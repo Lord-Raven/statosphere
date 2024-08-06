@@ -2,13 +2,17 @@
 #   in which case these values can be managed in the UI.
 
 # The name of the stage.
-# project_name: "Stage Template"
+project_name: "Statosphere"
+
+creator_notes: "
+
+"
 
 # A short tagline to show in search.
-# tagline: "A base template for all stages."
+tagline: "Implement stats and variables for your bots."
 
 # 'PUBLIC', 'PRIVATE', or 'UNLISTED'.
-# visibility: 'PUBLIC'
+visibility: 'UNLISTED'
 
 # 'ADJACENT' | 'NONE' | 'COVER' | 'FULLSCREEN'
 # 'ADJACENT' is default. The frame will display on the side of the
@@ -18,7 +22,7 @@
 #   but leave the text input box.
 # 'FULLSCREEN' will make nothing below the header bar
 #   show except for your stage.
-# position: 'ADJACENT'
+position: 'NONE'
 
 # Self-explanatory.
 # tags:
@@ -30,12 +34,71 @@
 # The schema of any user-supplied config.
 # If your stage requires a configuration but has no
 #   defined schema, it won't work.
+# variableType: adjusted/determined/incremented
 config_schema:
+  title: Escalator Settings
   type: object
   properties:
-    health:
-      type: integer
-      default: 100
+    variableConfig:
+      title: Variable Configuration
+      description: A JSON array of variable definitions in one disgusting line.
+      type: string
+      value: >
+        [{
+        "name": "fuel",
+        "type": "adjusted",
+        "minimum": 0,
+        "maximum": 100,
+        "assessmentPrompt": "{{char}} runs on fuel and burns more during intense activities or over long stretches of time; describe how much fuel {{char}} has burned or gained in this passage.",
+        "assessmentMap":
+          [{
+          "label": "Lots of fuel gained",
+          "value": 50
+          },{
+          "label": "Some fuel gained",
+          "value": 20
+          },{
+          "label": "No fuel burned",
+          "value": 0
+          },{
+          "label": "A smidge of fuel burned",
+          "value": -2
+          },{
+          "label": "Some fuel burned",
+          "value": -5
+          },{
+          "label": "A bunch of fuel burned",
+          "value": -15
+          },{
+          "label": "Lots of fuel burned",
+          "value": -30
+          },{
+          "label": "Tons of fuel burned",
+          "value": -50
+          }],
+        "promptMap":
+          [{
+          "maximum": 0,
+          "prompt": "{{char}}'s engine is dead; she has no fuel and remains in a completely dormant state until she has been refueled."
+          },{
+          "maximum": 15,
+          "prompt": "{{char}}'s fuel is nearly depleted and she is panicking; she does _not_ want to go dormant and must find diesel quickly."
+          },{
+          "maximum": 40,
+          "prompt": "{{char}}'s fuel is low and she's getting concerned; she should think about refueling soon."
+          },{
+          "maximum": 60,
+          "prompt": "{{char}}'s tank is about half empty now; she may want to think about her next top off."
+          },{
+          "maximum": 100,
+          "prompt": "{{char}} is doing good on fuel at the moment; nothing to worry about."
+          }]
+        }]
+    displayConfig:
+      title: Display Configuration
+      description: Markdown-formatted system message to display after bot responses.
+      type: string
+      value: "`{{char}}'s diesel level: {{fuel}}%`"
 
 # The schema of the state that you store.
 # This isn't needed even if you do store state,
