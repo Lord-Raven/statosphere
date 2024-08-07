@@ -49,19 +49,16 @@ config_schema:
         "initialValue": 100,
         "defaultUpdate": "max({{fuel}} - 2, 0)",
         "source": "both",
-        "assessmentPrompt": "{{char}} runs on fuel and burns more during intense activities or over long stretches of time; describe how much fuel {{char}} has burned or gained in this passage.",
-        "assessmentThreshold": 0.5,
-        "assessmentMap":
+        "classificationPrompt": "{{char}} is a gas-powered robot who burns fuel during intense activities; analyze this passage and describe how much fuel {{char}} burns or gains.",
+        "classificationThreshold": 0.5,
+        "classificationMap":
           {
-          "Tank filled": "min({{fuel}} + 100, 100)",
           "Lots of fuel gained": "min({{fuel}} + 50, 100)",
           "Some fuel gained": "min({{fuel}} + 20, 100)",
           "No fuel burned or gained": "{{fuel}}",
-          "A smidge of fuel burned": "max({{fuel}} - 2, 0)",
           "Some fuel burned": "max({{fuel}} - 5, 0)",
           "A bunch of fuel burned": "max({{fuel}} - 15, 0)",
-          "Lots of fuel burned": "max({{fuel}} - 30, 0)",
-          "Tons of fuel burned": "max({{fuel}} - 50, 0)"
+          "Lots of fuel burned": "max({{fuel}} - 30, 0)"
           }
         }]
     promptConfig:
@@ -85,8 +82,8 @@ config_schema:
         "condition": "60 < {{fuel}}",
         "prompt": "{{char}} is doing good on fuel at the moment; nothing to worry about."
         }]
-    displayConfig:
-      title: Display Configuration
+    displayMessage:
+      title: Display Message
       description: Markdown-formatted system message to display after bot responses.
       type: string
       value: "`{{char}}'s diesel level: {{fuel}}%`"

@@ -22,6 +22,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
     classificationPipeline: any;
     characters: {[key: string]: Character};
     user: User;
+    displayMessage: string = '';
 
     constructor(data: InitialData<InitStateType, ChatStateType, MessageStateType, ConfigType>) {
         super(data);
@@ -53,6 +54,8 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         const data: any = yaml.load(await yamlResponse.text());
 
         const variableDefinitions: VariableDefinition[] = JSON.parse(this.config.variableConfig ?? data.config_schema.properties.variableConfig.value);
+
+        this.displayMessage = this.config.displayMessage ?? data.config_schema.properties.displayMessage.value ?? '';
 
         for (const definition of variableDefinitions) {
             this.variableDefinitions[definition.name] = definition;
@@ -96,26 +99,26 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
             if ([contentSource, 'both', ''].includes(entry.source.trim().toLowerCase())) {
                 console.log('process');
                 let updateFormula = entry.defaultUpdate;
-                if (entry.assessmentMap && Object.keys(entry.assessmentMap).length > 0) {
-                    this.classificationPipeline.task = entry.assessmentPrompt;
-                    let response = await this.classificationPipeline(content, Object.keys(entry.assessmentMap), { multi_label: true });
+                if (entry.classificationMap && Object.keys(entry.classificationMap).length > 0) {
+                    this.classificationPipeline.task = entry.classificationPrompt;
+                    let response = await this.classificationPipeline(content, Object.keys(entry.classificationMap), { multi_label: true });
                     console.log(response);
-                    updateFormula = response.scores[0] >= entry.assessmentThreshold ? entry.assessmentMap[response.labels[0]] : updateFormula;
+                    updateFormula = response.scores[0] >= entry.classificationThreshold ? entry.classificationMap[response.labels[0]] : updateFormula;
                 }
                 console.log('post pipeline');
-                let valueMap: {[key: string]: any} = {};
-                for (const key of Object.keys(this.variables)) {
-                    valueMap[key] = this.variables[key].value;
-                }
-                console.log(valueMap);
+
                 console.log(`Before: ${variable.value}`);
-                variable.value = Parser.evaluate(this.replaceTags(updateFormula, valueMap));
+                variable.value = Parser.evaluate(this.replaceTags(updateFormula, {}));
                 console.log(`After: ${variable.value}`);
             }
         }
     }
 
     replaceTags(source: string, replacements: {[name: string]: string}) {
+        for (const key of Object.keys(this.variables)) {
+            replacements[key] = this.variables[key].value;
+        }
+
         return source.replace(/{{([A-z]*)}}/g, (match) => {
             return replacements[match.substring(2, match.length - 2)];
         });
@@ -124,9 +127,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
     async beforePrompt(userMessage: Message): Promise<Partial<StageResponse<ChatStateType, MessageStateType>>> {
 
         const {
-            content,
-            anonymizedId,
-            isBot
+            content
         } = userMessage;
         console.log('start beforePrompt');
         await this.processVariables(content, 'input');
@@ -145,8 +146,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
 
         const {
             content,
-            anonymizedId,
-            isBot
+            anonymizedId
         } = botMessage;
         console.log('start afterResponse');
         await this.processVariables(content, 'response');
@@ -156,7 +156,8 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
             messageState: this.writeMessageState(),
             modifiedMessage: null,
             error: null,
-            systemMessage: null,
+            systemMessage: (this.displayMessage && this.displayMessage.trim() != '') ?
+                this.replaceTags(this.displayMessage, {'user': this.user.name, 'char': this.characters[anonymizedId].name}) : null,
             chatState: null
         };
     }

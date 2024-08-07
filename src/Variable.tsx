@@ -4,9 +4,9 @@ export class VariableDefinition {
     initialValue: any;
     defaultUpdate: any;
     source: string;
-    assessmentPrompt: string;
-    assessmentThreshold: number;
-    assessmentMap: {[key: string]: any};
+    classificationPrompt: string;
+    classificationThreshold: number;
+    classificationMap: {[key: string]: any};
 
     constructor(data: any) {
         this.name = data.name;
@@ -14,9 +14,9 @@ export class VariableDefinition {
         this.initialValue = data.initialValue;
         this.defaultUpdate = data.defaultUpdate;
         this.source = data.source;
-        this.assessmentPrompt = data.assessmentPrompt;
-        this.assessmentThreshold = data.assessmentThreshold ?? 0.5;
-        this.assessmentMap = data.assessmentMap;
+        this.classificationPrompt = data.classificationPrompt;
+        this.classificationThreshold = data.classificationThreshold ?? 0.5;
+        this.classificationMap = data.classificationMap;
     }
 }
 
