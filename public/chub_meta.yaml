@@ -34,9 +34,9 @@ position: 'NONE'
 # The schema of any user-supplied config.
 # If your stage requires a configuration but has no
 #   defined schema, it won't work.
-# variableType: adjusted/determined/incremented
+# source: input/response/both
 config_schema:
-  title: Escalator Settings
+  title: Statosphere Settings
   type: object
   properties:
     variableConfig:
@@ -46,53 +46,44 @@ config_schema:
       value: >
         [{
         "name": "fuel",
-        "type": "adjusted",
-        "minimum": 0,
-        "maximum": 100,
+        "initialValue": 100,
+        "defaultUpdate": "max({{fuel}} - 2, 0)",
+        "source": "both",
         "assessmentPrompt": "{{char}} runs on fuel and burns more during intense activities or over long stretches of time; describe how much fuel {{char}} has burned or gained in this passage.",
+        "assessmentThreshold": 0.5,
         "assessmentMap":
-          [{
-          "label": "Lots of fuel gained",
-          "value": 50
-          },{
-          "label": "Some fuel gained",
-          "value": 20
-          },{
-          "label": "No fuel burned",
-          "value": 0
-          },{
-          "label": "A smidge of fuel burned",
-          "value": -2
-          },{
-          "label": "Some fuel burned",
-          "value": -5
-          },{
-          "label": "A bunch of fuel burned",
-          "value": -15
-          },{
-          "label": "Lots of fuel burned",
-          "value": -30
-          },{
-          "label": "Tons of fuel burned",
-          "value": -50
-          }],
-        "promptMap":
-          [{
-          "maximum": 0,
-          "prompt": "{{char}}'s engine is dead; she has no fuel and remains in a completely dormant state until she has been refueled."
-          },{
-          "maximum": 15,
-          "prompt": "{{char}}'s fuel is nearly depleted and she is panicking; she does _not_ want to go dormant and must find diesel quickly."
-          },{
-          "maximum": 40,
-          "prompt": "{{char}}'s fuel is low and she's getting concerned; she should think about refueling soon."
-          },{
-          "maximum": 60,
-          "prompt": "{{char}}'s tank is about half empty now; she may want to think about her next top off."
-          },{
-          "maximum": 100,
-          "prompt": "{{char}} is doing good on fuel at the moment; nothing to worry about."
+          {
+          "Tank filled": "min({{fuel}} + 100, 100)",
+          "Lots of fuel gained": "min({{fuel}} + 50, 100)",
+          "Some fuel gained": "min({{fuel}} + 20, 100)",
+          "No fuel burned or gained": "{{fuel}}",
+          "A smidge of fuel burned": "max({{fuel}} - 2, 0)",
+          "Some fuel burned": "max({{fuel}} - 5, 0)",
+          "A bunch of fuel burned": "max({{fuel}} - 15, 0)",
+          "Lots of fuel burned": "max({{fuel}} - 30, 0)",
+          "Tons of fuel burned": "max({{fuel}} - 50, 0)"
           }]
+        }]
+    promptConfig:
+      title: Prompt Configuration
+      description: A JSON array of rules for prompt additions.
+      type: string
+      value: >
+        [{
+        "condition": "{{fuel}} <= 0",
+        "prompt": "{{char}}'s engine is dead; she has no fuel and remains in a completely dormant state until she has been refueled."
+        },{
+        "condition": "0 < {{fuel}} <= 15"
+        "prompt": "{{char}}'s fuel is nearly depleted and she is panicking; she does _not_ want to go dormant and must find diesel quickly."
+        },{
+        "condition": "15 < {{fuel}} <= 40"
+        "prompt": "{{char}}'s fuel is low and she's getting concerned; she should think about refueling soon."
+        },{
+        "condition": "40 < {{fuel}} <= 60"
+        "prompt": "{{char}}'s tank is about half empty now; she may want to think about her next top off."
+        },{
+        "condition": "60 < {{fuel}}"
+        "prompt": "{{char}} is doing good on fuel at the moment; nothing to worry about."
         }]
     displayConfig:
       title: Display Configuration
