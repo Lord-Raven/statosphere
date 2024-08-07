@@ -62,7 +62,7 @@ config_schema:
           "A bunch of fuel burned": "max({{fuel}} - 15, 0)",
           "Lots of fuel burned": "max({{fuel}} - 30, 0)",
           "Tons of fuel burned": "max({{fuel}} - 50, 0)"
-          }]
+          }
         }]
     promptConfig:
       title: Prompt Configuration
@@ -73,16 +73,16 @@ config_schema:
         "condition": "{{fuel}} <= 0",
         "prompt": "{{char}}'s engine is dead; she has no fuel and remains in a completely dormant state until she has been refueled."
         },{
-        "condition": "0 < {{fuel}} <= 15"
+        "condition": "0 < {{fuel}} <= 15",
         "prompt": "{{char}}'s fuel is nearly depleted and she is panicking; she does _not_ want to go dormant and must find diesel quickly."
         },{
-        "condition": "15 < {{fuel}} <= 40"
+        "condition": "15 < {{fuel}} <= 40",
         "prompt": "{{char}}'s fuel is low and she's getting concerned; she should think about refueling soon."
         },{
-        "condition": "40 < {{fuel}} <= 60"
+        "condition": "40 < {{fuel}} <= 60",
         "prompt": "{{char}}'s tank is about half empty now; she may want to think about her next top off."
         },{
-        "condition": "60 < {{fuel}}"
+        "condition": "60 < {{fuel}}",
         "prompt": "{{char}} is doing good on fuel at the moment; nothing to worry about."
         }]
     displayConfig:
