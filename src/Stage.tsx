@@ -104,10 +104,9 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
                     updateFormula = response.scores[0] >= entry.assessmentThreshold ? entry.assessmentMap[response.labels[0]] : updateFormula;
                 }
                 console.log('post pipeline');
-                const valueMap: {[key: string]: any} = Object.entries(this.variables)
-                    .map((result:{[key: string]: any}, key) => {
-                        result[key] = this.variables[key].value;
-                        return result;
+                const valueMap: {[key: string]: any} = Object.keys(this.variables)
+                    .map(key => {
+                        return this.variables[key].value;
                     });
                 console.log(valueMap);
                 console.log(`Before: ${variable.value}`);
