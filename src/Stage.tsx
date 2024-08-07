@@ -46,6 +46,12 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
 
         try {
             this.classificationPipeline = await pipeline("zero-shot-classification", "Xenova/mobilebert-uncased-mnli");
+            let redPipeline = await pipeline("zero-shot-classification", "Xenova/mobilebert-uncased-mnli");
+            let redResponse = await redPipeline('red', ['red', 'blue', 'orange'], { hypothesis_template: 'Text mixed with yellow is {}', multi_label: true });
+            console.log(redResponse);
+            let otherResponse = await this.classificationPipeline('red', ['red', 'blue', 'orange'], {hypothesis_template: 'Text is {}', multi_label: true });
+            console.log(otherResponse);
+
         } catch (exception: any) {
             console.error(`Error loading pipeline: ${exception}`);
         }
