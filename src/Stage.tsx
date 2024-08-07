@@ -33,7 +33,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
             messageState
         } = data;
         this.characters = characters;
-        this.user = users[0];
+        this.user = users[Object.keys(users)[0]];
         this.variables = {};
         this.variableDefinitions = {};
         this.config = config;
