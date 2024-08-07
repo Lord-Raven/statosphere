@@ -146,18 +146,19 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
 
         const {
             content,
-            anonymizedId
+            anonymizedId,
+            promptForId
         } = botMessage;
         console.log('start afterResponse');
         await this.processVariables(content, 'response');
-        console.log('finished afterResponse');
+        console.log(`finished afterResponse: ${anonymizedId}:${promptForId}:${this.user.anonymizedId}`);
         return {
             stageDirections: null,
             messageState: this.writeMessageState(),
             modifiedMessage: null,
             error: null,
             systemMessage: (this.displayMessage && this.displayMessage.trim() != '') ?
-                this.replaceTags(this.displayMessage, {'user': this.user.name, 'char': this.characters[anonymizedId].name}) : null,
+                this.replaceTags(this.displayMessage, {'user': this.user.name, 'char': (this.characters[anonymizedId] ? this.characters[anonymizedId].name : '')}) : null,
             chatState: null
         };
     }
