@@ -22,7 +22,6 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
     classificationPipeline: any;
     characters: {[key: string]: Character};
     user: User;
-    parser: Parser = new Parser();
 
     constructor(data: InitialData<InitStateType, ChatStateType, MessageStateType, ConfigType>) {
         super(data);
@@ -110,7 +109,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
                 }
                 console.log(valueMap);
                 console.log(`Before: ${variable.value}`);
-                variable.value = this.parser.parse(this.replaceTags(updateFormula, valueMap));
+                variable.value = Parser.evaluate(this.replaceTags(updateFormula, valueMap));
                 console.log(`After: ${variable.value}`);
             }
         }
