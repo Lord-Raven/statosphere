@@ -86,21 +86,24 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
 
     async processVariables(content: string, contentSource: string) {
         for (const entry of Object.values(this.variableDefinitions)) {
+            console.log('Variable:' + entry);
             // Generate variable if not present.
             if (!this.variables[entry.name]) {
+                console.log('Initialize variable');
                 this.variables[entry.name] = new Variable(entry.name, this.variableDefinitions);
             }
 
             let variable = this.variables[entry.name];
             if ([contentSource, 'both', ''].includes(entry.source.trim().toLowerCase())) {
-
+                console.log('process');
                 let updateFormula = entry.defaultUpdate;
                 if (entry.assessmentMap && Object.keys(entry.assessmentMap).length > 0) {
                     this.classificationPipeline.task = entry.assessmentPrompt;
                     let response = await this.classificationPipeline(content, Object.keys(entry.assessmentMap), { multi_label: true });
+                    console.log(response);
                     updateFormula = response.scores[0] >= entry.assessmentThreshold ? entry.assessmentMap[response.labels[0]] : updateFormula;
                 }
-
+                console.log('post pipeline');
                 const valueMap: {[key: string]: any} = Object.entries(this.variables)
                     .map((result:{[key: string]: any}, key) => {
                         result[key] = this.variables[key].value;
@@ -127,9 +130,9 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
             anonymizedId,
             isBot
         } = userMessage;
-
+        console.log('start beforePrompt');
         await this.processVariables(content, 'input');
-
+        console.log('finished beforePrompt');
         return {
             stageDirections: null,
             messageState: this.writeMessageState(),
@@ -147,9 +150,9 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
             anonymizedId,
             isBot
         } = botMessage;
-
+        console.log('start afterResponse');
         await this.processVariables(content, 'response');
-
+        console.log('finished afterResponse');
         return {
             stageDirections: null,
             messageState: this.writeMessageState(),
