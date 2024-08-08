@@ -3,8 +3,8 @@ export class VariableDefinition {
     type: string;
     initialValue: any;
     defaultUpdate: any;
-    source: string;
-    classificationPrompt: string;
+    inputHypothesis: string;
+    responseHypothesis: string;
     classificationThreshold: number;
     classificationMap: {[key: string]: any};
 
@@ -13,8 +13,8 @@ export class VariableDefinition {
         this.type = data.type;
         this.initialValue = data.initialValue;
         this.defaultUpdate = data.defaultUpdate;
-        this.source = data.source;
-        this.classificationPrompt = data.classificationPrompt;
+        this.inputHypothesis = data.inputHypothesis;
+        this.responseHypothesis = data.responseHypothesis;
         this.classificationThreshold = data.classificationThreshold ?? 0.5;
         this.classificationMap = data.classificationMap;
     }

@@ -49,16 +49,17 @@ config_schema:
         "initialValue": 100,
         "defaultUpdate": "max({{fuel}} - 2, 0)",
         "source": "both",
-        "classificationPrompt": "{{char}} is a gas-powered robot who burns fuel during intense activities; analyze this passage and describe how much fuel {{char}} burns or gains.",
+        "inputHypothesis": "{{char}} is a gas-powered robot who burns fuel during intense activities; during this passage, she {}.",
+        "responseHypothesis": "{{char}} is a gas-powered robot who burns fuel during intense activities; during this passage, she {}.",
         "classificationThreshold": 0.5,
         "classificationMap":
           {
-          "Lots of fuel gained": "min({{fuel}} + 50, 100)",
-          "Some fuel gained": "min({{fuel}} + 20, 100)",
-          "No fuel burned or gained": "{{fuel}}",
-          "Some fuel burned": "max({{fuel}} - 5, 0)",
-          "A bunch of fuel burned": "max({{fuel}} - 15, 0)",
-          "Lots of fuel burned": "max({{fuel}} - 30, 0)"
+          "gained lots of fuel": "min({{fuel}} + 50, 100)",
+          "gained some fuel": "min({{fuel}} + 20, 100)",
+          "neither burned nor gained fuel": "{{fuel}}",
+          "burned some fuel": "max({{fuel}} - 5, 0)",
+          "burned a bunch of fuel": "max({{fuel}} - 15, 0)",
+          "burned tons of fuel": "max({{fuel}} - 30, 0)"
           }
         }]
     promptConfig:

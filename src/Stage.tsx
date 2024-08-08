@@ -46,12 +46,6 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
 
         try {
             this.classificationPipeline = await pipeline("zero-shot-classification", "Xenova/mobilebert-uncased-mnli");
-            let redPipeline = await pipeline("zero-shot-classification", "Xenova/mobilebert-uncased-mnli");
-            let redResponse = await redPipeline('red', ['red', 'blue', 'orange'], { hypothesis_template: 'This color mixed with a lot of yellow is {}', multi_label: true });
-            console.log(redResponse);
-            let otherResponse = await this.classificationPipeline('red', ['red', 'blue', 'orange'], {hypothesis_template: 'This color is {}', multi_label: true });
-            console.log(otherResponse);
-
         } catch (exception: any) {
             console.error(`Error loading pipeline: ${exception}`);
         }
@@ -102,12 +96,12 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
             }
 
             let variable = this.variables[entry.name];
-            if ([contentSource, 'both', ''].includes(entry.source.trim().toLowerCase())) {
+            let hypothesisTemplate = contentSource == 'input' ? entry.inputHypothesis : entry.responseHypothesis;
+            if (hypothesisTemplate && hypothesisTemplate.trim() != '') {
                 console.log('process');
                 let updateFormula = entry.defaultUpdate;
                 if (entry.classificationMap && Object.keys(entry.classificationMap).length > 0) {
-                    this.classificationPipeline.task = entry.classificationPrompt;
-                    let response = await this.classificationPipeline(content, Object.keys(entry.classificationMap), { multi_label: true });
+                    let response = await this.classificationPipeline(content, Object.keys(entry.classificationMap), { hypothesis_template: hypothesisTemplate, multi_label: true });
                     console.log(response);
                     updateFormula = response.scores[0] >= entry.classificationThreshold ? entry.classificationMap[response.labels[0]] : updateFormula;
                 }
