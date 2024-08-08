@@ -86,7 +86,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         }
     }
 
-    async processVariables(content: string, contentSource: string) {
+    async processVariables(content: string, contentSource: string, botId: string) {
         for (const entry of Object.values(this.variableDefinitions)) {
             console.log('Variable:' + entry);
             // Generate variable if not present.
@@ -96,8 +96,8 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
             }
 
             let variable = this.variables[entry.name];
-            let hypothesisTemplate = contentSource == 'input' ? entry.inputHypothesis : entry.responseHypothesis;
-            if (hypothesisTemplate && hypothesisTemplate.trim() != '') {
+            let hypothesisTemplate = this.replaceTags((contentSource == 'input' ? entry.inputHypothesis : entry.responseHypothesis) ?? '', {"user": this.user.name, "char": this.characters[botId]?.name ?? ''});
+            if (hypothesisTemplate.trim() != '') {
                 console.log('process');
                 let updateFormula = entry.defaultUpdate;
                 if (entry.classificationMap && Object.keys(entry.classificationMap).length > 0) {
@@ -127,10 +127,11 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
     async beforePrompt(userMessage: Message): Promise<Partial<StageResponse<ChatStateType, MessageStateType>>> {
 
         const {
-            content
+            content,
+            promptForId
         } = userMessage;
         console.log('start beforePrompt');
-        await this.processVariables(content, 'input');
+        await this.processVariables(content, 'input', promptForId ?? '');
         console.log('finished beforePrompt');
         return {
             stageDirections: null,
@@ -146,12 +147,11 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
 
         const {
             content,
-            anonymizedId,
-            promptForId
+            anonymizedId
         } = botMessage;
         console.log('start afterResponse');
-        await this.processVariables(content, 'response');
-        console.log(`finished afterResponse: ${anonymizedId}:${promptForId}:${this.user.anonymizedId}`);
+        await this.processVariables(content, 'response', anonymizedId);
+        console.log(`finished afterResponse`);
         return {
             stageDirections: null,
             messageState: this.writeMessageState(),
