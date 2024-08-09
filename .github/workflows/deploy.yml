@@ -25,7 +25,7 @@ jobs:
       - name: Confirm CHUB_AUTH_TOKEN is set
         env:
           CHUB_AUTH_TOKEN: ${{ secrets.CHUB_AUTH_TOKEN }}
-          VITE_HF_API_KEY: ${{ secrets.VITE_HF_API_KEY }}
+          VITE_HF_API_KEY: ${{ secrets.HF_API_KEY }}
         run: |
           if [ "${{ secrets.CHUB_AUTH_TOKEN }}" == "" ] || [ "${{ secrets.CHUB_AUTH_TOKEN }}" == "null" ]; then
              echo "Your CHUB_AUTH_TOKEN secret is not set for this project. Cannot proceed."
@@ -110,7 +110,7 @@ jobs:
       - name: Build
         run: yarn build
         env:
-          VITE_HF_API_KEY: ${{ secrets.VITE_HF_API_KEY }}
+          VITE_HF_API_KEY: ${{ secrets.HF_API_KEY }}
 
       - name: Zip the build folder
         run: cd dist && zip -r ../build.zip * && cd ../
