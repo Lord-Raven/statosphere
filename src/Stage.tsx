@@ -126,9 +126,9 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
     }
 
     async query(data: any) {
-        console.log('querying: ' + import.meta.env.VITE_HF_API_KEY);
+        console.log('querying:');
         console.log(data);
-        /*const response = await fetch(
+        const response = await fetch(
             "https://api-inference.huggingface.co/models/facebook/bart-large-mnli",
             {
                 headers: { Authorization: `Bearer ${process.env.VITE_HF_API_KEY}` },
@@ -136,9 +136,9 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
                 body: JSON.stringify(data),
             }
         );
-        const result = await response.json();*/
-        console.log({});
-        return {};
+        const result = await response.json();
+        console.log(result);
+        return result;
     }
 
     async beforePrompt(userMessage: Message): Promise<Partial<StageResponse<ChatStateType, MessageStateType>>> {
