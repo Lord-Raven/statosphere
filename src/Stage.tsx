@@ -131,7 +131,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         const response = await fetch(
             "https://api-inference.huggingface.co/models/facebook/bart-large-mnli",
             {
-                headers: { Authorization: `Bearer ${meta.env.VITE_HF_API_KEY}` },
+                headers: { Authorization: `Bearer ${import.meta.env.VITE_HF_API_KEY}` },
                 method: "POST",
                 body: JSON.stringify(data),
             }
