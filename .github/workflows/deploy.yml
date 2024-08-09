@@ -109,6 +109,8 @@ jobs:
 
       - name: Build
         run: yarn build
+        env:
+          VITE_HF_API_KEY: ${{ secrets.VITE_HF_API_KEY }}
 
       - name: Zip the build folder
         run: cd dist && zip -r ../build.zip * && cd ../
