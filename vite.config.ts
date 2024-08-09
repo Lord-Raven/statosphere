@@ -6,8 +6,7 @@ import { resolve } from 'path'
 export default defineConfig(({ command, mode }) => {
     if (mode != 'lib') {
         return {
-            plugins: [react()],
-            base: '/statosphere'
+            plugins: [react()]
         }
     } else {
         return { plugins: [
