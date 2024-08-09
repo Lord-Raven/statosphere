@@ -41,6 +41,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         this.variableDefinitions = {};
         this.config = config;
         env.allowRemoteModels = true;
+        env.allowLocalModels = false;
 
         this.readMessageState(messageState);
     }
