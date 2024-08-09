@@ -101,7 +101,8 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
                 console.log('process');
                 let updateFormula = entry.defaultUpdate;
                 if (entry.classificationMap && Object.keys(entry.classificationMap).length > 0) {
-                    let response = await this.classificationPipeline(content, Object.keys(entry.classificationMap), { hypothesis_template: hypothesisTemplate, multi_label: true });
+                    let response = await this.query({inputs: content, parameters: {candidate_labels: Object.keys(entry.classificationMap), hypothesis_template: hypothesisTemplate, multi_label: true}});
+                    //let response = await this.classificationPipeline(content, Object.keys(entry.classificationMap), { hypothesis_template: hypothesisTemplate, multi_label: true });
                     console.log(response);
                     updateFormula = response.scores[0] >= entry.classificationThreshold ? entry.classificationMap[response.labels[0]] : updateFormula;
                 }
@@ -122,6 +123,22 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         return source.replace(/{{([A-z]*)}}/g, (match) => {
             return replacements[match.substring(2, match.length - 2)];
         });
+    }
+
+    async query(data: any) {
+        console.log('querying');
+        console.log(data);
+        const response = await fetch(
+            "https://api-inference.huggingface.co/models/facebook/bart-large-mnli",
+            {
+                headers: { Authorization: `Bearer ${process.env.VITE_HF_API_KEY}` },
+                method: "POST",
+                body: JSON.stringify(data),
+            }
+        );
+        const result = await response.json();
+        console.log(result);
+        return result;
     }
 
     async beforePrompt(userMessage: Message): Promise<Partial<StageResponse<ChatStateType, MessageStateType>>> {
