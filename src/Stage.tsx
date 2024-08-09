@@ -40,7 +40,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         this.variables = {};
         this.variableDefinitions = {};
         this.config = config;
-        env.allowRemoteModels = false;
+        env.allowRemoteModels = true;
 
         this.readMessageState(messageState);
     }
@@ -48,7 +48,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
     async load(): Promise<Partial<LoadResponse<InitStateType, ChatStateType, MessageStateType>>> {
 
         try {
-            this.classificationPipeline = await pipeline("zero-shot-classification", "Xenova/mobilebert-uncased-mnli");
+            this.classificationPipeline = await pipeline("zero-shot-classification", "Xenova/distilbert-base-uncased-mnli");
         } catch (exception: any) {
             console.error(`Error loading pipeline: ${exception}`);
         }
@@ -104,12 +104,12 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
                 console.log('process');
                 let updateFormula = entry.defaultUpdate;
                 if (entry.classificationMap && Object.keys(entry.classificationMap).length > 0) {
-                    let response = (await hfInference.zeroShotClassification({
+                    /*let response = (await hfInference.zeroShotClassification({
                         model: 'facebook/bart-large-mnli',
                         inputs: content,
                         //hypothesis_template: hypothesisTemplate,
-                        parameters: {candidate_labels: Object.keys(entry.classificationMap), multi_label: true}})).pop();
-                    //let response = await this.classificationPipeline(content, Object.keys(entry.classificationMap), { hypothesis_template: hypothesisTemplate, multi_label: true });
+                        parameters: {candidate_labels: Object.keys(entry.classificationMap), multi_label: true}})).pop();*/
+                    let response = await this.classificationPipeline(content, Object.keys(entry.classificationMap), { hypothesis_template: hypothesisTemplate, multi_label: true });
                     console.log(response);
 
                     updateFormula = response && response.scores[0] >= entry.classificationThreshold ? entry.classificationMap[response.labels[0]] : updateFormula;
