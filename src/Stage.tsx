@@ -40,8 +40,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         this.variables = {};
         this.variableDefinitions = {};
         this.config = config;
-        env.allowRemoteModels = true;
-        env.allowLocalModels = false;
+        env.allowRemoteModels = false;
 
         this.readMessageState(messageState);
     }
@@ -66,6 +65,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
             console.log('Found variable definition: ' + this.variableDefinitions[definition.name])
         }
 
+        await this.messenger.updateEnvironment({stage_hidden: true})
         return {
             success: true,
             error: null,
