@@ -126,7 +126,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
     }
 
     async query(data: any) {
-        console.log('querying: ' + process.env.VITE_HF_API_KEY);
+        console.log('querying: ' + import.meta.env.VITE_HF_API_KEY);
         console.log(data);
         /*const response = await fetch(
             "https://api-inference.huggingface.co/models/facebook/bart-large-mnli",
