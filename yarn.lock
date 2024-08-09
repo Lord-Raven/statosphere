@@ -383,10 +383,35 @@
   resolved "https://registry.yarnpkg.com/@ffmpeg/types/-/types-0.12.2.tgz#bc7eef321ae50225c247091f1f23fd3087c6aa1d"
   integrity sha512-NJtxwPoLb60/z1Klv0ueshguWQ/7mNm106qdHkB4HL49LXszjhjCCiL+ldHJGQ9ai2Igx0s4F24ghigy//ERdA==
 
+"@huggingface/hub@^0.15.1":
+  version "0.15.1"
+  resolved "https://registry.yarnpkg.com/@huggingface/hub/-/hub-0.15.1.tgz#1fceb272c7123f152aadc370281c366f97079091"
+  integrity sha512-uHb4aFkJDoGfLeRHfFTjkI36Z8IV6Z1c+KzhMDqUSC56opyr7Mn1Nsx7Rri/C7KDwROhQfBp/fOOqqjTzn6Cgg==
+  dependencies:
+    "@huggingface/tasks" "^0.10.6"
+    hash-wasm "^4.9.0"
+
+"@huggingface/inference@^2.8.0":
+  version "2.8.0"
+  resolved "https://registry.yarnpkg.com/@huggingface/inference/-/inference-2.8.0.tgz#9f57192270d137b10df38622521fd6a652eecfa9"
+  integrity sha512-Ti681P1qckcCAqgzmL53jBnluPuZGelmMIuXNjgAwC5+RIjF4S0SDQu6oy44ZTwekwNp2ETaZ2sXsOk+45aC4w==
+  dependencies:
+    "@huggingface/tasks" "^0.11.2"
+
 "@huggingface/jinja@^0.2.2":
   version "0.2.2"
   resolved "https://registry.yarnpkg.com/@huggingface/jinja/-/jinja-0.2.2.tgz#faeb205a9d6995089bef52655ddd8245d3190627"
   integrity sha512-/KPde26khDUIPkTGU82jdtTW9UAuvUTumCAbFs/7giR0SxsvZC4hru51PBvpijH6BVkHcROcvZM/lpy5h1jRRA==
+
+"@huggingface/tasks@^0.10.6":
+  version "0.10.22"
+  resolved "https://registry.yarnpkg.com/@huggingface/tasks/-/tasks-0.10.22.tgz#fa2fb435001452e8f3960973258f9b10146f0ed2"
+  integrity sha512-sCtp+A6sq6NXoUU7NXuXWoVNNjKddk1GTQIh3cJ6illF8S4zmFoerCVRvFf19BdgICGvF+RVZiv9sGGK9KRDTg==
+
+"@huggingface/tasks@^0.11.2":
+  version "0.11.8"
+  resolved "https://registry.yarnpkg.com/@huggingface/tasks/-/tasks-0.11.8.tgz#df54804c396bca4577ceb2166722eae8aca5955a"
+  integrity sha512-HOdx2vwhd/rCmy6gpDPiUbsXD+vwVpYSS/h2Tx+yV1uMDfS98MWl/TvoVGV+u5cJWTFbvdiTHMXIuw8B6JbHuQ==
 
 "@humanwhocodes/config-array@^0.11.14":
   version "0.11.14"
@@ -1612,6 +1637,11 @@ has-flag@^4.0.0:
   version "4.0.0"
   resolved "https://registry.yarnpkg.com/has-flag/-/has-flag-4.0.0.tgz#944771fd9c81c81265c4d6941860da06bb59479b"
   integrity sha512-EykJT/Q1KjTWctppgIAgfSO0tKVuZUjhgMr17kqTumMl6Afv3EISleU7qZUzoXDFTAHTDC4NOoG/ZxU3EvlMPQ==
+
+hash-wasm@^4.9.0:
+  version "4.11.0"
+  resolved "https://registry.yarnpkg.com/hash-wasm/-/hash-wasm-4.11.0.tgz#7d1479b114c82e48498fdb1d2462a687d00386d5"
+  integrity sha512-HVusNXlVqHe0fzIzdQOGolnFN6mX/fqcrSAOcTBXdvzrXVHwTz11vXeKRmkR5gTuwVpvHZEIyKoePDvuAR+XwQ==
 
 hasown@^2.0.0:
   version "2.0.2"

@@ -6,11 +6,14 @@ import {Parser} from "expr-eval";
 import {Variable, VariableDefinition} from "./Variable";
 import {env, pipeline} from '@xenova/transformers';
 import * as yaml from 'js-yaml';
+import {HfInference} from "@huggingface/inference"
 
 type MessageStateType = any;
 type ConfigType = any;
 type InitStateType = any;
 type ChatStateType = any;
+
+const hfInference = new HfInference(import.meta.env.VITE_HF_API_KEY);
 
 export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateType, ConfigType> {
 
@@ -101,10 +104,15 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
                 console.log('process');
                 let updateFormula = entry.defaultUpdate;
                 if (entry.classificationMap && Object.keys(entry.classificationMap).length > 0) {
-                    let response = await this.query({inputs: content, parameters: {candidate_labels: Object.keys(entry.classificationMap), hypothesis_template: hypothesisTemplate, multi_label: true}});
+                    let response = (await hfInference.zeroShotClassification({
+                        model: 'facebook/bart-large-mnli',
+                        inputs: content,
+                        //hypothesis_template: hypothesisTemplate,
+                        parameters: {candidate_labels: Object.keys(entry.classificationMap), multi_label: true}})).pop();
                     //let response = await this.classificationPipeline(content, Object.keys(entry.classificationMap), { hypothesis_template: hypothesisTemplate, multi_label: true });
                     console.log(response);
-                    updateFormula = response.scores[0] >= entry.classificationThreshold ? entry.classificationMap[response.labels[0]] : updateFormula;
+
+                    updateFormula = response && response.scores[0] >= entry.classificationThreshold ? entry.classificationMap[response.labels[0]] : updateFormula;
                 }
                 console.log('post pipeline');
 
