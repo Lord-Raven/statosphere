@@ -6,14 +6,11 @@ import {Parser} from "expr-eval";
 import {Variable, VariableDefinition} from "./Variable";
 import {env, pipeline} from '@xenova/transformers';
 import * as yaml from 'js-yaml';
-import {HfInference} from "@huggingface/inference"
 
 type MessageStateType = any;
 type ConfigType = any;
 type InitStateType = any;
 type ChatStateType = any;
-
-const hfInference = new HfInference(import.meta.env.VITE_HF_API_KEY);
 
 export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateType, ConfigType> {
 
@@ -62,12 +59,8 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
 
         for (const definition of variableDefinitions) {
             this.variableDefinitions[definition.name] = definition;
-            console.log('Found variable definition: ' + this.variableDefinitions[definition.name])
         }
-
-
-        await this.messenger.updateEnvironment({stage_hidden: true})
-        console.log('finished loading');
+        console.log('Finished loading.');
         return {
             success: true,
             error: null,
@@ -107,11 +100,6 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
                 console.log('process');
                 let updateFormula = entry.defaultUpdate;
                 if (entry.classificationMap && Object.keys(entry.classificationMap).length > 0) {
-                    /*let response = (await hfInference.zeroShotClassification({
-                        model: 'facebook/bart-large-mnli',
-                        inputs: content,
-                        //hypothesis_template: hypothesisTemplate,
-                        parameters: {candidate_labels: Object.keys(entry.classificationMap), multi_label: true}})).pop();*/
                     let response = await this.classificationPipeline(content, Object.keys(entry.classificationMap), { hypothesis_template: hypothesisTemplate, multi_label: true });
                     console.log(response);
 
@@ -134,22 +122,6 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         return source.replace(/{{([A-z]*)}}/g, (match) => {
             return replacements[match.substring(2, match.length - 2)];
         });
-    }
-
-    async query(data: any) {
-        console.log('querying...');
-        console.log(data);
-        const response = await fetch(
-            "https://api-inference.huggingface.co/models/facebook/bart-large-mnli",
-            {
-                headers: { Authorization: `Bearer ${import.meta.env.VITE_HF_API_KEY}` },
-                method: "POST",
-                body: JSON.stringify(data),
-            }
-        );
-        const result = await response.json();
-        console.log(result);
-        return await response.json();
     }
 
     async beforePrompt(userMessage: Message): Promise<Partial<StageResponse<ChatStateType, MessageStateType>>> {
