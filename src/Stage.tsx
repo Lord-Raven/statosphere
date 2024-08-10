@@ -65,7 +65,9 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
             console.log('Found variable definition: ' + this.variableDefinitions[definition.name])
         }
 
+
         await this.messenger.updateEnvironment({stage_hidden: true})
+        console.log('finished loading');
         return {
             success: true,
             error: null,
