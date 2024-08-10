@@ -100,7 +100,13 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
                 console.log('process');
                 let updateFormula = entry.defaultUpdate;
                 if (entry.classificationMap && Object.keys(entry.classificationMap).length > 0) {
-                    let response = await this.classificationPipeline(content, Object.keys(entry.classificationMap), { hypothesis_template: hypothesisTemplate, multi_label: true });
+                    /*let response = (await hfInference.zeroShotClassification({
+                        model: 'facebook/bart-large-mnli',
+                        inputs: content,
+                        //hypothesis_template: hypothesisTemplate,
+                        parameters: {candidate_labels: Object.keys(entry.classificationMap), multi_label: true}})).pop();*/
+                    //let response = await this.classificationPipeline(content, Object.keys(entry.classificationMap), { hypothesis_template: hypothesisTemplate, multi_label: true });
+                    let response = await this.query({inputs: content, parameters: {candidate_labels: Object.keys(entry.classificationMap), hypothesisTemplate: hypothesisTemplate, multi_label: true}});
                     console.log(response);
 
                     updateFormula = response && response.scores[0] >= entry.classificationThreshold ? entry.classificationMap[response.labels[0]] : updateFormula;
@@ -122,6 +128,22 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         return source.replace(/{{([A-z]*)}}/g, (match) => {
             return replacements[match.substring(2, match.length - 2)];
         });
+    }
+
+    async query(data: any) {
+        console.log('querying...');
+        console.log(data);
+        const response = await fetch(
+            "https://os3flc08k8ivk5zd.eastus.azure.endpoints.huggingface.cloud",
+            {
+                headers: { Authorization: `Bearer ${import.meta.env.VITE_HF_API_KEY}` },
+                method: "POST",
+                body: JSON.stringify(data),
+            }
+        );
+        const result = await response.json();
+        console.log(result);
+        return await response.json();
     }
 
     async beforePrompt(userMessage: Message): Promise<Partial<StageResponse<ChatStateType, MessageStateType>>> {
