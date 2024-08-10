@@ -134,9 +134,13 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         console.log('querying...');
         console.log(data);
         const response = await fetch(
-            "https://os3flc08k8ivk5zd.eastus.azure.endpoints.huggingface.cloud",
+        "https://os3flc08k8ivk5zd.eastus.azure.endpoints.huggingface.cloud",
             {
-                headers: { Authorization: `Bearer ${import.meta.env.VITE_HF_API_KEY}` },
+                headers: {
+                    "Accept" : "application/json",
+                    "Authorization": `Bearer ${import.meta.env.VITE_HF_API_KEY}`,
+                    "Content-Type": "application/json"
+                },
                 method: "POST",
                 body: JSON.stringify(data),
             }
