@@ -6,6 +6,7 @@ import {Parser} from "expr-eval";
 import {Variable, VariableDefinition} from "./Variable";
 import {env, pipeline} from '@xenova/transformers';
 import * as yaml from 'js-yaml';
+import {Client} from "@gradio/client";
 
 type MessageStateType = any;
 type ConfigType = any;
@@ -23,6 +24,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
     characters: {[key: string]: Character};
     user: User;
     displayMessage: string = '';
+    client: any;
 
     constructor(data: InitialData<InitStateType, ChatStateType, MessageStateType, ConfigType>) {
         super(data);
@@ -56,6 +58,8 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         const variableDefinitions: VariableDefinition[] = JSON.parse(this.config.variableConfig ?? data.config_schema.properties.variableConfig.value);
 
         this.displayMessage = this.config.displayMessage ?? data.config_schema.properties.displayMessage.value ?? '';
+
+        this.client = await Client.connect("JHuhman/statosphere-backend");
 
         for (const definition of variableDefinitions) {
             this.variableDefinitions[definition.name] = definition;
@@ -106,7 +110,8 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
                         //hypothesis_template: hypothesisTemplate,
                         parameters: {candidate_labels: Object.keys(entry.classificationMap), multi_label: true}})).pop();*/
                     //let response = await this.classificationPipeline(content, Object.keys(entry.classificationMap), { hypothesis_template: hypothesisTemplate, multi_label: true });
-                    let response = await this.query({inputs: content, parameters: {candidate_labels: Object.keys(entry.classificationMap), hypothesisTemplate: hypothesisTemplate, multi_label: true}});
+                    let response = await this.query({sequence: content, candidate_labels: Object.keys(entry.classificationMap), hypothesis_template: hypothesisTemplate, multi_label: true});
+                        //{inputs: content, parameters: {candidate_labels: Object.keys(entry.classificationMap), hypothesisTemplate: hypothesisTemplate, multi_label: true}});
                     console.log(response);
 
                     updateFormula = response && response.scores[0] >= entry.classificationThreshold ? entry.classificationMap[response.labels[0]] : updateFormula;
@@ -133,8 +138,10 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
     async query(data: any) {
         console.log('querying...');
         console.log(data);
-        const response = await fetch(
-        "https://os3flc08k8ivk5zd.eastus.azure.endpoints.huggingface.cloud",
+
+        const response = await this.client.predict("/predict", {data_string: JSON.stringify(data)});
+        /*const response = await fetch(
+        "https://jhuhman-statosphere.hf.space/run/predict",
             {
                 headers: {
                     "Accept" : "application/json",
@@ -144,7 +151,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
                 method: "POST",
                 body: JSON.stringify(data),
             }
-        );
+        );*/
         const result = await response.json();
         console.log(result);
         return result;
