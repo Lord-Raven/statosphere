@@ -112,7 +112,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
                     //let response = await this.classificationPipeline(content, Object.keys(entry.classificationMap), { hypothesis_template: hypothesisTemplate, multi_label: true });
                     let response = await this.query({sequence: content, candidate_labels: Object.keys(entry.classificationMap), hypothesis_template: hypothesisTemplate, multi_label: true});
                         //{inputs: content, parameters: {candidate_labels: Object.keys(entry.classificationMap), hypothesisTemplate: hypothesisTemplate, multi_label: true}});
-                    console.log(response);
+                    //console.log(response);
 
                     updateFormula = response && response.scores[0] >= entry.classificationThreshold ? entry.classificationMap[response.labels[0]] : updateFormula;
                 }
