@@ -154,7 +154,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         );
         const result = await response.json();*/
         console.log(result.data[0]);
-        return result.data[0];
+        return JSON.parse(`${result.data[0]}`);
     }
 
     async beforePrompt(userMessage: Message): Promise<Partial<StageResponse<ChatStateType, MessageStateType>>> {
