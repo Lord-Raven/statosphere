@@ -139,7 +139,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         console.log('querying...');
         console.log(data);
 
-        const response = await this.client.predict("/predict", {data_string: JSON.stringify(data)});
+        const result = await this.client.predict("/predict", {data_string: JSON.stringify(data)});
         /*const response = await fetch(
         "https://jhuhman-statosphere.hf.space/run/predict",
             {
@@ -151,8 +151,8 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
                 method: "POST",
                 body: JSON.stringify(data),
             }
-        );*/
-        const result = await response.json();
+        );
+        const result = await response.json();*/
         console.log(result);
         return result;
     }
