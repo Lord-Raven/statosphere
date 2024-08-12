@@ -10,7 +10,7 @@ Statosphere is a stage for creating custom stat-tracking for bots. It is compris
  * Stat-block definition to display after bot responses<br>
  * Rules to apply different post-history prompt instructions based on your variables<br>
  <br>
-##Example Applications##<br>
+**Example Applications**<br>
 This stage does nothing by default, but through configuration, a wide variety of effects are possible:<br>
  * Health tracking and display: track and display health or other stats and how they are affected by events<br>
  * Scenario escalation tracking: track scenario progress and provide escalating prompts to the LLM<br>
@@ -56,50 +56,18 @@ config_schema:
       description: A JSON array of variable definitions in one disgusting line.
       type: string
       value: >
-        [{
-        "name": "fuel",
-        "initialValue": 100,
-        "defaultUpdate": "max({{fuel}} - 2, 0)",
-        "source": "both",
-        "inputHypothesis": "{{char}} is a gas-powered robot who expends fuel to exist (and burns more during intense activity). During this passage, she {}.",
-        "responseHypothesis": "{{char}} is a gas-powered robot who expends fuel to exist (and burns more during intense activity). During this passage, she {}.",
-        "classificationThreshold": 0.5,
-        "classificationMap":
-          {
-          "gained lots of fuel": "min({{fuel}} + 50, 100)",
-          "gained some fuel": "min({{fuel}} + 20, 100)",
-          "neither lost nor gained fuel": "{{fuel}}",
-          "spent or lost some fuel": "max({{fuel}} - 5, 0)",
-          "spent or lost a bunch of fuel": "max({{fuel}} - 15, 0)",
-          "spent or lost tons of fuel": "max({{fuel}} - 30, 0)"
-          }
-        }]
+        []
     promptConfig:
       title: Prompt Configuration
       description: A JSON array of rules for prompt additions.
       type: string
       value: >
-        [{
-        "condition": "{{fuel}} <= 0",
-        "prompt": "{{char}}'s engine is dead; she has no fuel and remains in a completely dormant state until she has been refueled."
-        },{
-        "condition": "{{fuel}} > 0 and {{fuel}} <= 15",
-        "prompt": "{{char}}'s fuel is nearly depleted and she is panicking; she does _not_ want to go dormant and must find diesel quickly."
-        },{
-        "condition": "{{fuel}} > 15 and {{fuel}} <= 40",
-        "prompt": "{{char}}'s fuel is low and she's getting concerned; she should think about refueling soon."
-        },{
-        "condition": "{{fuel}} > 40 and {{fuel}} <= 60",
-        "prompt": "{{char}}'s tank is about half empty now; she may want to think about her next top off."
-        },{
-        "condition": "{{fuel}} > 60",
-        "prompt": "{{char}} is doing good on fuel at the moment; nothing to worry about."
-        }]
+        []
     displayMessage:
       title: Display Message
       description: Markdown-formatted system message to display after bot responses.
       type: string
-      value: "`{{char}}'s diesel level: {{fuel}}%`"
+      value: ""
 
 # The schema of the state that you store.
 # This isn't needed even if you do store state,
