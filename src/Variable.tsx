@@ -1,23 +1,13 @@
 export class VariableDefinition {
     name: string;
-    type: string;
     initialValue: any;
-    defaultUpdate: any;
-    inputHypothesis: string;
-    responseHypothesis: string;
-    classificationThreshold: number;
-    classificationMap: {[key: string]: any};
+    perTurnUpdate: any;
 
     constructor(data: any) {
         console.log('Loading variable definition');
         this.name = data.name;
-        this.type = data.type;
         this.initialValue = data.initialValue;
-        this.defaultUpdate = data.defaultUpdate;
-        this.inputHypothesis = data.inputHypothesis;
-        this.responseHypothesis = data.responseHypothesis;
-        this.classificationThreshold = data.classificationThreshold ?? 0.5;
-        this.classificationMap = data.classificationMap;
+        this.perTurnUpdate = data.perTurnUpdate;
     }
 }
 

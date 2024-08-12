@@ -6,10 +6,12 @@ project_name: "Statosphere"
 
 creator_notes: "
 Statosphere is a stage for creating custom stat-tracking for bots. It is comprised of three core elements:<br>
- * Variable definitions and rules for per-intput and/or per-response changes, including zero-shot classification rules<br>
- * Stat-block definition to display after bot responses<br>
- * Rules to apply different post-history prompt instructions based on your variables<br>
- <br>
+<ul>
+<li>Variable definitions and rules for per-intput and/or per-response changes, including zero-shot classification rules<br>
+<li>Stat-block definition to display after bot responses<br>
+<li>Rules to apply different post-history prompt instructions based on your variables<br>
+</ul>
+<br>
 **Example Applications**<br>
 This stage does nothing by default, but through configuration, a wide variety of effects are possible:<br>
 <ul>
@@ -58,18 +60,89 @@ config_schema:
       description: A JSON array of variable definitions in one disgusting line.
       type: string
       value: >
-        []
+        [{
+        "name": "wishes",
+        "initialValue": 3
+        },{
+        "name": "timeSinceWish",
+        "initialValue": 0,
+        "perTurnSetter": "{{timeSinceWish}} + 1"
+        },{
+        "name": "madeWish",
+        "initialValue": false,
+        "perTurnSetter": false
+        },{
+        "name": "fakeWish",
+        "initialValue": false,
+        "perTurnSetter": false
+        },{
+        "name": "saidName",
+        "initialValue": false,
+        "perTurnSetter": false
+        }]
+    classifierConfig:
+      title: Classifier Configuration
+      description: A JSON array of classification rules in one disgusting line.
+      type: string
+      value: >
+        [{
+        "name": "Input Check",
+        "inputHypothesis": "A wish only counts if {{user}} says 'I wish' along with details. {{user}} is {}.",
+        "classifications":
+          [{
+            "label": "making a proper wish with the words 'I wish' and details",
+            "category": "wish",
+            "threshold": 0.5,
+            "updates": 
+            {
+              "wishes": "max(0, {{wishes}} - 1)",
+              "madeWish": "true",
+              "timeSinceWish": "0"
+            }
+          },{
+            "label": "only talking about making a wish",
+            "category": "wish",
+            "threshold": 0.8,
+            "updates":
+            {
+              "fakeWish": "true"
+            }
+          },{
+            "label": "saying '{{char}}'s full name",
+            "category": "name",
+            "threshold": 0.6,
+            "updates":
+            {
+              "saidName": "true"
+            }
+          }]
+        }]
     promptConfig:
       title: Prompt Configuration
       description: A JSON array of rules for prompt additions.
       type: string
       value: >
-        []
+        [{
+          "condition": "{{saidName}} and not ({{madeWish}} or {{fakeWish}})",
+          "prompt": "{{user}} may have said {{char}}'s full name; she might have a poor reaction."
+        },{
+          "condition": "{{madeWish}}",
+          "prompt": "{{user}} appears to have made a proper wish, {{char}} should definitely 'grant' it."
+        },{
+          "condition": "{{fakeWish}}",
+          "prompt": "{{user}} may have almost made a wish there, {{char}} should remind them to make it a proper wish--or just taunt them a bit."
+        },{
+          "condition": "{{timeSinceWish}} > 10 and {{wishes}} > 0",
+          "prompt": "{{char}} really wants {{user}} to make a wish and is growing impatient."
+        },{
+          "condition": "{{wishes}} == 0 and not {{madeWish}}",
+          "prompt": "{{user}} is out of wishes. {{char}} no longer owes them anything, but may choose to stick around."
+        }]
     displayMessage:
       title: Display Message
       description: Markdown-formatted system message to display after bot responses.
       type: string
-      value: ""
+      value: "`Wishes remaining: {{wishes}}`"
 
 # The schema of the state that you store.
 # This isn't needed even if you do store state,
