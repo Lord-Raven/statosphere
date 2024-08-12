@@ -12,11 +12,13 @@ Statosphere is a stage for creating custom stat-tracking for bots. It is compris
  <br>
 **Example Applications**<br>
 This stage does nothing by default, but through configuration, a wide variety of effects are possible:<br>
- * Health tracking and display: track and display health or other stats and how they are affected by events<br>
- * Scenario escalation tracking: track scenario progress and provide escalating prompts to the LLM<br>
- * Rule or behavior reinforcement: remind the LLM of behavior rules if an input appears to violate it<br>
- * Probably all kinds of creative applications<br>
- <br>
+<ul>
+<li>Health tracking and display: track and display health or other stats and how they are affected by events<br>
+<li>Scenario escalation tracking: track scenario progress and provide escalating prompts to the LLM<br>
+<li>Rule or behavior reinforcement: remind the LLM of behavior rules if an input appears to violate it<br>
+<li>Probably all kinds of creative applications<br>
+</ul>
+<br>
 
 "
 
