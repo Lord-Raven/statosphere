@@ -4,7 +4,6 @@ import {LoadResponse} from "@chub-ai/stages-ts/dist/types/load";
 import {Character, User} from "@chub-ai/stages-ts";
 import {Parser} from "expr-eval";
 import {Variable, VariableDefinition} from "./Variable";
-import {env, pipeline} from '@xenova/transformers';
 import * as yaml from 'js-yaml';
 import {Client} from "@gradio/client";
 
@@ -20,7 +19,6 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
     // other:
     config: any;
     variableDefinitions: {[key: string]: VariableDefinition}
-    classificationPipeline: any;
     characters: {[key: string]: Character};
     user: User;
     displayMessage: string = '';
@@ -39,18 +37,11 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         this.variables = {};
         this.variableDefinitions = {};
         this.config = config;
-        env.allowRemoteModels = false;
 
         this.readMessageState(messageState);
     }
 
     async load(): Promise<Partial<LoadResponse<InitStateType, ChatStateType, MessageStateType>>> {
-
-        try {
-            this.classificationPipeline = await pipeline("zero-shot-classification", "Xenova/distilbert-base-uncased-mnli");
-        } catch (exception: any) {
-            console.error(`Error loading pipeline: ${exception}`);
-        }
 
         let yamlResponse = await fetch('chub_meta.yaml');
         const data: any = yaml.load(await yamlResponse.text());
@@ -59,7 +50,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
 
         this.displayMessage = this.config.displayMessage ?? data.config_schema.properties.displayMessage.value ?? '';
 
-        this.client = await Client.connect("JHuhman/statosphere-backend");
+        this.client = await Client.connect("JHuhman/statosphere-backend", {hf_token: import.meta.env.VITE_HF_API_KEY});
 
         for (const definition of variableDefinitions) {
             this.variableDefinitions[definition.name] = definition;
@@ -104,15 +95,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
                 console.log('process');
                 let updateFormula = entry.defaultUpdate;
                 if (entry.classificationMap && Object.keys(entry.classificationMap).length > 0) {
-                    /*let response = (await hfInference.zeroShotClassification({
-                        model: 'facebook/bart-large-mnli',
-                        inputs: content,
-                        //hypothesis_template: hypothesisTemplate,
-                        parameters: {candidate_labels: Object.keys(entry.classificationMap), multi_label: true}})).pop();*/
-                    //let response = await this.classificationPipeline(content, Object.keys(entry.classificationMap), { hypothesis_template: hypothesisTemplate, multi_label: true });
                     let response = await this.query({sequence: content, candidate_labels: Object.keys(entry.classificationMap), hypothesis_template: hypothesisTemplate, multi_label: true});
-                        //{inputs: content, parameters: {candidate_labels: Object.keys(entry.classificationMap), hypothesisTemplate: hypothesisTemplate, multi_label: true}});
-                    //console.log(response);
 
                     updateFormula = response && response.scores[0] >= entry.classificationThreshold ? entry.classificationMap[response.labels[0]] : updateFormula;
                 }
@@ -136,23 +119,8 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
     }
 
     async query(data: any) {
-        console.log('querying...');
         console.log(data);
-
         const result = await this.client.predict("/predict", {data_string: JSON.stringify(data)});
-        /*const response = await fetch(
-        "https://jhuhman-statosphere.hf.space/run/predict",
-            {
-                headers: {
-                    "Accept" : "application/json",
-                    "Authorization": `Bearer ${import.meta.env.VITE_HF_API_KEY}`,
-                    "Content-Type": "application/json"
-                },
-                method: "POST",
-                body: JSON.stringify(data),
-            }
-        );
-        const result = await response.json();*/
         console.log(result.data[0]);
         return JSON.parse(`${result.data[0]}`);
     }
