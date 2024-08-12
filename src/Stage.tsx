@@ -6,6 +6,7 @@ import {Parser} from "expr-eval";
 import {Variable, VariableDefinition} from "./Variable";
 import * as yaml from 'js-yaml';
 import {Client} from "@gradio/client";
+import {PromptRule} from "./PromptRule";
 
 type MessageStateType = any;
 type ConfigType = any;
@@ -18,11 +19,13 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
     variables: {[key: string]: any}
     // other:
     config: any;
-    variableDefinitions: {[key: string]: VariableDefinition}
+    variableDefinitions: {[key: string]: VariableDefinition};
+    promptRules: PromptRule[];
     characters: {[key: string]: Character};
     user: User;
     displayMessage: string = '';
     client: any;
+    fallbackPipeline: any;
 
     constructor(data: InitialData<InitStateType, ChatStateType, MessageStateType, ConfigType>) {
         super(data);
@@ -36,6 +39,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         this.user = users[Object.keys(users)[0]];
         this.variables = {};
         this.variableDefinitions = {};
+        this.promptRules = [];
         this.config = config;
 
         this.readMessageState(messageState);
@@ -47,14 +51,15 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         const data: any = yaml.load(await yamlResponse.text());
 
         const variableDefinitions: VariableDefinition[] = JSON.parse(this.config.variableConfig ?? data.config_schema.properties.variableConfig.value);
+        for (const definition of variableDefinitions) {
+            this.variableDefinitions[definition.name] = definition;
+        }
+        this.promptRules = JSON.parse(this.config.promptConfig ?? data.config_schema.properties.promptConfig.value);
 
         this.displayMessage = this.config.displayMessage ?? data.config_schema.properties.displayMessage.value ?? '';
 
         this.client = await Client.connect("JHuhman/statosphere-backend", {hf_token: import.meta.env.VITE_HF_API_KEY});
 
-        for (const definition of variableDefinitions) {
-            this.variableDefinitions[definition.name] = definition;
-        }
         console.log('Finished loading.');
         return {
             success: true,
@@ -120,9 +125,22 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
 
     async query(data: any) {
         console.log(data);
-        const result = await this.client.predict("/predict", {data_string: JSON.stringify(data)});
-        console.log(result.data[0]);
-        return JSON.parse(`${result.data[0]}`);
+        let result: any = null;
+        if (this.client) {
+            try {
+                const response = await this.client.predict("/predict", {data_string: JSON.stringify(data)});
+                console.log(response.data[0]);
+                result = JSON.parse(`${response.data[0]}`);
+            } catch(e) {
+                console.log(e);
+            }
+        }
+        if (!result) {
+            console.log('Falling back to local pipeline.');
+            result = await this.fallbackPipeline(data.sequence, data.candidate_labels, { hypothesis_template: data.hypothesis_template, multi_label: data.multi_label });
+        }
+
+        return result;
     }
 
     async beforePrompt(userMessage: Message): Promise<Partial<StageResponse<ChatStateType, MessageStateType>>> {
@@ -133,9 +151,12 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         } = userMessage;
         console.log('start beforePrompt');
         await this.processVariables(content, 'input', promptForId ?? '');
+
+        let stageDirections = '' + Object.values(this.promptRules).map(promptRule => promptRule.evaluate(this.replaceTags)).filter(prompt => prompt.trim().length > 0).join('/n');
+
         console.log('finished beforePrompt');
         return {
-            stageDirections: null,
+            stageDirections: stageDirections != '' ? `[INST]/n${stageDirections}/n[/INST]` : null,
             messageState: this.writeMessageState(),
             modifiedMessage: null,
             systemMessage: null,

@@ -5,6 +5,18 @@
 project_name: "Statosphere"
 
 creator_notes: "
+Statosphere is a stage for creating custom stat-tracking for bots. It is comprised of three core elements:<br>
+ * Variable definitions and rules for per-intput and/or per-response changes, including zero-shot classification rules<br>
+ * Stat-block definition to display after bot responses<br>
+ * Rules to apply different post-history prompt instructions based on your variables<br>
+ <br>
+##Example Applications##<br>
+This stage does nothing by default, but through configuration, a wide variety of effects are possible:<br>
+ * Health tracking and display: track and display health or other stats and how they are affected by events<br>
+ * Scenario escalation tracking: track scenario progress and provide escalating prompts to the LLM<br>
+ * Rule or behavior reinforcement: remind the LLM of behavior rules if an input appears to violate it<br>
+ * Probably all kinds of creative applications<br>
+ <br>
 
 "
 
