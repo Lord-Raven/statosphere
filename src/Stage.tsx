@@ -52,10 +52,9 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
 
         const variableDefinitions: VariableDefinition[] = JSON.parse(this.config.variableConfig ?? data.config_schema.properties.variableConfig.value);
         for (const definition of variableDefinitions) {
-            this.variableDefinitions[definition.name] = definition;
+            this.variableDefinitions[definition.name] = new VariableDefinition(definition);
         }
-        const promptRules: PromptRule[] = JSON.parse(this.config.promptConfig ?? data.config_schema.properties.promptConfig.value);
-        this.promptRules = promptRules;
+        Object.values(JSON.parse(this.config.promptConfig ?? data.config_schema.properties.promptConfig.value)).forEach(promptRule => this.promptRules.push(new PromptRule(promptRule)));
 
         this.displayMessage = this.config.displayMessage ?? data.config_schema.properties.displayMessage.value ?? '';
 
