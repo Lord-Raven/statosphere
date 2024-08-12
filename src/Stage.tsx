@@ -152,7 +152,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         console.log('start beforePrompt');
         await this.processVariables(content, 'input', promptForId ?? '');
 
-        let stageDirections = '' + Object.values(this.promptRules).map(promptRule => promptRule.evaluate(this.replaceTags)).filter(prompt => prompt.trim().length > 0).join('/n');
+        let stageDirections = '' + Object.values(this.promptRules).map(promptRule => promptRule.evaluate(this)).filter(prompt => prompt.trim().length > 0).join('/n');
 
         console.log('finished beforePrompt');
         return {

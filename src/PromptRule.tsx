@@ -1,4 +1,5 @@
 import {Parser} from "expr-eval";
+import {Stage} from "./Stage";
 
 export class PromptRule {
     condition: string
@@ -12,11 +13,11 @@ export class PromptRule {
         this.subRules = data.subRules ?? [];
     }
 
-    evaluate(replace: (input: string, other: {[key: string]: string}) => string): string {
+    evaluate(stage: Stage): string {
         if (this.prompt.trim() != '') {
-            return (Parser.evaluate(replace(this.condition, {})) ? this.prompt : '');
+            return (Parser.evaluate(stage.replaceTags(this.condition, {})) ? this.prompt : '');
         } else if (this.subRules.length > 0) {
-            return (Object.values(this.subRules).map(rule => rule.evaluate(replace)).filter(retVal => retVal.trim().length > 0).join('\n'))
+            return (Object.values(this.subRules).map(rule => rule.evaluate(stage)).filter(retVal => retVal.trim().length > 0).join('\n'))
         }
         return '';
     }
