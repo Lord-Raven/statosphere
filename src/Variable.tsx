@@ -9,6 +9,7 @@ export class VariableDefinition {
     classificationMap: {[key: string]: any};
 
     constructor(data: any) {
+        console.log('Loading variable definition');
         this.name = data.name;
         this.type = data.type;
         this.initialValue = data.initialValue;
