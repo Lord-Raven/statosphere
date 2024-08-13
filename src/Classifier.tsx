@@ -22,7 +22,7 @@ export class Classification {
     updates: {[key: string]: string}
 
     constructor(data: any) {
-        console.log('Loading classification');
+        console.log(`Loading classification: ${data.threshold}`);
         this.label = data.label;
         this.category = data.category;
         this.threshold = data.threshold;
