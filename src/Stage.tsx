@@ -28,6 +28,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
     displayMessage: string = '';
     client: any;
     fallbackPipeline: any;
+    debugMode: boolean;
 
     constructor(data: InitialData<InitStateType, ChatStateType, MessageStateType, ConfigType>) {
         super(data);
@@ -44,6 +45,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         this.promptRules = [];
         this.classifiers = [];
         this.config = config;
+        this.debugMode = false;
 
         this.readMessageState(messageState);
     }
@@ -56,6 +58,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         const variableDefinitions: VariableDefinition[] = JSON.parse(this.config.variableConfig ?? data.config_schema.properties.variableConfig.value);
         for (const definition of variableDefinitions) {
             this.variableDefinitions[definition.name] = new VariableDefinition(definition);
+            this.initializeVariable(definition.name);
         }
         Object.values(JSON.parse(this.config.promptConfig ?? data.config_schema.properties.promptConfig.value)).forEach(promptRule => this.promptRules.push(new PromptRule(promptRule)));
         Object.values(JSON.parse(this.config.classifierConfig ?? data.config_schema.properties.classifierConfig.value)).forEach(classifier => this.classifiers.push(new Classifier(classifier)));
@@ -94,21 +97,13 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         this.variables[name] = new Variable(name, this.variableDefinitions);
     }
     async updateVariable(name: string, update: string) {
-        // If variable is not present, initialize, otherwise, update.
-        if (!this.variables[name]) {
-            this.initializeVariable(name);
-        } else {
-            this.variables[name].value = Parser.evaluate(this.replaceTags(update, {}));
-        }
+        this.variables[name].value = Parser.evaluate(this.replaceTags(update, {}));
     }
 
     async processVariables() {
         for (const entry of Object.values(this.variableDefinitions)) {
-            console.log(`${entry.name} process: ${entry.perTurnUpdate}`);
             if (entry.perTurnUpdate) {
                 await this.updateVariable(entry.name, entry.perTurnUpdate);
-            } else if (!this.variables[entry.name]) {
-                this.initializeVariable(entry.name);
             }
         }
     }
@@ -120,13 +115,10 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
             sequenceTemplate = sequenceTemplate.trim() == '' ? content : sequenceTemplate.replace('{}', content);
             let hypothesisTemplate = this.replaceTags((contentSource == 'input' ? classifier.inputHypothesis : classifier.responseHypothesis) ?? '', {"user": this.user.name, "char": this.characters[botId]?.name ?? ''});
             if (hypothesisTemplate.trim() != '') {
-                console.log('process classifier');
-
                 let response = await this.query({sequence: sequenceTemplate, candidate_labels: Object.keys(classifier.classifications), hypothesis_template: hypothesisTemplate, multi_label: true});
 
                 let selectedClassifications: {[key: string]: Classification} = {};
                 let categoryScores: {[key: string]: number} = {};
-                console.log(`Labels size:${response.labels.size}. Length:${response.labels.length}`);
                 for (let i = 0; i < response.labels.length; i++) {
                     let classification = classifier.classifications[response.labels[i]];
                     if (response.scores[i] >= Math.max(classification.threshold ?? 0.8, categoryScores[classification.category] ?? 0)) {
