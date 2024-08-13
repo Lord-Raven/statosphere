@@ -87,12 +87,12 @@ config_schema:
       value: >
         [{
         "name": "Input Check",
-        "inputHypothesis": "A wish only counts if {{user}} says 'I wish' along with details. {{user}} is {}.",
+        "inputHypothesis": "The narrator is {{user}}. {{user}} is {}.",
         "classifications":
           [{
-            "label": "making a proper wish with the words 'I wish' and details",
+            "label": "making a proper wish by saying the words 'I wish' and providing details",
             "category": "wish",
-            "threshold": 0.5,
+            "threshold": 0.7,
             "updates": 
             {
               "wishes": "max(0, {{wishes}} - 1)",
