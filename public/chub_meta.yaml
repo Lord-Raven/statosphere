@@ -28,7 +28,7 @@ There's a lot to cover here, but I have not had time to do so yet. For the momen
 "
 
 # A short tagline to show in search.
-tagline: "Implement stats and variables for your bots."
+tagline: "Implement variables and rules for your bots."
 
 # 'PUBLIC', 'PRIVATE', or 'UNLISTED'.
 visibility: 'UNLISTED'
