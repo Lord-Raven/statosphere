@@ -66,19 +66,19 @@ config_schema:
         },{
         "name": "timeSinceWish",
         "initialValue": 0,
-        "perTurnSetter": "{{timeSinceWish}} + 1"
+        "perTurnUpdate": "{{timeSinceWish}} + 1"
         },{
         "name": "madeWish",
         "initialValue": false,
-        "perTurnSetter": false
+        "perTurnUpdate": false
         },{
         "name": "fakeWish",
         "initialValue": false,
-        "perTurnSetter": false
+        "perTurnUpdate": false
         },{
         "name": "saidName",
         "initialValue": false,
-        "perTurnSetter": false
+        "perTurnUpdate": false
         }]
     classifierConfig:
       title: Classifier Configuration
