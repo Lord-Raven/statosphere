@@ -123,7 +123,8 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
 
                 let selectedClassifications: {[key: string]: Classification} = {};
                 let categoryScores: {[key: string]: number} = {};
-                for (let i = 0; i < response.labels.size; i++) {
+                console.log(`Labels size:${response.labels.size}. Length:${response.labels.length}`);
+                for (let i = 0; i < response.labels.length; i++) {
                     let classification = classifier.classifications[response.labels[i]];
                     console.log(`Looking at ${response.labels[i]}:${response.scores[i]}. Compare to ${classification.threshold} or ${categoryScores[classification.category] ?? 0}`);
                     if (response.scores[i] >= Math.max(classification.threshold, categoryScores[classification.category] ?? 0)) {
