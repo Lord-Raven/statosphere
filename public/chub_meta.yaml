@@ -5,7 +5,8 @@
 project_name: "Statosphere"
 
 creator_notes: "
-Statosphere is a stage for creating custom stat-tracking for bots. It is comprised of four core, configurable elements:<br>
+_Up front, I'm going to say that this is a bit experimental and could be unstable._<br>
+This is a stage for creating custom variables and rules for stat tracking or behavior implementation. It is comprised of four core, configurable elements:<br>
 <ul>
 <li>Variable definitions and per-turn rules<br>
 <li>Zero-shot classification rules to use inference on inputs and responses and apply updates to variables as a result<br>
@@ -14,17 +15,24 @@ Statosphere is a stage for creating custom stat-tracking for bots. It is compris
 </ul>
 <br>
 **Example Applications**<br>
-This stage does nothing by default, but through configuration, a wide variety of effects are possible:<br>
+This stage has no default configuration and will do nothing on its own. However, through configuration, a wide variety of effects are possible:<br>
 <ul>
-<li>Health tracking and display: use inference to roughly gauge damage or recovery and translate that into a number to apply to stats<br>
-<li>Scenario escalation tracking: use perTurnUpdate to increase a turn stat and prompt rules to feed updated scenario data as time marches on<br>
+<li>Stat tracking and display: use inference to roughly gauge changes present in the input or response and translate that into a number to apply to stats<br>
+<li>Scenario escalation tracking: use perTurnUpdate to increase a turn variable and prompt rules to feed updated scenario data as time marches on<br>
 <li>Rule or behavior reinforcement: remind the LLM of your bot's quirks when the user's input should trigger them<br>
 <li>Probably all kinds of other creative applications<br>
 </ul>
 <br>
 <br>
 **Guide**<br>
-There's a lot to cover here, but I have not had time to do so yet. For the moment, please see my example bots.
+There's a lot to cover here, but I have not had time to do so yet. For the moment, please see my example bots and the configuration of the stage on those bots.
+<br>
+<br>
+**Inference Details**<br>
+This stage makes API calls to a Hugging Face backend that I have set up to leverage a zero-shot classification model. 
+If this backend is unavailable or some other error occurs in calling it, the stage will swap to applying a very small local zero-shot model. 
+Chub's stage timeout is pretty short and that can cause the stage to make a second call or give up entirely if these calls take too long. 
+This is hopefully something that will be configurable in the future.
 "
 
 # A short tagline to show in search.
