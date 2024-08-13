@@ -141,6 +141,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
                 let candidateLabels: string[] = [];
                 let labelMapping: { [key: string]: string } = {};
                 for (let label in Object.keys(classifier.classifications)) {
+                    console.log(label);
                     let subbedLabel = this.replaceTags(label, replacementMapping);
                     candidateLabels.push(subbedLabel);
                     labelMapping[subbedLabel] = label;
