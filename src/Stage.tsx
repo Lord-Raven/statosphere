@@ -138,7 +138,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
             sequenceTemplate = sequenceTemplate.trim() == '' ? content : sequenceTemplate.replace('{}', content);
             let hypothesisTemplate = this.replaceTags((contentSource == 'input' ? classifier.inputHypothesis : classifier.responseHypothesis) ?? '', replacementMapping);
             if (hypothesisTemplate.trim() != '') {
-                let candidateLabels = [];
+                let candidateLabels: string[] = [];
                 let labelMapping: { [key: string]: string } = {};
                 for (let label in Object.keys(classifier.classifications)) {
                     let subbedLabel = this.replaceTags(label, replacementMapping);
@@ -193,7 +193,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
             }
         }
         if (!result) {
-            console.log('Falling back to local pipeline.');
+            console.log('Falling back to local zero-shot pipeline.');
             this.fallbackMode = true;
             result = await this.fallbackPipeline(data.sequence, data.candidate_labels, { hypothesis_template: data.hypothesis_template, multi_label: data.multi_label });
         }
