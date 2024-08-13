@@ -11,7 +11,8 @@ export class Classifier {
         this.responseHypothesis = data.responseHypothesis
         this.classifications = {};
         for (let classification of data.classifications) {
-            this.classifications[classification.label] = new Classification(data);
+            console.log(`Classification:${classification}`);
+            this.classifications[classification.label] = new Classification(classification);
         }
     }
 }
