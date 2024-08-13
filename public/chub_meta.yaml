@@ -87,7 +87,7 @@ config_schema:
       value: >
         [{
         "name": "Input Check",
-        "inputHypothesis": "The narrator is {{user}}. {{user}} is {}.",
+        "inputHypothesis": "The narrator is {{user}}. In this passage, {{user}} is {}.",
         "classifications":
           [{
             "label": "literally saying 'I wish' and providing details for a wish",
