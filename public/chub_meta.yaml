@@ -135,6 +135,9 @@ config_schema:
           "condition": "{{timeSinceWish}} > 10 and {{wishes}} > 0",
           "prompt": "{{char}} really wants {{user}} to make a wish and is growing impatient."
         },{
+          "condition": "{{wishes}} > 0 and not {{madeWish}}",
+          "prompt": "{{user}}'s remaining wishes: {{wishes}}."
+        },{
           "condition": "{{wishes}} == 0 and not {{madeWish}}",
           "prompt": "{{user}} is out of wishes. {{char}} no longer owes them anything, but may choose to stick around."
         }]
