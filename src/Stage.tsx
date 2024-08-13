@@ -104,6 +104,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
 
     async processVariables() {
         for (const entry of Object.values(this.variableDefinitions)) {
+            console.log(`${entry.name} process: ${entry.perTurnUpdate}`);
             if (entry.perTurnUpdate) {
                 await this.updateVariable(entry.name, entry.perTurnUpdate);
             } else if (!this.variables[entry.name]) {

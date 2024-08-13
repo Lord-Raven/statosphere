@@ -108,7 +108,7 @@ config_schema:
               "fakeWish": "true"
             }
           },{
-            "label": "saying '{{char}}'",
+            "label": "invoking {{char}}'s name: '{{char}}'",
             "category": "name",
             "threshold": 0.5,
             "updates":
