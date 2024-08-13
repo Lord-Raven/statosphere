@@ -126,9 +126,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
                 console.log(`Labels size:${response.labels.size}. Length:${response.labels.length}`);
                 for (let i = 0; i < response.labels.length; i++) {
                     let classification = classifier.classifications[response.labels[i]];
-                    console.log(`Looking at ${response.labels[i]}:${response.scores[i]}. Compare to ${classification.threshold} or ${categoryScores[classification.category] ?? 0}`);
                     if (response.scores[i] >= Math.max(classification.threshold ?? 0.8, categoryScores[classification.category] ?? 0)) {
-                        console.log(`Adding ${classification.label}`);
                         selectedClassifications[classification.category] = classification;
                         categoryScores[classification.category] = response.scores[i];
                     }
@@ -136,7 +134,6 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
 
                 // Go through all operations and execute them.
                 for (let classification of Object.values(selectedClassifications)) {
-                    console.log(`Considering ${classification.label}`)
                     for (let variable of Object.keys(classification.updates)) {
                         let oldValue = this.variables[variable].value;
                         await this.updateVariable(variable, classification.updates[variable]);

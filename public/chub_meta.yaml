@@ -90,7 +90,7 @@ config_schema:
         "inputHypothesis": "The narrator is {{user}}. {{user}} is {}.",
         "classifications":
           [{
-            "label": "making a wish by literally saying 'I wish' and providing details",
+            "label": "literally saying 'I wish' and providing details for a wish",
             "category": "wish",
             "threshold": 0.7,
             "updates": 
@@ -100,7 +100,7 @@ config_schema:
               "timeSinceWish": "0"
             }
           },{
-            "label": "only talking about making a wish",
+            "label": "talking about a possible wish but not literally saying 'I wish'",
             "category": "wish",
             "threshold": 0.8,
             "updates":
