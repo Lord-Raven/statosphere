@@ -10,8 +10,9 @@ export class Classifier {
         this.inputHypothesis = data.inputHypothesis;
         this.responseHypothesis = data.responseHypothesis
         this.classifications = {};
-        // @ts-ignore
-        Object.values(data.classifications).forEach(classification => this.classifications[classification.label] = new Classification(data));
+        for (let classification of data.classifications) {
+            this.classifications[classification.label] = new Classification(data);
+        }
     }
 }
 
