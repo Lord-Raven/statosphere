@@ -16,6 +16,8 @@ type ChatStateType = any;
 
 export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateType, ConfigType> {
 
+    readonly DEFAULT_THRESHOLD = 0.8;
+
     // message-level variables:
     variables: {[key: string]: any}
     // other:
@@ -128,18 +130,27 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
 
     async processClassifiers(content: string, contentSource: string, botId: string) {
         for (const classifier of Object.values(this.classifiers)) {
+            const replacementMapping: any = {"user": this.user.name, "char": this.characters[botId]?.name ?? ''};
 
-            let sequenceTemplate = this.replaceTags((contentSource == 'input' ? classifier.inputTemplate : classifier.responseTemplate) ?? '', {"user": this.user.name, "char": this.characters[botId]?.name ?? ''});
+            let sequenceTemplate = this.replaceTags((contentSource == 'input' ? classifier.inputTemplate : classifier.responseTemplate) ?? '', replacementMapping);
             sequenceTemplate = sequenceTemplate.trim() == '' ? content : sequenceTemplate.replace('{}', content);
-            let hypothesisTemplate = this.replaceTags((contentSource == 'input' ? classifier.inputHypothesis : classifier.responseHypothesis) ?? '', {"user": this.user.name, "char": this.characters[botId]?.name ?? ''});
+            let hypothesisTemplate = this.replaceTags((contentSource == 'input' ? classifier.inputHypothesis : classifier.responseHypothesis) ?? '', replacementMapping);
             if (hypothesisTemplate.trim() != '') {
-                let response = await this.query({sequence: sequenceTemplate, candidate_labels: Object.keys(classifier.classifications), hypothesis_template: hypothesisTemplate, multi_label: true});
+                let candidateLabels = [];
+                let labelMapping: { [key: string]: string } = {};
+                for (let label in Object.keys(classifier.classifications)) {
+                    let subbedLabel = this.replaceTags(label, replacementMapping);
+                    candidateLabels.push(subbedLabel);
+                    labelMapping[subbedLabel] = label;
+                }
+
+                let response = await this.query({sequence: sequenceTemplate, candidate_labels: candidateLabels, hypothesis_template: hypothesisTemplate, multi_label: true});
 
                 let selectedClassifications: {[key: string]: Classification} = {};
                 let categoryScores: {[key: string]: number} = {};
                 for (let i = 0; i < response.labels.length; i++) {
-                    let classification = classifier.classifications[response.labels[i]];
-                    if (response.scores[i] >= Math.max(classification.threshold ?? 0.8, categoryScores[classification.category] ?? 0)) {
+                    let classification = classifier.classifications[labelMapping[response.labels[i]]];
+                    if (response.scores[i] >= Math.max(classification.threshold ?? this.DEFAULT_THRESHOLD, categoryScores[classification.category] ?? 0)) {
                         selectedClassifications[classification.category] = classification;
                         categoryScores[classification.category] = response.scores[i];
                     }
