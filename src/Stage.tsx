@@ -140,6 +140,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
             if (hypothesisTemplate.trim() != '') {
                 let candidateLabels: string[] = [];
                 let labelMapping: { [key: string]: string } = {};
+                console.log(classifier.classifications);
                 for (let label in Object.keys(classifier.classifications)) {
                     console.log(label);
                     let subbedLabel = this.replaceTags(label, replacementMapping);
