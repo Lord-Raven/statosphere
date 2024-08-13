@@ -58,10 +58,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         const variableDefinitions: VariableDefinition[] = JSON.parse(this.config.variableConfig ?? data.config_schema.properties.variableConfig.value);
         for (const definition of variableDefinitions) {
             this.variableDefinitions[definition.name] = new VariableDefinition(definition);
-            if (!this.variables[definition.name]) {
-                this.initializeVariable(definition.name);
-            }
-
+            this.initializeVariable(definition.name);
         }
         Object.values(JSON.parse(this.config.promptConfig ?? data.config_schema.properties.promptConfig.value)).forEach(promptRule => this.promptRules.push(new PromptRule(promptRule)));
         Object.values(JSON.parse(this.config.classifierConfig ?? data.config_schema.properties.classifierConfig.value)).forEach(classifier => this.classifiers.push(new Classifier(classifier)));
@@ -113,6 +110,9 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
             this.variables[name].value = value;
         }
     }
+    updateVariable(name: string, formula: string) {
+        this.setVariable(name, Parser.evaluate(this.replaceTags(formula, {})))
+    }
 
     initializeVariable(name: string) {
         this.variables[name] = new Variable(name, this.variableDefinitions);
@@ -121,7 +121,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
     async processVariables() {
         for (const entry of Object.values(this.variableDefinitions)) {
             if (entry.perTurnUpdate) {
-                this.setVariable(entry.name, entry.perTurnUpdate);
+                this.updateVariable(entry.name, entry.perTurnUpdate);
             }
         }
     }
@@ -149,7 +149,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
                 for (let classification of Object.values(selectedClassifications)) {
                     for (let variable of Object.keys(classification.updates)) {
                         let oldValue = this.getVariable(variable);
-                        this.setVariable(variable, classification.updates[variable]);
+                        this.updateVariable(variable, classification.updates[variable]);
                         console.log(`Updated ${variable} from ${oldValue} to ${this.getVariable(variable)}`);
                     }
                 }
