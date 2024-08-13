@@ -1,13 +1,17 @@
 export class Classifier {
     name: string;
+    inputTemplate: any;
+    responseTemplate: any;
     inputHypothesis: any;
     responseHypothesis: any;
     classifications: {[key: string]: Classification};
 
     constructor(data: any) {
         this.name = data.name;
+        this.inputTemplate = data.inputTemplate;
+        this.responseTemplate = data.responseTemplate;
         this.inputHypothesis = data.inputHypothesis;
-        this.responseHypothesis = data.responseHypothesis
+        this.responseHypothesis = data.responseHypothesis;
         this.classifications = {};
         for (let classification of data.classifications) {
             this.classifications[classification.label] = new Classification(classification);

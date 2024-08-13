@@ -116,11 +116,13 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
     async processClassifiers(content: string, contentSource: string, botId: string) {
         for (const classifier of Object.values(this.classifiers)) {
 
+            let sequenceTemplate = this.replaceTags((contentSource == 'input' ? classifier.inputTemplate : classifier.responseTemplate) ?? '', {"user": this.user.name, "char": this.characters[botId]?.name ?? ''});
+            sequenceTemplate = sequenceTemplate.trim() == '' ? content : sequenceTemplate.replace('{}', content);
             let hypothesisTemplate = this.replaceTags((contentSource == 'input' ? classifier.inputHypothesis : classifier.responseHypothesis) ?? '', {"user": this.user.name, "char": this.characters[botId]?.name ?? ''});
             if (hypothesisTemplate.trim() != '') {
                 console.log('process classifier');
 
-                let response = await this.query({sequence: content, candidate_labels: Object.keys(classifier.classifications), hypothesis_template: hypothesisTemplate, multi_label: true});
+                let response = await this.query({sequence: sequenceTemplate, candidate_labels: Object.keys(classifier.classifications), hypothesis_template: hypothesisTemplate, multi_label: true});
 
                 let selectedClassifications: {[key: string]: Classification} = {};
                 let categoryScores: {[key: string]: number} = {};

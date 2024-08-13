@@ -87,10 +87,11 @@ config_schema:
       value: >
         [{
         "name": "Input Check",
-        "inputHypothesis": "In this passage, the narrator is {}.",
+        "inputTemplate": "[{{user}} is narrating this sequence]\n{}",
+        "inputHypothesis": "{{user}} {}.",
         "classifications":
           [{
-            "label": "literally saying 'I wish' and providing details for a wish",
+            "label": "literally says 'I wish' and provides details for a wish",
             "category": "wish",
             "threshold": 0.7,
             "updates": 
@@ -100,7 +101,7 @@ config_schema:
               "timeSinceWish": "0"
             }
           },{
-            "label": "talking about a possible wish but not literally saying 'I wish'",
+            "label": "talks about a possible wish but doesn't say 'I wish'",
             "category": "wish",
             "threshold": 0.9,
             "updates":
@@ -108,7 +109,7 @@ config_schema:
               "fakeWish": "true"
             }
           },{
-            "label": "invoking {{char}}'s name: '{{char}}'",
+            "label": "invokes the name '{{char}}'",
             "category": "name",
             "threshold": 0.5,
             "updates":
