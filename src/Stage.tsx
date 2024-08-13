@@ -89,21 +89,25 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         }
     }
 
+    initializeVariable(name: string) {
+        console.log('Initialize variable');
+        this.variables[name] = new Variable(name, this.variableDefinitions);
+    }
     async updateVariable(name: string, update: string) {
         // If variable is not present, initialize, otherwise, update.
         if (!this.variables[name]) {
-            console.log('Initialize variable');
-            this.variables[name] = new Variable(name, this.variableDefinitions);
+            this.initializeVariable(name);
         } else {
             this.variables[name].value = Parser.evaluate(this.replaceTags(update, {}));
         }
     }
+
     async processVariables() {
         for (const entry of Object.values(this.variableDefinitions)) {
             if (entry.perTurnUpdate) {
                 await this.updateVariable(entry.name, entry.perTurnUpdate);
-            } else {
-                console.log(entry + ' has no perTurnUpdate');
+            } else if (!this.variables[entry.name]) {
+                this.initializeVariable(entry.name);
             }
         }
     }
