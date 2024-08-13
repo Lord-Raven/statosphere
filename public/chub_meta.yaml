@@ -102,7 +102,7 @@ config_schema:
           },{
             "label": "talking about a possible wish but not literally saying 'I wish'",
             "category": "wish",
-            "threshold": 0.8,
+            "threshold": 0.9,
             "updates":
             {
               "fakeWish": "true"
@@ -110,7 +110,7 @@ config_schema:
           },{
             "label": "saying '{{char}}'",
             "category": "name",
-            "threshold": 0.8,
+            "threshold": 0.5,
             "updates":
             {
               "saidName": "true"
@@ -129,7 +129,7 @@ config_schema:
           "condition": "{{madeWish}}",
           "prompt": "{{user}} appears to have made a proper wish, {{char}} should definitely 'grant' it."
         },{
-          "condition": "{{fakeWish}}",
+          "condition": "{{fakeWish}} and not {{madeWish}}",
           "prompt": "{{user}} may have almost made a wish there, {{char}} should remind them to make it a proper wish--or just taunt them a bit."
         },{
           "condition": "{{timeSinceWish}} > 10 and {{wishes}} > 0",
