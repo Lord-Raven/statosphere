@@ -93,10 +93,10 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
     }
 
     initializeVariable(name: string) {
-        console.log('Initialize variable');
         this.variables[name] = new Variable(name, this.variableDefinitions);
     }
     async updateVariable(name: string, update: string) {
+        console.log(`Before: ${this.variables[name].value}`);
         this.variables[name].value = Parser.evaluate(this.replaceTags(update, {}));
     }
 
