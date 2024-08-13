@@ -90,7 +90,7 @@ config_schema:
         "inputHypothesis": "The narrator is {{user}}. {{user}} is {}.",
         "classifications":
           [{
-            "label": "making a proper wish by saying the words 'I wish' and providing details",
+            "label": "making a wish by literally saying 'I wish' and providing details",
             "category": "wish",
             "threshold": 0.7,
             "updates": 
@@ -108,9 +108,9 @@ config_schema:
               "fakeWish": "true"
             }
           },{
-            "label": "saying '{{char}}'s full name",
+            "label": "saying '{{char}}'",
             "category": "name",
-            "threshold": 0.6,
+            "threshold": 0.8,
             "updates":
             {
               "saidName": "true"
