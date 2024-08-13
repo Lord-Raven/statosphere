@@ -149,7 +149,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         }
 
         return source.replace(/{{([A-z]*)}}/g, (match) => {
-            return replacements[match.substring(2, match.length - 2)];
+            return replacements[match.substring(2, match.length - 2).toLowerCase()];
         });
     }
 
