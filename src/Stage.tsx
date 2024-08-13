@@ -30,6 +30,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
     displayMessage: string = '';
     client: any;
     fallbackPipeline: any;
+    fallbackMode: boolean;
     debugMode: boolean;
 
     constructor(data: InitialData<InitStateType, ChatStateType, MessageStateType, ConfigType>) {
@@ -48,6 +49,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         this.classifiers = [];
         this.config = config;
         this.debugMode = false;
+        this.fallbackMode = false;
 
         this.readMessageState(messageState);
     }
@@ -181,7 +183,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
     async query(data: any) {
         console.log(data);
         let result: any = null;
-        if (this.client) {
+        if (this.client && !this.fallbackMode) {
             try {
                 const response = await this.client.predict("/predict", {data_string: JSON.stringify(data)});
                 console.log(response.data[0]);
@@ -192,6 +194,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         }
         if (!result) {
             console.log('Falling back to local pipeline.');
+            this.fallbackMode = true;
             result = await this.fallbackPipeline(data.sequence, data.candidate_labels, { hypothesis_template: data.hypothesis_template, multi_label: data.multi_label });
         }
 
