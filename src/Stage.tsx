@@ -58,7 +58,10 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         const variableDefinitions: VariableDefinition[] = JSON.parse(this.config.variableConfig ?? data.config_schema.properties.variableConfig.value);
         for (const definition of variableDefinitions) {
             this.variableDefinitions[definition.name] = new VariableDefinition(definition);
-            this.initializeVariable(definition.name);
+            if (!this.variables[definition.name]) {
+                this.initializeVariable(definition.name);
+            }
+
         }
         Object.values(JSON.parse(this.config.promptConfig ?? data.config_schema.properties.promptConfig.value)).forEach(promptRule => this.promptRules.push(new PromptRule(promptRule)));
         Object.values(JSON.parse(this.config.classifierConfig ?? data.config_schema.properties.classifierConfig.value)).forEach(classifier => this.classifiers.push(new Classifier(classifier)));
@@ -92,18 +95,33 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         }
     }
 
+    getVariable(name: string): any {
+        if (this.variableDefinitions[name]) {
+            if (!this.variables[name]) {
+                this.initializeVariable(name);
+            }
+            return this.variables[name].value;
+        }
+        return '';
+    }
+
+    setVariable(name: string, value: any) {
+        if (this.variableDefinitions[name]) {
+            if (!this.variables[name]) {
+                this.initializeVariable(name);
+            }
+            this.variables[name].value = value;
+        }
+    }
+
     initializeVariable(name: string) {
         this.variables[name] = new Variable(name, this.variableDefinitions);
-    }
-    async updateVariable(name: string, update: string) {
-        console.log(`Before: ${this.variables[name].value}`);
-        this.variables[name].value = Parser.evaluate(this.replaceTags(update, {}));
     }
 
     async processVariables() {
         for (const entry of Object.values(this.variableDefinitions)) {
             if (entry.perTurnUpdate) {
-                await this.updateVariable(entry.name, entry.perTurnUpdate);
+                this.setVariable(entry.name, entry.perTurnUpdate);
             }
         }
     }
@@ -130,9 +148,9 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
                 // Go through all operations and execute them.
                 for (let classification of Object.values(selectedClassifications)) {
                     for (let variable of Object.keys(classification.updates)) {
-                        let oldValue = this.variables[variable].value;
-                        await this.updateVariable(variable, classification.updates[variable]);
-                        console.log(`Updated ${variable} from ${oldValue} to ${this.variables[variable].value}`);
+                        let oldValue = this.getVariable(variable);
+                        this.setVariable(variable, classification.updates[variable]);
+                        console.log(`Updated ${variable} from ${oldValue} to ${this.getVariable(variable)}`);
                     }
                 }
             }
@@ -141,7 +159,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
 
     replaceTags(source: string, replacements: {[name: string]: string}) {
         for (const key of Object.keys(this.variables)) {
-            replacements[key.toLowerCase()] = this.variables[key].value;
+            replacements[key.toLowerCase()] = this.getVariable(key);
         }
 
         return source.replace(/{{([A-z]*)}}/g, (match) => {

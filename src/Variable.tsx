@@ -4,7 +4,6 @@ export class VariableDefinition {
     perTurnUpdate: any;
 
     constructor(data: any) {
-        console.log('Loading variable definition');
         this.name = data.name;
         this.initialValue = data.initialValue;
         this.perTurnUpdate = data.perTurnUpdate;
