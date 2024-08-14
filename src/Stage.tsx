@@ -217,15 +217,14 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         } = userMessage;
         console.log('Start beforePrompt()');
         await this.processVariables();
+
         await this.processClassifiers(content, 'input', promptForId ?? '');
 
         let stageDirections = this.replaceTags('' + Object.values(this.promptRules).map(promptRule => promptRule.evaluate(this)).filter(prompt => prompt.trim().length > 0).join('\n'), {'user': this.user.name, 'char': (this.characters[promptForId ?? ''] ? this.characters[promptForId ?? ''].name : '')});
 
         console.log('End beforePrompt()');
         return {
-            stageDirections: '[INST]\n' +
-                'This is a test instruction.\n' +
-                '[/INST]', //stageDirections != '' ? `[INST]\n${stageDirections}\n[/INST]` : null,
+            stageDirections: stageDirections != '' ? `[Response Hints]${stageDirections}[/Response Hints]` : null,
             messageState: this.writeMessageState(),
             modifiedMessage: null,
             systemMessage: null,
