@@ -70,7 +70,9 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         const variableDefinitions: VariableDefinition[] = JSON.parse(this.config.variableConfig ?? data.config_schema.properties.variableConfig.value);
         for (const definition of variableDefinitions) {
             this.variableDefinitions[definition.name] = new VariableDefinition(definition);
-            this.initializeVariable(definition.name);
+            if (!this.variables[definition.name]) {
+                this.initializeVariable(definition.name);
+            }
         }
         Object.values(JSON.parse(this.config.promptConfig ?? data.config_schema.properties.promptConfig.value)).forEach(promptRule => this.promptRules.push(new PromptRule(promptRule)));
         Object.values(JSON.parse(this.config.classifierConfig ?? data.config_schema.properties.classifierConfig.value)).forEach(classifier => this.classifiers.push(new Classifier(classifier)));
@@ -132,6 +134,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
 
     async processVariables() {
         for (const entry of Object.values(this.variableDefinitions)) {
+            console.log(`${entry.name} = ${entry.perTurnUpdate}`);
             if (entry.perTurnUpdate) {
                 this.updateVariable(entry.name, entry.perTurnUpdate);
             }
@@ -194,7 +197,6 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         if (this.client && !this.fallbackMode) {
             try {
                 const response = await this.client.predict("/predict", {data_string: JSON.stringify(data)});
-                console.log(response.data[0]);
                 result = JSON.parse(`${response.data[0]}`);
             } catch(e) {
                 console.log(e);
@@ -205,7 +207,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
             this.fallbackMode = true;
             result = await this.fallbackPipeline(data.sequence, data.candidate_labels, { hypothesis_template: data.hypothesis_template, multi_label: data.multi_label });
         }
-
+        console.log(result);
         return result;
     }
 
