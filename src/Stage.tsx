@@ -49,7 +49,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         this.classifiers = [];
         this.config = config;
         this.debugMode = false;
-        this.fallbackMode = false;
+        this.fallbackMode = true;
 
         this.readMessageState(messageState);
     }
@@ -140,9 +140,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
             if (hypothesisTemplate.trim() != '') {
                 let candidateLabels: string[] = [];
                 let labelMapping: { [key: string]: string } = {};
-                console.log(classifier.classifications);
                 for (const label of Object.keys(classifier.classifications)) {
-                    console.log(label);
                     let subbedLabel = this.replaceTags(label, replacementMapping);
                     candidateLabels.push(subbedLabel);
                     labelMapping[subbedLabel] = label;
@@ -209,13 +207,13 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
             content,
             promptForId
         } = userMessage;
-        console.log('start beforePrompt');
+        console.log('Start beforePrompt()');
         await this.processVariables();
         await this.processClassifiers(content, 'input', promptForId ?? '');
 
         let stageDirections = this.replaceTags('' + Object.values(this.promptRules).map(promptRule => promptRule.evaluate(this)).filter(prompt => prompt.trim().length > 0).join('\n'), {'user': this.user.name, 'char': (this.characters[promptForId ?? ''] ? this.characters[promptForId ?? ''].name : '')});
 
-        console.log('finished beforePrompt');
+        console.log('End beforePrompt()');
         return {
             stageDirections: stageDirections != '' ? `[INST]\n${stageDirections}\n[/INST]` : null,
             messageState: this.writeMessageState(),
@@ -232,9 +230,9 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
             content,
             anonymizedId
         } = botMessage;
-        console.log('start afterResponse');
+        console.log('Start afterResponse()');
         await this.processClassifiers(content, 'response', anonymizedId);
-        console.log(`finished afterResponse`);
+        console.log(`End afterResponse()`);
         return {
             stageDirections: null,
             messageState: this.writeMessageState(),
