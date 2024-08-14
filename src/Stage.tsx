@@ -8,6 +8,7 @@ import * as yaml from 'js-yaml';
 import {Client} from "@gradio/client";
 import {PromptRule} from "./PromptRule";
 import {Classification, Classifier} from "./Classifier";
+import {env, pipeline} from "@xenova/transformers";
 
 type MessageStateType = any;
 type ConfigType = any;
@@ -49,13 +50,20 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         this.classifiers = [];
         this.config = config;
         this.debugMode = false;
-        this.fallbackMode = true;
+        this.fallbackMode = true; // Backend temporarily disabled by default.
+
+        env.allowRemoteModels = false;
 
         this.readMessageState(messageState);
     }
 
     async load(): Promise<Partial<LoadResponse<InitStateType, ChatStateType, MessageStateType>>> {
 
+        try {
+            this.fallbackPipeline = await pipeline("zero-shot-classification", "Xenova/mobilebert-uncased-mnli");
+        } catch (exception: any) {
+            console.error(`Error loading pipeline: ${exception}`);
+        }
         let yamlResponse = await fetch('chub_meta.yaml');
         const data: any = yaml.load(await yamlResponse.text());
 
