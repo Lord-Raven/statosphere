@@ -223,7 +223,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
 
         console.log('End beforePrompt()');
         return {
-            stageDirections: stageDirections != '' ? `[INST]\n${stageDirections}\n[/INST]` : null,
+            stageDirections: null, //stageDirections != '' ? `[INST]\n${stageDirections}\n[/INST]` : null,
             messageState: this.writeMessageState(),
             modifiedMessage: null,
             systemMessage: null,
