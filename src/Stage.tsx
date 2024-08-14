@@ -50,8 +50,8 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         this.classifiers = [];
         this.config = config;
         this.debugMode = false;
-        this.fallbackMode = true; // Backend temporarily disabled by default.
-
+        this.fallbackMode = false; // Backend temporarily disabled by default.
+        this.fallbackPipeline = null;
         env.allowRemoteModels = false;
 
         this.readMessageState(messageState);
@@ -79,7 +79,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
 
         this.client = await Client.connect("JHuhman/statosphere-backend", {hf_token: import.meta.env.VITE_HF_API_KEY});
 
-        console.log('Finished loading.');
+        console.log('Finished loading stage.');
         return {
             success: true,
             error: null,
