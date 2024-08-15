@@ -86,7 +86,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
 
         this.displayMessage = this.config.displayMessage ?? data.config_schema.properties.displayMessage.value ?? '';
 
-        this.client = await Client.connect("JHuhman/statosphere-backend", {hf_token: import.meta.env.VITE_HF_API_KEY});
+        this.client = await Client.connect("Ravenok/statosphere-backend", {hf_token: import.meta.env.VITE_HF_API_KEY});
 
         console.log('Finished loading stage.');
         return {
