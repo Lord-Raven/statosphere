@@ -31,6 +31,6 @@ export class Classification {
         this.threshold = data.threshold;
         this.updates = {};
         const updates: any[] = data.updates;
-        Object.values(updates).forEach(update => {console.log(update);this.updates[update.variable] = update.setTo;});
+        Object.values(updates).forEach(update => this.updates[update.variable] = update.setTo);
     }
 }

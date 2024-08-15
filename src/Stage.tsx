@@ -72,16 +72,16 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         const data: any = yaml.load(await yamlResponse.text());
 
         const variableDefinitions: VariableDefinition[] =
-            this.validateSchema(this.config.variableConfig ?? data.config_schema.properties.variableConfig.value, variableSchema);
+            this.validateSchema(this.config.variableConfig ?? data.config_schema.properties.variableConfig.value, variableSchema, 'variable schema');
         for (const definition of variableDefinitions) {
             this.variableDefinitions[definition.name] = new VariableDefinition(definition);
             if (!this.variables[definition.name]) {
                 this.initializeVariable(definition.name);
             }
         }
-        Object.values(this.validateSchema(this.config.promptConfig ?? data.config_schema.properties.promptConfig.value, promptSchema))
+        Object.values(this.validateSchema(this.config.promptConfig ?? data.config_schema.properties.promptConfig.value, promptSchema, 'prompt schema'))
             .forEach(promptRule => this.promptRules.push(new PromptRule(promptRule)));
-        Object.values(this.validateSchema(this.config.classifierConfig ?? data.config_schema.properties.classifierConfig.value, classifierSchema))
+        Object.values(this.validateSchema(this.config.classifierConfig ?? data.config_schema.properties.classifierConfig.value, classifierSchema, 'classifier schema'))
             .forEach(classifier => this.classifiers.push(new Classifier(classifier)));
 
         this.displayMessage = this.config.displayMessage ?? data.config_schema.properties.displayMessage.value ?? '';
@@ -97,19 +97,18 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         };
     }
 
-    validateSchema(inputJson: string, schema: any): any {
+    validateSchema(inputJson: string, schema: any, schemaName: string): any {
         try {
-            console.log(schema);
             const validate = new Ajv().compile(schema);
             const data = JSON.parse(inputJson);
             const valid = validate(data);
             if (valid) {
                 return data;
             } else {
-                console.log(`Configuration JSON validation failed against ${schema}.`, validate.errors);
+                console.log(`Configuration JSON validation failed against ${schemaName}.`, validate.errors);
             }
         } catch (error) {
-            console.log(`Invalid JSON string:`, error);
+            console.log(`Invalid JSON string validating ${schemaName}.`, error);
         }
         return {};
     }
