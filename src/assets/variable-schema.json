@@ -17,13 +17,10 @@
       "initialValue": {
       },
       "perTurnUpdate": {
-        "type": "string"
       },
       "postInputUpdate": {
-        "type": "string"
       },
       "postResponseUpdate": {
-        "type": "string"
       }
     }
   }
