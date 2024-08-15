@@ -2,13 +2,19 @@
 #   in which case these values can be managed in the UI.
 
 # The name of the stage.
-project_name: "Statosphere"
+project_name: "Stat-O-Sphere"
+
+tagline: "Send your bots into...the Stat-O-Sphere!\n(Give 'em variables and junk)"
 
 creator_notes: "
-_Up front, I'm going to say that this is a bit experimental and could be unstable._<br>
-This is a stage for creating custom variables and rules for stat tracking or behavior implementation. It is comprised of four core, configurable elements:<br>
+This is a stage for creating custom variables and rules for stat-tracking or behavior implementation. 
+_Up front, this is pretty experimental and I'm still playing with it, so it could be unstable._ 
+But it could also be fun to play with as-is.
+<br>
+<br>
+The stage is comprised of four core, configurable elements:<br>
 <ul>
-<li>Variable definitions and per-turn rules<br>
+<li>Variable definitions and per-turn behaviors<br>
 <li>Zero-shot classification rules to use inference on inputs and responses and apply updates to variables as a result<br>
 <li>A stat-block to display after bot responses<br>
 <li>Rules to apply post-history prompt instructions based on your variables<br>
@@ -35,9 +41,6 @@ Chub's stage timeout is pretty short and that can cause the stage to make a seco
 This is hopefully something that will be configurable in the future.
 "
 
-# A short tagline to show in search.
-tagline: "Implement variables and rules for your bots."
-
 # 'PUBLIC', 'PRIVATE', or 'UNLISTED'.
 visibility: 'UNLISTED'
 
@@ -62,7 +65,7 @@ tags:
 #   defined schema, it won't work.
 # source: input/response/both
 config_schema:
-  title: Statosphere Settings
+  title: Stat-O-Sphere Settings
   type: object
   properties:
     variableConfig:

@@ -9,6 +9,10 @@ import {Client} from "@gradio/client";
 import {PromptRule} from "./PromptRule";
 import {Classification, Classifier} from "./Classifier";
 import {env, pipeline} from "@xenova/transformers";
+import Ajv from "ajv";
+import classifierSchema from "./assets/classifier-schema.json";
+import promptSchema from "./assets/prompt-schema.json";
+import variableSchema from "./assets/variable-schema.json";
 
 type MessageStateType = any;
 type ConfigType = any;
@@ -67,15 +71,18 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         let yamlResponse = await fetch('chub_meta.yaml');
         const data: any = yaml.load(await yamlResponse.text());
 
-        const variableDefinitions: VariableDefinition[] = JSON.parse(this.config.variableConfig ?? data.config_schema.properties.variableConfig.value);
+        const variableDefinitions: VariableDefinition[] =
+            this.validateSchema(this.config.variableConfig ?? data.config_schema.properties.variableConfig.value, variableSchema);
         for (const definition of variableDefinitions) {
             this.variableDefinitions[definition.name] = new VariableDefinition(definition);
             if (!this.variables[definition.name]) {
                 this.initializeVariable(definition.name);
             }
         }
-        Object.values(JSON.parse(this.config.promptConfig ?? data.config_schema.properties.promptConfig.value)).forEach(promptRule => this.promptRules.push(new PromptRule(promptRule)));
-        Object.values(JSON.parse(this.config.classifierConfig ?? data.config_schema.properties.classifierConfig.value)).forEach(classifier => this.classifiers.push(new Classifier(classifier)));
+        Object.values(this.validateSchema(this.config.promptConfig ?? data.config_schema.properties.promptConfig.value, promptSchema))
+            .forEach(promptRule => this.promptRules.push(new PromptRule(promptRule)));
+        Object.values(this.validateSchema(this.config.classifierConfig ?? data.config_schema.properties.classifierConfig.value, classifierSchema))
+            .forEach(classifier => this.classifiers.push(new Classifier(classifier)));
 
         this.displayMessage = this.config.displayMessage ?? data.config_schema.properties.displayMessage.value ?? '';
 
@@ -88,6 +95,22 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
             initState: null,
             chatState: null,
         };
+    }
+
+    validateSchema(inputJson: string, schema: any): any {
+        try {
+            const validate = new Ajv().compile(schema);
+            const data = JSON.parse(inputJson);
+            const valid = validate(data);
+            if (valid) {
+                return data;
+            } else {
+                console.log(`Configuration JSON validation failed against ${schema}.`, validate.errors);
+            }
+        } catch (error) {
+            console.log(`Invalid JSON string:`, error);
+        }
+        return {};
     }
 
     async setState(state: MessageStateType): Promise<void> {
@@ -132,11 +155,26 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         this.variables[name] = new Variable(name, this.variableDefinitions);
     }
 
-    async processVariables() {
+    async processVariablesPerTurn() {
         for (const entry of Object.values(this.variableDefinitions)) {
-            console.log(`${entry.name} = ${entry.perTurnUpdate}`);
             if (entry.perTurnUpdate) {
                 this.updateVariable(entry.name, entry.perTurnUpdate);
+            }
+        }
+    }
+
+    async processVariablesPostInput() {
+        for (const entry of Object.values(this.variableDefinitions)) {
+            if (entry.postInputUpdate) {
+                this.updateVariable(entry.name, entry.postInputUpdate);
+            }
+        }
+    }
+
+    async processVariablesPostResponse() {
+        for (const entry of Object.values(this.variableDefinitions)) {
+            if (entry.postResponseUpdate) {
+                this.updateVariable(entry.name, entry.postResponseUpdate);
             }
         }
     }
@@ -218,9 +256,11 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
             promptForId
         } = userMessage;
         console.log('Start beforePrompt()');
-        await this.processVariables();
+        await this.processVariablesPerTurn();
 
         await this.processClassifiers(content, 'input', promptForId ?? '');
+
+        await this.processVariablesPostInput();
 
         let stageDirections = this.replaceTags('' + Object.values(this.promptRules).map(promptRule => promptRule.evaluate(this)).filter(prompt => prompt.trim().length > 0).join('\n'), {'user': this.user.name, 'char': (this.characters[promptForId ?? ''] ? this.characters[promptForId ?? ''].name : '')});
 
@@ -244,6 +284,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         console.log('Start afterResponse()');
         await this.processClassifiers(content, 'response', anonymizedId);
         console.log(`End afterResponse()`);
+        await this.processVariablesPostResponse();
         return {
             stageDirections: null,
             messageState: this.writeMessageState(),

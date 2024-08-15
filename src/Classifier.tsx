@@ -29,6 +29,8 @@ export class Classification {
         this.label = data.label;
         this.category = data.category;
         this.threshold = data.threshold;
-        this.updates = data.updates;
+        this.updates = {};
+        const updates: any[] = data.updates;
+        Object.values(updates).forEach(update => {console.log(update);this.updates[update.variable] = update.setTo;});
     }
 }

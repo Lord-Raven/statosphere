@@ -1,0 +1,24 @@
+{
+  "type": "array",
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "description": "",
+  "minItems": 0,
+  "uniqueItems": true,
+  "items": {
+    "type": "object",
+    "required": [
+      "condition",
+      "prompt"
+    ],
+    "properties": {
+      "condition": {
+        "type": "string",
+        "minLength": 1
+      },
+      "prompt": {
+        "type": "string",
+        "minLength": 1
+      }
+    }
+  }
+}

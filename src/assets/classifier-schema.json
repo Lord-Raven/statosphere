@@ -1,0 +1,79 @@
+{
+  "type": "array",
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "description": "",
+  "minItems": 0,
+  "uniqueItems": true,
+  "items": {
+    "type": "object",
+    "required": [
+      "name",
+      "classifications"
+    ],
+    "properties": {
+      "name": {
+        "type": "string",
+        "minLength": 1
+      },
+      "inputTemplate": {
+        "type": "string",
+        "minLength": 1
+      },
+      "inputHypothesis": {
+        "type": "string",
+        "minLength": 1
+      },
+      "responseTemplate": {
+        "type": "string",
+        "minLength": 1
+      },
+      "responseHypothesis": {
+        "type": "string",
+        "minLength": 1
+      },
+      "classifications": {
+        "type": "array",
+        "uniqueItems": true,
+        "minItems": 1,
+        "items": {
+          "required": [
+            "label",
+            "threshold"
+          ],
+          "properties": {
+            "label": {
+              "type": "string",
+              "minLength": 1
+            },
+            "category": {
+              "type": "string"
+            },
+            "threshold": {
+              "type": "number"
+            },
+            "updates": {
+              "type": "array",
+              "uniqueItems": true,
+              "minItems": 1,
+              "items": {
+                "required": [
+                  "variable",
+                  "setTo"
+                ],
+                "properties": {
+                  "variable": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "setTo": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

@@ -2,11 +2,15 @@ export class VariableDefinition {
     name: string;
     initialValue: any;
     perTurnUpdate: any;
+    postInputUpdate: any;
+    postResponseUpdate: any;
 
     constructor(data: any) {
         this.name = data.name;
         this.initialValue = data.initialValue;
         this.perTurnUpdate = data.perTurnUpdate;
+        this.postInputUpdate = data.postInputUpdate;
+        this.postResponseUpdate = data.postResponseUpdate;
     }
 }
 
