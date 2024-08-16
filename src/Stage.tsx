@@ -158,22 +158,31 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
     async processVariablesPerTurn() {
         for (const entry of Object.values(this.variableDefinitions)) {
             if (entry.perTurnUpdate) {
+                console.log(`${entry.name} per turn update: ${entry.perTurnUpdate}`)
                 this.updateVariable(entry.name, entry.perTurnUpdate);
             }
         }
     }
 
-    async processVariablesPostInput() {
+    async processVariablesPostInput(content: string) {
         for (const entry of Object.values(this.variableDefinitions)) {
-            if (entry.postInputUpdate) {
+            if (entry.postInputUpdate &&
+                    (!entry.postInputTriggers ||
+                    entry.postInputTriggers.length == 0 ||
+                    Object.values(entry.postInputTriggers).filter(trigger => content.toLowerCase().indexOf(trigger.toLowerCase())).length > 0)) {
+                console.log(`${entry.name} post input update: ${entry.postInputUpdate}`)
                 this.updateVariable(entry.name, entry.postInputUpdate);
             }
         }
     }
 
-    async processVariablesPostResponse() {
+    async processVariablesPostResponse(content: string) {
         for (const entry of Object.values(this.variableDefinitions)) {
-            if (entry.postResponseUpdate) {
+            if (entry.postResponseUpdate &&
+                    (!entry.postResponseTriggers ||
+                    entry.postResponseTriggers.length == 0 ||
+                    Object.values(entry.postResponseTriggers).filter(trigger => content.toLowerCase().indexOf(trigger.toLowerCase())).length > 0)) {
+                console.log(`${entry.name} post response update: ${entry.postResponseUpdate}`)
                 this.updateVariable(entry.name, entry.postResponseUpdate);
             }
         }
@@ -260,7 +269,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
 
         await this.processClassifiers(content, 'input', promptForId ?? '');
 
-        await this.processVariablesPostInput();
+        await this.processVariablesPostInput(content);
 
         let stageDirections = this.replaceTags('' + Object.values(this.promptRules).map(promptRule => promptRule.evaluate(this)).filter(prompt => prompt.trim().length > 0).join('\n'), {'user': this.user.name, 'char': (this.characters[promptForId ?? ''] ? this.characters[promptForId ?? ''].name : '')});
 
@@ -284,7 +293,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         console.log('Start afterResponse()');
         await this.processClassifiers(content, 'response', anonymizedId);
         console.log(`End afterResponse()`);
-        await this.processVariablesPostResponse();
+        await this.processVariablesPostResponse(content);
         return {
             stageDirections: null,
             messageState: this.writeMessageState(),
