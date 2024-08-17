@@ -18,15 +18,7 @@
       },
       "perTurnUpdate": {
       },
-      "postInputTriggers": {
-        "type": "array",
-        "minItems": 0
-      },
       "postInputUpdate": {
-      },
-      "postResponseTriggers": {
-        "type": "array",
-        "minItems": 0
       },
       "postResponseUpdate": {
       }

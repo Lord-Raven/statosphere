@@ -37,6 +37,8 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
     fallbackPipeline: any;
     fallbackMode: boolean;
     debugMode: boolean;
+    parser: Parser;
+    latestContent: string = '';
 
     constructor(data: InitialData<InitStateType, ChatStateType, MessageStateType, ConfigType>) {
         super(data);
@@ -56,6 +58,10 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         this.debugMode = false;
         this.fallbackMode = false; // Backend temporarily disabled by default.
         this.fallbackPipeline = null;
+        this.parser = new Parser();
+        this.parser.functions.contains = function(haystack: any, needle: any) {
+            return `${haystack}`.indexOf(`${needle}`) > -1;
+        };
         env.allowRemoteModels = false;
 
         this.readMessageState(messageState);
@@ -155,7 +161,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
     }
     updateVariable(name: string, formula: string) {
         console.log(`first, ${name} = ${this.getVariable(name)}`);
-        this.setVariable(name, Parser.evaluate(this.replaceTags(formula, {})))
+        this.setVariable(name, this.parser.evaluate(this.replaceTags(formula, {})))
         console.log(`then, ${name} = ${this.getVariable(name)}`);
     }
 
@@ -179,11 +185,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
     async processVariablesPostInput(content: string) {
         console.log('post input');
         for (const entry of Object.values(this.variableDefinitions)) {
-            if (entry.postInputUpdate &&
-                    (!entry.postInputTriggers ||
-                    entry.postInputTriggers.length == 0 ||
-                    Object.values(entry.postInputTriggers).filter(trigger => {return content.toLowerCase().indexOf(trigger.toLowerCase()) >= 0;}).length > 0)) {
-                console.log(entry.postInputTriggers);
+            if (entry.postInputUpdate) {
                 console.log(`${entry.name} post input update: ${entry.postInputUpdate}`)
                 try {
                     this.updateVariable(entry.name, entry.postInputUpdate);
@@ -197,10 +199,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
 
     async processVariablesPostResponse(content: string) {
         for (const entry of Object.values(this.variableDefinitions)) {
-            if (entry.postResponseUpdate &&
-                    (!entry.postResponseTriggers ||
-                    entry.postResponseTriggers.length == 0 ||
-                    Object.values(entry.postResponseTriggers).filter(trigger => {return content.toLowerCase().indexOf(trigger.toLowerCase()) >= 0;}).length > 0)) {
+            if (entry.postResponseUpdate) {
                 console.log(`${entry.name} post response update: ${entry.postResponseUpdate}`)
                 try {
                     this.updateVariable(entry.name, entry.postResponseUpdate);
@@ -255,6 +254,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         for (const key of Object.keys(this.variables)) {
             replacements[key.toLowerCase()] = this.getVariable(key);
         }
+        replacements['content'] = this.latestContent;
 
         return source.replace(/{{([A-z]*)}}/g, (match) => {
             return replacements[match.substring(2, match.length - 2).toLowerCase()];
@@ -288,6 +288,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
             promptForId
         } = userMessage;
         console.log('Start beforePrompt()');
+        this.latestContent = content;
         await this.processVariablesPerTurn();
 
         await this.processClassifiers(content, 'input', promptForId ?? '');
@@ -314,9 +315,10 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
             anonymizedId
         } = botMessage;
         console.log('Start afterResponse()');
+        this.latestContent = content;
         await this.processClassifiers(content, 'response', anonymizedId);
-        console.log(`End afterResponse()`);
         await this.processVariablesPostResponse(content);
+        console.log(`End afterResponse()`);
         return {
             stageDirections: null,
             messageState: this.writeMessageState(),

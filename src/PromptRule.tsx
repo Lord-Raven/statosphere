@@ -15,7 +15,7 @@ export class PromptRule {
     evaluate(stage: Stage): string {
         if (this.prompt.trim() != '') {
             console.log(this.condition);
-            return (Parser.evaluate(stage.replaceTags(this.condition.toLowerCase(), {})) ? this.prompt : '');
+            return (stage.parser.evaluate(stage.replaceTags(this.condition.toLowerCase(), {})) ? this.prompt : '');
         } else if (this.subRules.length > 0) {
             return (Object.values(this.subRules).map(rule => rule.evaluate(stage)).filter(retVal => retVal.trim().length > 0).join('\n'))
         }
