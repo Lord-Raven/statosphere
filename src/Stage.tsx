@@ -182,7 +182,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
             if (entry.postInputUpdate &&
                     (!entry.postInputTriggers ||
                     entry.postInputTriggers.length == 0 ||
-                    Object.values(entry.postInputTriggers).filter(trigger => {console.log(`okay:${trigger}`);content.toLowerCase().indexOf(trigger.toLowerCase());}).length > 0)) {
+                    Object.values(entry.postInputTriggers).filter(trigger => {console.log(`okay:${trigger}`);return content.toLowerCase().indexOf(trigger.toLowerCase());}).length > 0)) {
                 console.log(entry.postInputTriggers);
                 console.log(`${entry.name} post input update: ${entry.postInputUpdate}`)
                 try {
