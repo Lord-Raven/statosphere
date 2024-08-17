@@ -38,7 +38,6 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
     fallbackMode: boolean;
     debugMode: boolean;
     parser: Parser;
-    latestContent: string = '';
 
     constructor(data: InitialData<InitStateType, ChatStateType, MessageStateType, ConfigType>) {
         super(data);
@@ -59,9 +58,6 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         this.fallbackMode = false; // Backend temporarily disabled by default.
         this.fallbackPipeline = null;
         this.parser = new Parser();
-        this.parser.functions.contains = function(haystack: any, needle: any) {
-            return `${haystack}`.indexOf(`${needle}`) > -1;
-        };
         env.allowRemoteModels = false;
 
         this.readMessageState(messageState);
@@ -182,7 +178,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         }
     }
 
-    async processVariablesPostInput(content: string) {
+    async processVariablesPostInput() {
         console.log('post input');
         for (const entry of Object.values(this.variableDefinitions)) {
             if (entry.postInputUpdate) {
@@ -197,7 +193,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         console.log('done with post input');
     }
 
-    async processVariablesPostResponse(content: string) {
+    async processVariablesPostResponse() {
         for (const entry of Object.values(this.variableDefinitions)) {
             if (entry.postResponseUpdate) {
                 console.log(`${entry.name} post response update: ${entry.postResponseUpdate}`)
@@ -250,12 +246,16 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         }
     }
 
+    updateContains(content: string) {
+        this.parser.functions.contentContains = function(needle: any) {
+            return content.indexOf(`${needle}`) > -1;
+        }
+    }
+
     replaceTags(source: string, replacements: {[name: string]: string}) {
         for (const key of Object.keys(this.variables)) {
             replacements[key.toLowerCase()] = this.getVariable(key);
         }
-        replacements['content'] = this.latestContent;
-
         return source.replace(/{{([A-z]*)}}/g, (match) => {
             return replacements[match.substring(2, match.length - 2).toLowerCase()];
         });
@@ -288,12 +288,12 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
             promptForId
         } = userMessage;
         console.log('Start beforePrompt()');
-        this.latestContent = content;
+        this.updateContains(content);
         await this.processVariablesPerTurn();
 
         await this.processClassifiers(content, 'input', promptForId ?? '');
 
-        await this.processVariablesPostInput(content);
+        await this.processVariablesPostInput();
 
         let stageDirections = this.replaceTags('' + Object.values(this.promptRules).map(promptRule => promptRule.evaluate(this)).filter(prompt => prompt.trim().length > 0).join('\n'), {'user': this.user.name, 'char': (this.characters[promptForId ?? ''] ? this.characters[promptForId ?? ''].name : '')});
 
@@ -315,9 +315,9 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
             anonymizedId
         } = botMessage;
         console.log('Start afterResponse()');
-        this.latestContent = content;
+        this.updateContains(content);
         await this.processClassifiers(content, 'response', anonymizedId);
-        await this.processVariablesPostResponse(content);
+        await this.processVariablesPostResponse();
         console.log(`End afterResponse()`);
         return {
             stageDirections: null,
