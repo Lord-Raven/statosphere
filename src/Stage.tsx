@@ -182,7 +182,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
             if (entry.postInputUpdate &&
                     (!entry.postInputTriggers ||
                     entry.postInputTriggers.length == 0 ||
-                    Object.values(entry.postInputTriggers).filter(trigger => {console.log(`okay:${trigger}`);return content.toLowerCase().indexOf(trigger.toLowerCase());}).length > 0)) {
+                    Object.values(entry.postInputTriggers).filter(trigger => {return content.toLowerCase().indexOf(trigger.toLowerCase()) >= 0;}).length > 0)) {
                 console.log(entry.postInputTriggers);
                 console.log(`${entry.name} post input update: ${entry.postInputUpdate}`)
                 try {
@@ -200,7 +200,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
             if (entry.postResponseUpdate &&
                     (!entry.postResponseTriggers ||
                     entry.postResponseTriggers.length == 0 ||
-                    Object.values(entry.postResponseTriggers).filter(trigger => content.toLowerCase().indexOf(trigger.toLowerCase())).length > 0)) {
+                    Object.values(entry.postResponseTriggers).filter(trigger => {return content.toLowerCase().indexOf(trigger.toLowerCase()) >= 0;}).length > 0)) {
                 console.log(`${entry.name} post response update: ${entry.postResponseUpdate}`)
                 try {
                     this.updateVariable(entry.name, entry.postResponseUpdate);
