@@ -14,7 +14,7 @@ But it could also be fun to play with as-is.
 <br>
 The stage is comprised of four core, configurable elements:<br>
 <ul>
-<li>Variable definitions and per-turn behaviors<br>
+<li>Variable definitions with per-turn, post-input, and post-response assignment options<br>
 <li>Zero-shot classification rules to use inference on inputs and responses and apply updates to variables as a result<br>
 <li>A stat-block to display after bot responses<br>
 <li>Rules to apply post-history prompt instructions based on your variables<br>
@@ -38,7 +38,7 @@ There's a lot to cover here, but I have not had time to do so yet. For the momen
 This stage makes API calls to a Hugging Face backend that I have set up to leverage a zero-shot classification model. 
 If this backend is unavailable or some other error occurs in calling it, the stage will swap to applying a very small local zero-shot model. 
 Chub's stage timeout is pretty short and that can cause the stage to make a second call or give up entirely if these calls take too long. 
-This is hopefully something that will be configurable in the future.
+This is hopefully something that will be more addressable in the future.
 "
 
 # 'PUBLIC', 'PRIVATE', or 'UNLISTED'.
