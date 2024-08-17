@@ -248,7 +248,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
 
     updateContains(content: string) {
         this.parser.functions.contentContains = function(needle: any) {
-            return content.indexOf(`${needle}`) > -1;
+            return content.toLowerCase().indexOf(`${needle}`.toLowerCase()) > -1;
         }
     }
 
