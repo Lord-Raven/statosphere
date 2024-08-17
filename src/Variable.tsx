@@ -11,7 +11,8 @@ export class VariableDefinition {
         this.name = data.name;
         this.initialValue = data.initialValue;
         this.perTurnUpdate = data.perTurnUpdate;
-        this.postInputTriggers = data.postInputUpdate
+        this.postInputTriggers = data.postInputTriggers
+        console.log(this.postInputTriggers);
         this.postInputUpdate = data.postInputUpdate;
         this.postResponseTriggers = data.postResponseTriggers;
         this.postResponseUpdate = data.postResponseUpdate;
