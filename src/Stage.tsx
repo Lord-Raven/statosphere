@@ -165,21 +165,31 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         for (const entry of Object.values(this.variableDefinitions)) {
             if (entry.perTurnUpdate) {
                 console.log(`${entry.name} per turn update: ${entry.perTurnUpdate}`)
-                this.updateVariable(entry.name, entry.perTurnUpdate);
+                try {
+                    this.updateVariable(entry.name, entry.perTurnUpdate);
+                } catch(error) {
+                    console.log(error);
+                }
             }
         }
     }
 
     async processVariablesPostInput(content: string) {
+        console.log('post input');
         for (const entry of Object.values(this.variableDefinitions)) {
             if (entry.postInputUpdate &&
                     (!entry.postInputTriggers ||
                     entry.postInputTriggers.length == 0 ||
                     Object.values(entry.postInputTriggers).filter(trigger => content.toLowerCase().indexOf(trigger.toLowerCase())).length > 0)) {
                 console.log(`${entry.name} post input update: ${entry.postInputUpdate}`)
-                this.updateVariable(entry.name, entry.postInputUpdate);
+                try {
+                    this.updateVariable(entry.name, entry.postInputUpdate);
+                } catch(error) {
+                    console.log(error);
+                }
             }
         }
+        console.log('done with post input');
     }
 
     async processVariablesPostResponse(content: string) {
@@ -189,7 +199,11 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
                     entry.postResponseTriggers.length == 0 ||
                     Object.values(entry.postResponseTriggers).filter(trigger => content.toLowerCase().indexOf(trigger.toLowerCase())).length > 0)) {
                 console.log(`${entry.name} post response update: ${entry.postResponseUpdate}`)
-                this.updateVariable(entry.name, entry.postResponseUpdate);
+                try {
+                    this.updateVariable(entry.name, entry.postResponseUpdate);
+                } catch(error) {
+                    console.log(error);
+                }
             }
         }
     }
