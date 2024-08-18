@@ -228,9 +228,9 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
                 let categoryScores: {[key: string]: number} = {};
                 for (let i = 0; i < response.labels.length; i++) {
                     let classification = classifier.classifications[labelMapping[response.labels[i]]];
-                    if (response.scores[i] >= Math.max(classification.threshold ?? this.DEFAULT_THRESHOLD, categoryScores[classification.category] ?? 0)) {
-                        selectedClassifications[classification.category] = classification;
-                        categoryScores[classification.category] = response.scores[i];
+                    if (response.scores[i] >= Math.max(classification.threshold ?? this.DEFAULT_THRESHOLD, categoryScores[classification.category ?? classification.label] ?? 0)) {
+                        selectedClassifications[classification.category ?? classification.label] = classification;
+                        categoryScores[classification.category ?? classification.label] = response.scores[i];
                     }
                 }
 
