@@ -9,7 +9,7 @@ tagline: "Send your bots into...the Stat-O-Sphere!\n(Give 'em variables and junk
 creator_notes: "
 This is a stage for creating custom variables and rules for stat-tracking or behavior implementation. 
 _Up front, this is pretty experimental and I'm still playing with it, so it could be unstable._ 
-But it could also be fun to play with as-is.
+But it can also be fun to play with as-is.
 <br>
 <br>
 The stage is comprised of four core, configurable elements:<br>
@@ -24,14 +24,15 @@ The stage is comprised of four core, configurable elements:<br>
 This stage has no default configuration and will do nothing on its own. However, through configuration, a wide variety of effects are possible:<br>
 <ul>
 <li>Stat tracking and display: use inference to roughly gauge changes present in the input or response and translate that into a number to apply to stats<br>
-<li>Scenario escalation tracking: use perTurnUpdate to increase a turn variable and prompt rules to feed updated scenario data as time marches on<br>
-<li>Rule or behavior reinforcement: remind the LLM of your bot's quirks when the user's input should trigger them<br>
+<li>Scenario escalation tracking: use perTurnUpdate to increase a turn variable, then add prompt rules to feed updated scenario data as time marches on<br>
+<li>Rule or behavior reinforcement: use inference or keywords to remind the LLM of your bot's quirks when the user's input should trigger them<br>
 <li>Probably all kinds of other creative applications<br>
 </ul>
 <br>
 <br>
 **Guide**<br>
-There's a lot to cover here, but I have not had time to do so yet. For the moment, please see my example bots and the configuration of the stage on those bots.
+There's a lot to cover here, but I have not had time to do so yet. For the moment, please see my example bots and the configuration of the stage on those bots. 
+It looks like I may have to build out a UI for editing the JSON configuration; Venus's configuration options are not as robust as I'd like for this stage.
 <br>
 <br>
 **Inference Details**<br>
@@ -52,7 +53,7 @@ visibility: 'UNLISTED'
 #   but leave the text input box.
 # 'FULLSCREEN' will make nothing below the header bar
 #   show except for your stage.
-position: 'NONE'
+position: 'ADJACENT'
 
 # Self-explanatory.
 tags:

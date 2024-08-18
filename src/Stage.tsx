@@ -90,6 +90,10 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
 
         this.client = await Client.connect("Ravenok/statosphere-backend", {hf_token: import.meta.env.VITE_HF_API_KEY});
 
+        if (!this.config.debugMode) {
+            await this.messenger.updateEnvironment({stage_hidden: true});
+        }
+
         console.log('Finished loading stage.');
         return {
             success: true,
