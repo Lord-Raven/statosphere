@@ -1,7 +1,8 @@
 {
-  "name": "@chub-ai/stage-template",
+  "name": "lord-raven/statosphere",
   "private": false,
   "version": "0.0.0",
+  "homepage": "https://lord-raven.github.io/statosphere",
   "type": "module",
   "files": [
     "dist"
