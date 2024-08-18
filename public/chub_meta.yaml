@@ -53,7 +53,7 @@ visibility: 'UNLISTED'
 #   but leave the text input box.
 # 'FULLSCREEN' will make nothing below the header bar
 #   show except for your stage.
-position: 'ADJACENT'
+position: 'NONE'
 
 # Self-explanatory.
 tags:
