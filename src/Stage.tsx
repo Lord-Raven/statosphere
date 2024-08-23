@@ -67,7 +67,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
             ...all,
 
             contains: factory('contains', [], () => function contains(a: any, b: any) {
-                if (a instanceof String && b instanceof String) {
+                if (typeof a === 'string' && typeof b === 'string') {
                     return a.toLowerCase().includes(b.toLowerCase());
                 }
                 return a.includes(b);
