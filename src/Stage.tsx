@@ -2,7 +2,7 @@ import {ReactElement} from "react";
 import {StageBase, StageResponse, InitialData, Message} from "@chub-ai/stages-ts";
 import {LoadResponse} from "@chub-ai/stages-ts/dist/types/load";
 import {Character, User} from "@chub-ai/stages-ts";
-import {Parser} from "expr-eval";
+import {all, create, factory} from "mathjs";
 import {Variable, VariableDefinition} from "./Variable";
 import * as yaml from 'js-yaml';
 import {Client} from "@gradio/client";
@@ -34,10 +34,13 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
     user: User;
     displayMessage: string = '';
     client: any;
+    fallbackPipelinePromise: Promise<any> | null = null;
     fallbackPipeline: any;
     fallbackMode: boolean;
     debugMode: boolean;
-    parser: Parser;
+    evaluate: any;
+    content: string = '';
+
 
     constructor(data: InitialData<InitStateType, ChatStateType, MessageStateType, ConfigType>) {
         super(data);
@@ -57,19 +60,30 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         this.debugMode = false;
         this.fallbackMode = false; // Backend temporarily disabled by default.
         this.fallbackPipeline = null;
-        this.parser = new Parser();
         env.allowRemoteModels = false;
+
+        // Set up mathjs:
+        const allWithCustomFunctions = {
+            ...all,
+
+            containsString: factory('contains', [], () => function contains(a: string, b: string) {
+                return a.toLowerCase().includes(b.toLowerCase());
+            }),
+            contains: factory('contains', [], () => function contains(a: any, b: any) {
+                return a.includes(b);
+            }),
+            regexMatch: factory('regex', [], () => function regex(a: string, b: string) {
+                let matches = a.match(b);
+                return matches && matches.length > 0 ? matches.map(match => match) : null;
+            })
+        };
+        this.evaluate = create(allWithCustomFunctions).evaluate;
 
         this.readMessageState(messageState);
     }
 
     async load(): Promise<Partial<LoadResponse<InitStateType, ChatStateType, MessageStateType>>> {
 
-        try {
-            this.fallbackPipeline = await pipeline("zero-shot-classification", "Xenova/mobilebert-uncased-mnli");
-        } catch (exception: any) {
-            console.error(`Error loading pipeline: ${exception}`);
-        }
         let yamlResponse = await fetch('chub_meta.yaml');
         const data: any = yaml.load(await yamlResponse.text());
 
@@ -86,6 +100,10 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         Object.values(this.validateSchema(this.config.classifierConfig ?? data.config_schema.properties.classifierConfig.value, classifierSchema, 'classifier schema'))
             .forEach(classifier => this.classifiers.push(new Classifier(classifier)));
 
+        if (this.classifiers.length > 0) {
+            this.fallbackPipelinePromise = this.getPipeline();
+        }
+
         this.displayMessage = this.config.displayMessage ?? data.config_schema.properties.displayMessage.value ?? '';
 
         this.client = await Client.connect("Ravenok/statosphere-backend", {hf_token: import.meta.env.VITE_HF_API_KEY});
@@ -101,6 +119,10 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
             initState: null,
             chatState: null,
         };
+    }
+
+    async getPipeline() {
+        return pipeline("zero-shot-classification", "Xenova/mobilebert-uncased-mnli");
     }
 
     validateSchema(inputJson: string, schema: any, schemaName: string): any {
@@ -161,7 +183,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
     }
     updateVariable(name: string, formula: string) {
         console.log(`first, ${name} = ${this.getVariable(name)}`);
-        this.setVariable(name, this.parser.evaluate(this.replaceTags(formula, {})))
+        this.setVariable(name, this.evaluate(this.replaceTags(formula, {})))
         console.log(`then, ${name} = ${this.getVariable(name)}`);
     }
 
@@ -250,16 +272,17 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         }
     }
 
-    updateContains(content: string) {
-        this.parser.functions.contentContains = function(needle: any) {
+    /*updateContains(content: string) {
+        math.functions.contentContains = function(needle: any) {
             return content.toLowerCase().indexOf(`${needle}`.toLowerCase()) > -1;
         }
-    }
+    }*/
 
     replaceTags(source: string, replacements: {[name: string]: string}) {
         for (const key of Object.keys(this.variables)) {
             replacements[key.toLowerCase()] = this.getVariable(key);
         }
+        replacements['content'] = this.content;
         return source.replace(/{{([A-z]*)}}/g, (match) => {
             return replacements[match.substring(2, match.length - 2).toLowerCase()];
         });
@@ -279,6 +302,9 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         if (!result) {
             console.log('Falling back to local zero-shot pipeline.');
             this.fallbackMode = true;
+            if (this.fallbackPipeline == null) {
+                this.fallbackPipeline = this.fallbackPipelinePromise ? await this.fallbackPipelinePromise : await this.getPipeline();
+            }
             result = await this.fallbackPipeline(data.sequence, data.candidate_labels, { hypothesis_template: data.hypothesis_template, multi_label: data.multi_label });
         }
         console.log(result);
@@ -292,7 +318,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
             promptForId
         } = userMessage;
         console.log('Start beforePrompt()');
-        this.updateContains(content);
+        this.content = content;
         await this.processVariablesPerTurn();
 
         await this.processClassifiers(content, 'input', promptForId ?? '');
@@ -319,7 +345,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
             anonymizedId
         } = botMessage;
         console.log('Start afterResponse()');
-        this.updateContains(content);
+        this.content = content;
         await this.processClassifiers(content, 'response', anonymizedId);
         await this.processVariablesPostResponse();
         console.log(`End afterResponse()`);

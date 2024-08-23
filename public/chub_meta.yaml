@@ -2,21 +2,21 @@
 #   in which case these values can be managed in the UI.
 
 # The name of the stage.
-project_name: "Stat-O-Sphere"
+project_name: "Statosphere"
 
-tagline: "Send your bots into...the Stat-O-Sphere!\n(Give 'em variables and junk)"
+tagline: "Give your bots variables and launch them into...the Stat-O-Sphere-phere-ere!"
 
 creator_notes: "
 This is a stage for creating custom variables and rules for stat-tracking or behavior implementation. 
 _Up front, this is pretty experimental and I'm still playing with it, so it could be unstable._ 
-But it can also be fun to play with as-is.
+But it could also be fun to play with as-is. If you can't read all of the notes here; refresh this page until the \"Show More\" prompt renders.
 <br>
 <br>
 The stage is comprised of four core, configurable elements:<br>
 <ul>
 <li>Variable definitions with per-turn, post-input, and post-response assignment options<br>
 <li>Zero-shot classification rules to use inference on inputs and responses and apply updates to variables as a result<br>
-<li>A stat-block to display after bot responses<br>
+<li>Conditionally rendered system messages to display after inputs or responses<br>
 <li>Rules to apply post-history prompt instructions based on your variables<br>
 </ul>
 <br>
@@ -24,15 +24,19 @@ The stage is comprised of four core, configurable elements:<br>
 This stage has no default configuration and will do nothing on its own. However, through configuration, a wide variety of effects are possible:<br>
 <ul>
 <li>Stat tracking and display: use inference to roughly gauge changes present in the input or response and translate that into a number to apply to stats<br>
-<li>Scenario escalation tracking: use perTurnUpdate to increase a turn variable, then add prompt rules to feed updated scenario data as time marches on<br>
-<li>Rule or behavior reinforcement: use inference or keywords to remind the LLM of your bot's quirks when the user's input should trigger them<br>
+<li>Scenario escalation tracking: use perTurnUpdate to increase a turn variable, then add prompt rules to feed updated scenario data as time marches on--go crazy and use inference to adjust the pace of escalation<br>
+<li>Rule or behavior reinforcement: apply classification or keywords to remind the LLM of your bot's quirks when the user's input should trigger them<br>
+<li>Response guidance: use inference to detect the nature of the user's input and ask the bot to focus its writing in different ways<br>
 <li>Probably all kinds of other creative applications<br>
 </ul>
 <br>
 <br>
-**Guide**<br>
-There's a lot to cover here, but I have not had time to do so yet. For the moment, please see my example bots and the configuration of the stage on those bots. 
-It looks like I may have to build out a UI for editing the JSON configuration; Venus's configuration options are not as robust as I'd like for this stage.
+**Configuration**<br>
+The stage has four core fields that define the elements above; these are provided as JSON objects because the stage configuration UI is not yet prepared for something so elaborate. 
+Don't worry! You don't have to hand-build JSON to paste in here: I made [an external tool](https://lord-raven.github.io/statosphere-editor/) that will produce JSON that you can copy and paste into the stage's configuration.
+<br>
+<br>
+There's a lot of information that I will need to cover here, but I have not had time to do so yet. For the moment, please see my example bots and the configuration of the stage on those bots. 
 <br>
 <br>
 **Inference Details**<br>

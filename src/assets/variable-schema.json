@@ -1,6 +1,6 @@
 {
+  "title": "Variables",
   "type": "array",
-  "description": "",
   "minItems": 0,
   "uniqueItems": true,
   "items": {
@@ -11,16 +11,30 @@
     ],
     "properties": {
       "name": {
+        "title": "Name",
+        "description": "Name by which this variable is referenced throughout the stage.",
         "type": "string",
         "minLength": 1
       },
       "initialValue": {
+        "title": "Initial Value",
+        "description": "The initial value for this variable when the stage is loaded.",
+        "type": "string"
       },
       "perTurnUpdate": {
+        "title": "Per Turn Update",
+        "description": "The value this variable will be set to at the start of the user's next input.",
+        "type": "string"
       },
       "postInputUpdate": {
+        "title": "Post Input Update",
+        "description": "The value this variable will be set to after the user's input is processed (after classifiers have run).",
+        "type": "string"
       },
       "postResponseUpdate": {
+        "title": "Post Response Update",
+        "description": "The value this variable will be set to after the bot's response is processed (after classifiers have run).",
+        "type": "string"
       }
     }
   }

@@ -1,9 +1,12 @@
 {
+  "title": "Classifiers",
+  "description": "An array of classifiers.",
   "type": "array",
-  "description": "",
   "minItems": 0,
   "uniqueItems": true,
   "items": {
+    "title": "Classifier",
+    "description": "A classification task to apply to input or responses.",
     "type": "object",
     "required": [
       "name",
@@ -11,46 +14,63 @@
     ],
     "properties": {
       "name": {
+        "title": "Name",
+        "description": "A name for this classifier.",
         "type": "string",
         "minLength": 1
       },
       "inputTemplate": {
-        "type": "string",
-        "minLength": 1
+        "title": "Input Template",
+        "description": "An optional input template; if set, this classification task will be performed upon inputs.",
+        "type": "string"
       },
       "inputHypothesis": {
-        "type": "string",
-        "minLength": 1
+        "title": "Input Hypothesis Template",
+        "description": "This is the hypothesis template applied to classifications performed on inputs.",
+        "type": "string"
       },
       "responseTemplate": {
-        "type": "string",
-        "minLength": 1
+        "title": "Response Template",
+        "description": "An optional response template; if set, this classification task will be performed upon responses.",
+        "type": "string"
       },
       "responseHypothesis": {
-        "type": "string",
-        "minLength": 1
+        "title": "Response Hypothesis Template",
+        "description": "This is the hypothesis template applied to classifications performed on responses.",
+        "type": "string"
       },
       "classifications": {
+        "title": "Classifications",
+        "description": "An array of classifications to test for.",
         "type": "array",
         "uniqueItems": true,
-        "minItems": 1,
+        "minItems": 0,
         "items": {
           "required": [
-            "label",
-            "threshold"
+            "label"
           ],
           "properties": {
             "label": {
+              "title": "Label",
+              "description": "The label substituted into the hypothesis.",
               "type": "string",
               "minLength": 1
             },
             "category": {
+              "title": "Category",
+              "description": "If multiple labels share a category, only the highest entailment applies.",
               "type": "string"
             },
             "threshold": {
-              "type": "number"
+              "title": "Threshold",
+              "description":  "The minimum entailment score to apply this classification.",
+              "type": "number",
+              "minimum": "0",
+              "maximum": "1"
             },
             "updates": {
+              "title": "Updates",
+              "description": "An array of variable updates to make when this classification is applied.",
               "type": "array",
               "uniqueItems": true,
               "minItems": 1,
@@ -61,10 +81,14 @@
                 ],
                 "properties": {
                   "variable": {
+                    "title": "Variable",
+                    "description": "Name of the variable to update.",
                     "type": "string",
                     "minLength": 1
                   },
                   "setTo": {
+                    "title": "Set To",
+                    "description": "Value to update this variable to when this classification is applied.",
                     "type": "string"
                   }
                 }
