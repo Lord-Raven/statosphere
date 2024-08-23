@@ -66,10 +66,10 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         const allWithCustomFunctions = {
             ...all,
 
-            containsString: factory('contains', [], () => function contains(a: string, b: string) {
-                return a.toLowerCase().includes(b.toLowerCase());
-            }),
             contains: factory('contains', [], () => function contains(a: any, b: any) {
+                if (a instanceof String && b instanceof String) {
+                    return a.toLowerCase().includes(b.toLowerCase());
+                }
                 return a.includes(b);
             }),
             regexMatch: factory('regex', [], () => function regex(a: string, b: string) {
