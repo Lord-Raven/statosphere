@@ -73,7 +73,7 @@
               "description": "An array of variable updates to make when this classification is applied.",
               "type": "array",
               "uniqueItems": true,
-              "minItems": 1,
+              "minItems": 0,
               "items": {
                 "required": [
                   "variable",
