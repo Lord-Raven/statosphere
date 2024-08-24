@@ -65,8 +65,8 @@
               "title": "Threshold",
               "description":  "The minimum entailment score to apply this classification.",
               "type": "number",
-              "minimum": 0,
-              "maximum": 1,
+              "minimum": 0.00,
+              "maximum": 1.00,
               "multipleOf": 0.01
             },
             "updates": {

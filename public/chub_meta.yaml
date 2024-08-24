@@ -33,10 +33,12 @@ This stage has no default configuration and will do nothing on its own. However,
 <br>
 **Configuration**<br>
 The stage has four core fields that define the elements above; these are provided as JSON objects because the stage configuration UI is not yet prepared for something so elaborate. 
-Don't worry! You don't have to hand-build JSON to paste in here: I made [an external tool](https://lord-raven.github.io/statosphere-editor/) that will produce JSON that you can copy and paste into the stage's configuration.
+Don't worry! You don't have to hand-build JSON to paste in here: I made [an external tool](https://lord-raven.github.io/statosphere-editor/) 
+that will produce JSON that you can copy and paste into the stage's configuration. You can also paste configuration from your bot into the tool to make modifications.
 <br>
 <br>
-There's a lot of information that I will need to cover here, but I have not had time to do so yet. For the moment, please see my example bots and the configuration of the stage on those bots. 
+There is a lot of information that I will need to cover here, but I have not had time to do so yet. For the moment, please see my example bots and the configuration of the stage on those bots; 
+you can view this by starting a chat with one and looking at the active stages in the chat settings. 
 <br>
 <br>
 **Inference Details**<br>
@@ -70,7 +72,7 @@ tags:
 #   defined schema, it won't work.
 # source: input/response/both
 config_schema:
-  title: Stat-O-Sphere Settings
+  title: Statosphere Settings
   type: object
   properties:
     variableConfig:
