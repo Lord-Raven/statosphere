@@ -12,12 +12,11 @@ _Up front, this is pretty experimental and I'm still playing with it, so it coul
 But it could also be fun to play with as-is. If you can't read all of the notes here; refresh this page until the \"Show More\" prompt renders.
 <br>
 <br>
-The stage is comprised of four core, configurable elements:<br>
+The stage is comprised of three core, configurable elements:<br>
 <ul>
 <li>Variable definitions with per-turn, post-input, and post-response assignment options<br>
 <li>Zero-shot classification rules to use inference on inputs and responses and apply updates to variables as a result<br>
-<li>Conditionally rendered system messages to display after inputs or responses<br>
-<li>Rules to apply post-history prompt instructions based on your variables<br>
+<li>Content modification rules which alter input, response, system messages (post-response details), and stage directions (additional LLM instruction) based on specified conditions<br>
 </ul>
 <br>
 **Example Applications**<br>
@@ -27,6 +26,7 @@ This stage has no default configuration and will do nothing on its own. However,
 <li>Scenario escalation tracking: use perTurnUpdate to increase a turn variable, then add prompt rules to feed updated scenario data as time marches on--go crazy and use inference to adjust the pace of escalation<br>
 <li>Rule or behavior reinforcement: apply classification or keywords to remind the LLM of your bot's quirks when the user's input should trigger them<br>
 <li>Response guidance: use inference to detect the nature of the user's input and ask the bot to focus its writing in different ways<br>
+<li>Response clean-up: use regex to strip undesired content or formatting from the bot's responses.<br>
 <li>Probably all kinds of other creative applications<br>
 </ul>
 <br>
@@ -85,17 +85,12 @@ config_schema:
       type: string
       value: >
         []
-    promptConfig:
-      title: Prompt Configuration
-      description: A JSON array of rules for prompt additions.
+    contentConfig:
+      title: Content Configuration
+      description: A JSON array of rules for content modifications.
       type: string
       value: >
         []
-    displayMessage:
-      title: Display Message
-      description: Markdown-formatted system message to display after bot responses.
-      type: string
-      value: ""
     debugMode:
       title: Debug Mode
       description: Leave disabled unless you don't care about stability.

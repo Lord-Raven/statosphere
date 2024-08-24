@@ -1,17 +1,16 @@
 import {ReactElement} from "react";
-import {StageBase, StageResponse, InitialData, Message} from "@chub-ai/stages-ts";
+import {Character, InitialData, Message, StageBase, StageResponse, User} from "@chub-ai/stages-ts";
 import {LoadResponse} from "@chub-ai/stages-ts/dist/types/load";
-import {Character, User} from "@chub-ai/stages-ts";
 import {all, create, factory} from "mathjs";
 import {Variable, VariableDefinition} from "./Variable";
 import * as yaml from 'js-yaml';
 import {Client} from "@gradio/client";
-import {PromptRule} from "./PromptRule";
+import {ContentCategory, ContentRule} from "./ContentRule";
 import {Classification, Classifier} from "./Classifier";
 import {env, pipeline} from "@xenova/transformers";
 import Ajv from "ajv";
 import classifierSchema from "./assets/classifier-schema.json";
-import promptSchema from "./assets/prompt-schema.json";
+import contentSchema from "./assets/content-schema.json";
 import variableSchema from "./assets/variable-schema.json";
 
 type MessageStateType = any;
@@ -28,11 +27,10 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
     // other:
     config: any;
     variableDefinitions: {[key: string]: VariableDefinition};
-    promptRules: PromptRule[];
+    contentRules: ContentRule[];
     classifiers: Classifier[];
     characters: {[key: string]: Character};
     user: User;
-    displayMessage: string = '';
     client: any;
     fallbackPipelinePromise: Promise<any> | null = null;
     fallbackPipeline: any;
@@ -54,7 +52,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         this.user = users[Object.keys(users)[0]];
         this.variables = {};
         this.variableDefinitions = {};
-        this.promptRules = [];
+        this.contentRules = [];
         this.classifiers = [];
         this.config = config;
         this.debugMode = false;
@@ -95,16 +93,14 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
                 this.initializeVariable(definition.name);
             }
         }
-        Object.values(this.validateSchema(this.config.promptConfig ?? data.config_schema.properties.promptConfig.value, promptSchema, 'prompt schema'))
-            .forEach(promptRule => this.promptRules.push(new PromptRule(promptRule)));
+        Object.values(this.validateSchema(this.config.contentConfig ?? data.config_schema.properties.contentConfig.value, contentSchema, 'content schema'))
+            .forEach(contentRule => this.contentRules.push(new ContentRule(contentRule)));
         Object.values(this.validateSchema(this.config.classifierConfig ?? data.config_schema.properties.classifierConfig.value, classifierSchema, 'classifier schema'))
             .forEach(classifier => this.classifiers.push(new Classifier(classifier)));
 
         if (this.classifiers.length > 0) {
             this.fallbackPipelinePromise = this.getPipeline();
         }
-
-        this.displayMessage = this.config.displayMessage ?? data.config_schema.properties.displayMessage.value ?? '';
 
         this.client = await Client.connect("Ravenok/statosphere-backend", {hf_token: import.meta.env.VITE_HF_API_KEY});
 
@@ -276,9 +272,9 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         for (const key of Object.keys(this.variables)) {
             replacements[key.toLowerCase()] = this.getVariable(key);
         }
-        replacements['content'] = this.content;
+        replacements['content'] = this.content ? this.content.replace(/"/g, '\\"') : this.content;
         return source.replace(/{{([A-z]*)}}/g, (match) => {
-            return String(replacements[match.substring(2, match.length - 2).toLowerCase()]).replace(/"/g, '\\"');
+            return replacements[match.substring(2, match.length - 2).toLowerCase()];
         });
     }
 
@@ -312,18 +308,23 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
             promptForId
         } = userMessage;
         console.log('Start beforePrompt()');
-        this.content = content;
+
         await this.processVariablesPerTurn();
 
-        await this.processClassifiers(content, 'input', promptForId ?? '');
+        const replacements = {'user': this.user.name, 'char': (this.characters[promptForId ?? ''] ? this.characters[promptForId ?? ''].name : '')};
+        this.content = '';
+        Object.values(this.contentRules).forEach(contentRule => this.content = contentRule.evaluateAndApply(this, ContentCategory.StageDirection, replacements));
+        const stageDirections = this.content;
 
+        this.content = content;
+        await this.processClassifiers(content, 'input', promptForId ?? '');
         await this.processVariablesPostInput();
 
-        let stageDirections = this.replaceTags('' + Object.values(this.promptRules).map(promptRule => promptRule.evaluate(this)).filter(prompt => prompt.trim().length > 0).join('\n'), {'user': this.user.name, 'char': (this.characters[promptForId ?? ''] ? this.characters[promptForId ?? ''].name : '')});
+        Object.values(this.contentRules).forEach(contentRule => this.content = contentRule.evaluateAndApply(this, ContentCategory.Input, replacements));
 
         console.log('End beforePrompt()');
         return {
-            stageDirections: stageDirections != '' ? `[Response Hints]\n${stageDirections}\n[/Response Hints]` : null,
+            stageDirections: stageDirections.trim() != '' ? `[Response Hints]\n${stageDirections}\n[/Response Hints]` : null,
             messageState: this.writeMessageState(),
             modifiedMessage: null,
             systemMessage: null,
@@ -339,17 +340,24 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
             anonymizedId
         } = botMessage;
         console.log('Start afterResponse()');
+
         this.content = content;
         await this.processClassifiers(content, 'response', anonymizedId);
         await this.processVariablesPostResponse();
+
+        const replacements = {'user': this.user.name, 'char': (this.characters[anonymizedId] ? this.characters[anonymizedId].name : '')};
+        Object.values(this.contentRules).forEach(contentRule => this.content = contentRule.evaluateAndApply(this, ContentCategory.Response, replacements));
+
+        this.content = '';
+        Object.values(this.contentRules).forEach(contentRule => this.content = contentRule.evaluateAndApply(this, ContentCategory.SystemMessage, replacements));
+
         console.log(`End afterResponse()`);
         return {
             stageDirections: null,
             messageState: this.writeMessageState(),
             modifiedMessage: null,
             error: null,
-            systemMessage: (this.displayMessage && this.displayMessage.trim() != '') ?
-                this.replaceTags(this.displayMessage, {'user': this.user.name, 'char': (this.characters[anonymizedId] ? this.characters[anonymizedId].name : '')}) : null,
+            systemMessage: this.content.trim() != '' ? this.content : null,
             chatState: null
         };
     }
