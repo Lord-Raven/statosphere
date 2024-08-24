@@ -310,9 +310,6 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         await this.processVariablesPerTurn();
 
         const replacements = {'user': this.user.name, 'char': (this.characters[promptForId ?? ''] ? this.characters[promptForId ?? ''].name : '')};
-        this.content = '';
-        Object.values(this.contentRules).forEach(contentRule => this.content = contentRule.evaluateAndApply(this, ContentCategory.StageDirection, replacements));
-        const stageDirections = this.content;
 
         this.content = content;
         await this.processClassifiers(content, 'input', promptForId ?? '');
@@ -320,9 +317,13 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
 
         Object.values(this.contentRules).forEach(contentRule => this.content = contentRule.evaluateAndApply(this, ContentCategory.Input, replacements));
 
+        this.content = '';
+        Object.values(this.contentRules).forEach(contentRule => this.content = contentRule.evaluateAndApply(this, ContentCategory.StageDirection, replacements));
+        const stageDirections = this.content;
+
         console.log('End beforePrompt()');
         return {
-            stageDirections: stageDirections.trim() != '' ? `[Response Hints]\n${stageDirections}\n[/Response Hints]` : null,
+            stageDirections: stageDirections.trim() != '' ? `[Response Hints]${stageDirections}\n[/Response Hints]` : null,
             messageState: this.writeMessageState(),
             modifiedMessage: null,
             systemMessage: null,

@@ -91,12 +91,6 @@ config_schema:
       type: string
       value: >
         []
-    promptConfig:
-      title: Prompt Configuration
-      description: A JSON array of rules for prompt additions.
-      type: string
-      value: >
-        []
     debugMode:
       title: Debug Mode
       description: Leave disabled unless you don't care about stability.

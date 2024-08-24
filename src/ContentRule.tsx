@@ -15,7 +15,7 @@ export class ContentRule {
     constructor(data: any) {
         this.category = data.category;
         this.condition = data.condition;
-        this.modification = data.modification ?? '';
+        this.modification = `\"${data.modification ?? '{{content}}'}\"`;
     }
 
     evaluateAndApply(stage: Stage, targetCategory: ContentCategory, replacements: any): string {
