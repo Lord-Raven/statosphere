@@ -28,7 +28,6 @@ export class Classification {
     constructor(data: any) {
         this.label = data.label;
         this.category = data.category;
-        console.log('threshold:' + data.threshold);
         this.threshold = data.threshold;
         this.updates = {};
         const updates: any[] = data.updates;
