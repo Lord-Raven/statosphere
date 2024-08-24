@@ -19,9 +19,7 @@ export class ContentRule {
     }
 
     evaluateAndApply(stage: Stage, targetCategory: ContentCategory, replacements: any): string {
-        console.log(this.condition);
         if (this.category == targetCategory && stage.evaluate(stage.replaceTags(this.condition.toLowerCase(), replacements))) {
-            console.log(stage.content + ":" + this.modification);
             return stage.evaluate(stage.replaceTags(this.modification, replacements));
         }
         return stage.content;

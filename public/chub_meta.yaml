@@ -26,7 +26,7 @@ This stage has no default configuration and will do nothing on its own. However,
 <li>Scenario escalation tracking: use perTurnUpdate to increase a turn variable, then add prompt rules to feed updated scenario data as time marches on--go crazy and use inference to adjust the pace of escalation<br>
 <li>Rule or behavior reinforcement: apply classification or keywords to remind the LLM of your bot's quirks when the user's input should trigger them<br>
 <li>Response guidance: use inference to detect the nature of the user's input and ask the bot to focus its writing in different ways<br>
-<li>Response clean-up: use regex to strip undesired content or formatting from the bot's responses.<br>
+<li>Input clean-up: use regex to strip bracketed LLM instruction from input and embed it into stage directions so it doesn't appear in your final input<br>
 <li>Probably all kinds of other creative applications<br>
 </ul>
 <br>

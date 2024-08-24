@@ -73,6 +73,9 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
             regexMatch: factory('regex', [], () => function regex(a: string, b: string) {
                 let matches = a.match(b);
                 return matches && matches.length > 0 ? matches.map(match => match) : null;
+            }),
+            join: factory('join', [], () => function join(a: any[], b: string) {
+                return a.join(b);
             })
         };
         this.evaluate = create(allWithCustomFunctions).evaluate;
