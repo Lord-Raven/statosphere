@@ -323,6 +323,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         await this.processVariablesPostInput();
 
         Object.values(this.contentRules).forEach(contentRule => this.content = contentRule.evaluateAndApply(this, ContentCategory.Input, replacements));
+        const modifiedMessage = this.content;
 
         this.content = '';
         Object.values(this.contentRules).forEach(contentRule => this.content = contentRule.evaluateAndApply(this, ContentCategory.StageDirection, replacements));
@@ -332,7 +333,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         return {
             stageDirections: stageDirections.trim() != '' ? `[Response Hints]${stageDirections}\n[/Response Hints]` : null,
             messageState: this.writeMessageState(),
-            modifiedMessage: null,
+            modifiedMessage: modifiedMessage,
             systemMessage: null,
             error: null,
             chatState: null
@@ -353,6 +354,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
 
         const replacements = {'user': this.user.name, 'char': (this.characters[anonymizedId] ? this.characters[anonymizedId].name : '')};
         Object.values(this.contentRules).forEach(contentRule => this.content = contentRule.evaluateAndApply(this, ContentCategory.Response, replacements));
+        const modifiedMessage = this.content;
 
         this.content = '';
         Object.values(this.contentRules).forEach(contentRule => this.content = contentRule.evaluateAndApply(this, ContentCategory.SystemMessage, replacements));
@@ -361,7 +363,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         return {
             stageDirections: null,
             messageState: this.writeMessageState(),
-            modifiedMessage: null,
+            modifiedMessage: modifiedMessage,
             error: null,
             systemMessage: this.content.trim() != '' ? this.content : null,
             chatState: null

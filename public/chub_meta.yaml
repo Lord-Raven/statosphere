@@ -8,8 +8,8 @@ tagline: "Give your bots variables and launch them into...the Stat-O-Sphere! (ph
 
 creator_notes: "
 This is a stage for creating custom variables and rules for stat-tracking or behavior implementation. 
-_Up front, this is pretty experimental and I'm still playing with it, so it could be unstable._ 
-But it could also be fun to play with as-is. If you can't read all of the notes here; refresh this page until the \"Show More\" prompt renders.
+_Up front, this is pretty experimental, and I'm continuing to play with and expand upon it, so it could be unstable._ 
+But it could also be fun to play with as-is. If you can't read all of the notes below, please refresh this page until the \"Show More\" prompt renders.
 <br>
 <br>
 The stage is comprised of three core, configurable elements:<br>
@@ -22,23 +22,44 @@ The stage is comprised of three core, configurable elements:<br>
 **Example Applications**<br>
 This stage has no default configuration and will do nothing on its own. However, through configuration, a wide variety of effects are possible:<br>
 <ul>
-<li>Stat tracking and display: use inference to roughly gauge changes present in the input or response and translate that into a number to apply to stats<br>
+<li>Stat tracking and display: use inference to roughly gauge changes present in the input or response and translate that into a number to apply to variables<br>
 <li>Scenario escalation tracking: use perTurnUpdate to increase a turn variable, then add prompt rules to feed updated scenario data as time marches on--go crazy and use inference to adjust the pace of escalation<br>
-<li>Rule or behavior reinforcement: apply classification or keywords to remind the LLM of your bot's quirks when the user's input should trigger them<br>
-<li>Response guidance: use inference to detect the nature of the user's input and ask the bot to focus its writing in different ways<br>
+<li>Rule or behavior reinforcement: apply classifiers or keywords to remind the LLM of your bot's quirks when the user's input should trigger them<br>
+<li>Dynamic response guidance: use inference to detect the nature of the user's input and ask the bot to focus its writing in different ways<br>
 <li>Input clean-up: use regex to strip bracketed LLM instruction from input and embed it into stage directions so it doesn't appear in your final input<br>
-<li>Probably all kinds of other creative applications<br>
+<li>Probably all kinds of other creative, insane applications<br>
 </ul>
 <br>
 <br>
 **Configuration**<br>
-The stage has four core fields that define the elements above; these are provided as JSON objects because the stage configuration UI is not yet prepared for something so elaborate. 
+The stage has three fields that define the elements above; these are provided as JSON objects because Chub's stage configuration UI is not yet prepared for something so elaborate. 
 Don't worry! You don't have to hand-build JSON to paste in here: I made [an external tool](https://lord-raven.github.io/statosphere-editor/) 
 that will produce JSON that you can copy and paste into the stage's configuration. You can also paste configuration from your bot into the tool to make modifications.
 <br>
 <br>
 There is a lot of information that I will need to cover here, but I have not had time to do so yet. For the moment, please see my example bots and the configuration of the stage on those bots; 
 you can view this by starting a chat with one and looking at the active stages in the chat settings. 
+<br>
+<br>
+**Order of Operations**<br>
+For reference, the rules on this stage are applied in this order:<br>
+<ul>
+<li>User submits input
+<ul>
+<li>Per-turn variable operations are performed, in the order that variables are defined
+<li>Classifiers with an input hypothesis are applied to the input, in the order that classifiers are defined
+<li>Post-input variable operations are performed, in the order that variables are defined
+<li>Input content modifications are executed, in the order that these modifications are defined
+<li>Stage direction modifications are executed, in the order that these modifications are defined
+</ul>
+<li>Bot returns response
+<ul>
+<li>Classifiers with a response hypothesis are applied to the response, in the order that classifiers are defined
+<li>Post-response variable operations are performed, in the order that variables are defined
+<li>Response content modifications are executed, in the order that these modifications are defined
+<li>System message modifications are executed, in the order that these modifications are defined
+</ul>
+</ul>
 <br>
 <br>
 **Inference Details**<br>
