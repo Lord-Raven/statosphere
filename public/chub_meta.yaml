@@ -14,20 +14,20 @@ But it could also be fun to play with as-is. If you can't read all of the notes 
 <br>
 The stage is comprised of three core, configurable elements:<br>
 <ul>
-<li>Variable definitions with per-turn, post-input, and post-response assignment options<br>
-<li>Zero-shot classification rules to use inference on inputs and responses and apply updates to variables as a result<br>
-<li>Content modification rules which alter input, response, system messages (post-response details), and stage directions (additional LLM instruction) based on specified conditions<br>
+<li>Variable definitions with per-turn, post-input, and post-response assignment options
+<li>Zero-shot classification rules to use inference on inputs and responses and apply updates to variables as a result
+<li>Content modification rules which alter input, response, system messages (post-response details), and stage directions (additional LLM instruction) based on specified conditions
 </ul>
 <br>
 **Example Applications**<br>
 This stage has no default configuration and will do nothing on its own. However, through configuration, a wide variety of effects are possible:<br>
 <ul>
-<li>Stat tracking and display: use inference to roughly gauge changes present in the input or response and translate that into a number to apply to variables<br>
-<li>Scenario escalation tracking: use perTurnUpdate to increase a turn variable, then add prompt rules to feed updated scenario data as time marches on--go crazy and use inference to adjust the pace of escalation<br>
-<li>Rule or behavior reinforcement: apply classifiers or keywords to remind the LLM of your bot's quirks when the user's input should trigger them<br>
-<li>Dynamic response guidance: use inference to detect the nature of the user's input and ask the bot to focus its writing in different ways<br>
-<li>Input clean-up: use regex to strip bracketed LLM instruction from input and embed it into stage directions so it doesn't appear in your final input<br>
-<li>Probably all kinds of other creative, insane applications<br>
+<li>Stat tracking and display: use inference to roughly gauge changes present in the input or response and translate that into a number to apply to variables
+<li>Scenario escalation tracking: use perTurnUpdate to increase a turn variable, then add prompt rules to feed updated scenario data as time marches on--go crazy and use inference to adjust the pace of escalation
+<li>Rule or behavior reinforcement: apply classifiers or keywords to remind the LLM of your bot's quirks when the user's input should trigger them
+<li>Dynamic response guidance: use inference to detect the nature of the user's input and ask the bot to focus its writing in different ways
+<li>Input clean-up: use regex to strip bracketed LLM instruction from input and embed it into stage directions so it doesn't appear in your final input
+<li>Probably all kinds of other creative, insane applications
 </ul>
 <br>
 <br>
