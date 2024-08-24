@@ -233,12 +233,14 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
 
     async processClassifiers(content: string, contentSource: string, botId: string) {
         for (const classifier of Object.values(this.classifiers)) {
+            console.log('Classifier');
             const replacementMapping: any = {"user": this.user.name, "char": this.characters[botId]?.name ?? ''};
 
             let sequenceTemplate = this.replaceTags((contentSource == 'input' ? classifier.inputTemplate : classifier.responseTemplate) ?? '', replacementMapping);
             sequenceTemplate = sequenceTemplate.trim() == '' ? content : sequenceTemplate.replace('{}', content);
             let hypothesisTemplate = this.replaceTags((contentSource == 'input' ? classifier.inputHypothesis : classifier.responseHypothesis) ?? '', replacementMapping);
             if (hypothesisTemplate.trim() != '') {
+                console.log('hypothesis template');
                 let candidateLabels: string[] = [];
                 let labelMapping: { [key: string]: string } = {};
                 for (const label of Object.keys(classifier.classifications)) {
