@@ -126,7 +126,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
 
     validateSchema(inputJson: string, schema: any, schemaName: string): any {
         try {
-            const validate = new Ajv({multipleOfPrecision: true}).compile(schema);
+            const validate = new Ajv({multipleOfPrecision: 1}).compile(schema);
             const data = JSON.parse(inputJson);
             const valid = validate(data);
             if (valid) {
