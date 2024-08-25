@@ -13,7 +13,6 @@ export class Classifier {
         this.inputHypothesis = data.inputHypothesis;
         this.responseHypothesis = data.responseHypothesis;
         this.classifications = {};
-        console.log(data.classifications);
         for (let classification of data.classifications) {
             this.classifications[classification.label] = new Classification(classification);
         }
