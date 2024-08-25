@@ -72,12 +72,14 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
             }),
             regex: factory('regex', [], () => function regex(input: string, regex: string) {
                 let matches = input.match(regex);
+                console.log(matches);
                 return matches && matches.length > 0 ? matches.map(match => match) : null;
             }),
             replace: factory('replace', [], () => function replace(input: string, oldValue: string, newValue: string) {
                 return input.replace(oldValue, newValue);
             }),
             join: factory('join', [], () => function join(a: any[], b: string) {
+                console.log(a);
                 return a.join(b);
             })
         };
