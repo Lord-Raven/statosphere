@@ -70,6 +70,7 @@
               "items": {
                 "title": "Update",
                 "description": "An update to make to a variable when this classification is applied.",
+                "type": "object",
                 "properties": {
                   "variable": {
                     "title": "Variable",
