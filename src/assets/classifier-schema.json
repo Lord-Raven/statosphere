@@ -3,21 +3,15 @@
   "description": "An array of classifiers.",
   "type": "array",
   "minItems": 0,
-  "uniqueItems": true,
   "items": {
     "title": "Classifier",
     "description": "A classification task to apply to input or responses.",
     "type": "object",
-    "required": [
-      "name",
-      "classifications"
-    ],
     "properties": {
       "name": {
         "title": "Name",
         "description": "A name for this classifier.",
-        "type": "string",
-        "minLength": 1
+        "type": "string"
       },
       "inputTemplate": {
         "title": "Input Template",
@@ -43,18 +37,13 @@
         "title": "Classifications",
         "description": "An array of classifications to test for.",
         "type": "array",
-        "uniqueItems": true,
         "minItems": 0,
         "items": {
-          "required": [
-            "label"
-          ],
           "properties": {
             "label": {
               "title": "Label",
               "description": "The label substituted into the hypothesis.",
-              "type": "string",
-              "minLength": 1
+              "type": "string"
             },
             "category": {
               "title": "Category",
@@ -65,6 +54,7 @@
               "title": "Threshold",
               "description":  "The minimum entailment score to apply this classification.",
               "type": "number",
+              "default": 0.7,
               "minimum": 0,
               "maximum": 1,
               "multipleOf": 0.01
@@ -73,19 +63,13 @@
               "title": "Updates",
               "description": "An array of variable updates to make when this classification is applied.",
               "type": "array",
-              "uniqueItems": true,
               "minItems": 0,
               "items": {
-                "required": [
-                  "variable",
-                  "setTo"
-                ],
                 "properties": {
                   "variable": {
                     "title": "Variable",
                     "description": "Name of the variable to update.",
-                    "type": "string",
-                    "minLength": 1
+                    "type": "string"
                   },
                   "setTo": {
                     "title": "Set To",

@@ -2,19 +2,13 @@
   "title": "Variables",
   "type": "array",
   "minItems": 0,
-  "uniqueItems": true,
   "items": {
     "type": "object",
-    "required": [
-      "name",
-      "initialValue"
-    ],
     "properties": {
       "name": {
         "title": "Name",
         "description": "Name by which this variable is referenced throughout the stage.",
-        "type": "string",
-        "minLength": 1
+        "type": "string"
       },
       "initialValue": {
         "title": "Initial Value",

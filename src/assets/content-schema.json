@@ -3,16 +3,10 @@
   "description": "An array of content modifications to apply to input, responses, system messages, or stage directions.",
   "type": "array",
   "minItems": 0,
-  "uniqueItems": true,
   "items": {
     "title": "Content Overrides",
     "description": "A content override to make under the specified conditions.",
     "type": "object",
-    "required": [
-      "category",
-      "condition",
-      "modification"
-    ],
     "properties": {
       "category": {
         "title": "Content Category",
@@ -23,14 +17,12 @@
       "condition": {
         "title": "Condition",
         "description": "Requirement for inclusion.",
-        "type": "string",
-        "minLength": 1
+        "type": "string"
       },
       "modification": {
         "title": "Modification",
         "description": "This content category will be set to this value; use the \"{{content}}\" tag to embed or reference the current content.",
-        "type": "string",
-        "minLength": 1
+        "type": "string"
       }
     }
   }
