@@ -39,6 +39,9 @@
         "type": "array",
         "minItems": 0,
         "items": {
+          "title": "Classification",
+          "description": "A classification to test for.",
+          "type": "object",
           "properties": {
             "label": {
               "title": "Label",
@@ -65,6 +68,8 @@
               "type": "array",
               "minItems": 0,
               "items": {
+                "title": "Update",
+                "description": "An update to make to a variable when this classification is applied.",
                 "properties": {
                   "variable": {
                     "title": "Variable",
