@@ -70,9 +70,12 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
                 }
                 return a.includes(b);
             }),
-            regexMatch: factory('regex', [], () => function regex(a: string, b: string) {
-                let matches = a.match(b);
+            regex: factory('regex', [], () => function regex(input: string, regex: string) {
+                let matches = input.match(regex);
                 return matches && matches.length > 0 ? matches.map(match => match) : null;
+            }),
+            replace: factory('replace', [], () => function replace(input: string, oldValue: string, newValue: string) {
+                return input.replace(oldValue, newValue);
             }),
             join: factory('join', [], () => function join(a: any[], b: string) {
                 return a.join(b);
@@ -233,7 +236,6 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
 
     async processClassifiers(content: string, contentSource: string, botId: string) {
         for (const classifier of Object.values(this.classifiers)) {
-            console.log('Classifier');
             const replacementMapping: any = {"user": this.user.name, "char": this.characters[botId]?.name ?? ''};
 
             let sequenceTemplate = this.replaceTags((contentSource == 'input' ? classifier.inputTemplate : classifier.responseTemplate) ?? '', replacementMapping);
