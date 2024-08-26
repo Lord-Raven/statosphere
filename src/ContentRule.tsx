@@ -1,4 +1,4 @@
-import {Stage} from "./Stage";
+import {Stage, stripComments} from "./Stage";
 
 export enum ContentCategory {
     Input = 'Input',
@@ -14,8 +14,8 @@ export class ContentRule {
 
     constructor(data: any) {
         this.category = data.category;
-        this.condition = data.condition;
-        this.modification = data.modification ?? '{{content}}';
+        this.condition = stripComments(data.condition);
+        this.modification = stripComments(data.modification ?? '{{content}}');
     }
 
     evaluateAndApply(stage: Stage, targetCategory: ContentCategory, replacements: any): string {

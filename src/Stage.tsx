@@ -18,6 +18,17 @@ type ConfigType = any;
 type InitStateType = any;
 type ChatStateType = any;
 
+export function stripComments(input: string) {
+    if (!input) return input;
+    // Remove single-line comments
+    input = input.replace(/\/\/.*$/gm, '');
+
+    // Remove block comments
+    input = input.replace(/\/\*[\s\S]*?\*\//g, '');
+
+    return input;
+}
+
 export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateType, ConfigType> {
 
     readonly DEFAULT_THRESHOLD = 0.8;
@@ -112,7 +123,19 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
             .forEach(classifier => this.classifiers.push(new Classifier(classifier)));
 
         if (this.classifiers.length > 0) {
+            // Only bother loading pipeline if classifiers exist.
             this.fallbackPipelinePromise = this.getPipeline();
+
+            // Update variables that are updated by classifiers to never be constant.
+            for (let classifier of Object.values(this.classifiers)) {
+                for (let classification of Object.values(classifier.classifications)) {
+                    for (let variableName of Object.keys(classification.updates)) {
+                        if (this.variableDefinitions[variableName]) {
+                            this.variableDefinitions[variableName].constant = false;
+                        }
+                    }
+                }
+            }
         }
 
         this.client = await Client.connect("Ravenok/statosphere-backend", {hf_token: import.meta.env.VITE_HF_API_KEY});
@@ -168,7 +191,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
 
     writeMessageState(): MessageStateType {
         return {
-            variables: this.variables
+            variables: Object.entries(this.variables).filter(([key]) => this.variableDefinitions[key].constant)
         }
     }
 

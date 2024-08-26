@@ -1,16 +1,20 @@
+import {stripComments} from "./Stage";
+
 export class VariableDefinition {
     name: string;
     initialValue: any;
     perTurnUpdate: any;
     postInputUpdate: any;
     postResponseUpdate: any;
+    constant: boolean;
 
     constructor(data: any) {
-        this.name = data.name;
-        this.initialValue = data.initialValue;
-        this.perTurnUpdate = data.perTurnUpdate;
-        this.postInputUpdate = data.postInputUpdate;
-        this.postResponseUpdate = data.postResponseUpdate;
+        this.name = stripComments(data.name);
+        this.initialValue = stripComments(data.initialValue);
+        this.perTurnUpdate = stripComments(data.perTurnUpdate);
+        this.postInputUpdate = stripComments(data.postInputUpdate);
+        this.postResponseUpdate = stripComments(data.postResponseUpdate);
+        this.constant = !this.perTurnUpdate && !this.postInputUpdate && !this.postResponseUpdate;
     }
 }
 
