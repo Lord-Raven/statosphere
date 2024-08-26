@@ -78,7 +78,11 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
                 return input.replace(new RegExp(oldValue, 'g'), newValue);
             }),
             join: factory('join', [], () => function join(a: any[], b: string) {
-                return a.join(b);
+                if (a) {
+                    return a.join(b);
+                } else {
+                    return '';
+                }
             })
         };
         this.evaluate = create(allWithCustomFunctions).evaluate;
