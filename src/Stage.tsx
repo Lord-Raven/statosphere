@@ -72,14 +72,12 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
             }),
             capture: factory('capture', [], () => function capture(input: string, regex: string) {
                 let matches = [...input.matchAll(new RegExp(regex, 'g'))];
-                console.log(matches);
                 return matches && matches.length > 0 ? matches.map(match => match.slice(1)) : null;
             }),
             replace: factory('replace', [], () => function replace(input: string, oldValue: string, newValue: string) {
                 return input.replace(new RegExp(oldValue, 'g'), newValue);
             }),
             join: factory('join', [], () => function join(a: any[], b: string) {
-                console.log(a);
                 return a.join(b);
             })
         };
@@ -116,7 +114,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
             await this.messenger.updateEnvironment({stage_hidden: true, });
         }
 
-        console.log('Finished loading stage.');
+        console.log('Finished loading Statosphere.');
         return {
             success: true,
             error: null,
@@ -209,7 +207,6 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
     }
 
     async processVariablesPostInput() {
-        console.log('post input');
         for (const entry of Object.values(this.variableDefinitions)) {
             if (entry.postInputUpdate) {
                 console.log(`${entry.name} post input update: ${entry.postInputUpdate}`)
@@ -220,7 +217,6 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
                 }
             }
         }
-        console.log('done with post input');
     }
 
     async processVariablesPostResponse() {
@@ -244,7 +240,6 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
             sequenceTemplate = sequenceTemplate.trim() == '' ? content : sequenceTemplate.replace('{}', content);
             let hypothesisTemplate = this.replaceTags((contentSource == 'input' ? classifier.inputHypothesis : classifier.responseHypothesis) ?? '', replacementMapping);
             if (hypothesisTemplate.trim() != '') {
-                console.log('hypothesis template');
                 let candidateLabels: string[] = [];
                 let labelMapping: { [key: string]: string } = {};
                 for (const label of Object.keys(classifier.classifications)) {
