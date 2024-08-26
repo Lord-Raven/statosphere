@@ -83,6 +83,9 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
                 } else {
                     return '';
                 }
+            }),
+            array: factory('array', [], () => function array(size: number, defaultValue: string) {
+                return Array.apply(defaultValue, Array(size));
             })
         };
         this.evaluate = create(allWithCustomFunctions).evaluate;
