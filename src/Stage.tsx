@@ -304,6 +304,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
     }
 
     replaceTags(source: string, replacements: {[name: string]: string}, keyTrail?: string) {
+        console.log(`${keyTrail}: ${source}`);
         for (const key of Object.keys(this.variables)) {
             replacements[key.toLowerCase()] = (keyTrail && keyTrail.indexOf(`:${key}:`) > -1) ? this.getVariable(key) : this.replaceTags(this.getVariable(key), replacements, `${keyTrail}:${key}:`);
         }
