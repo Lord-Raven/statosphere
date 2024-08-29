@@ -303,10 +303,11 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         }
     }
 
-    replaceTags(source: string, replacements: {[name: string]: string}) {
+    replaceTags(source: string, replacements: {[name: string]: string}, keyTrail?: string) {
         for (const key of Object.keys(this.variables)) {
-            replacements[key.toLowerCase()] = this.getVariable(key);
+            replacements[key.toLowerCase()] = (keyTrail && keyTrail.indexOf(`:${key}:`) > -1) ? this.getVariable(key) : this.replaceTags(this.getVariable(key), replacements, `${keyTrail}:${key}:`);
         }
+
         replacements['content'] = this.content ? this.content.replace(/"/g, '\\"') : this.content;
         return source.replace(/{{([A-z]*)}}/g, (match) => {
             return replacements[match.substring(2, match.length - 2).toLowerCase()];
