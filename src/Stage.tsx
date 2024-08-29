@@ -59,6 +59,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
             config,
             messageState
         } = data;
+        console.log('Constructing Statosphere');
         this.characters = characters;
         this.user = users[Object.keys(users)[0]];
         this.variables = {};
