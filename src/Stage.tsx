@@ -112,20 +112,26 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         let yamlResponse = await fetch('chub_meta.yaml');
         const data: any = yaml.load(await yamlResponse.text());
 
+        console.log('Validate variables');
         const variableDefinitions: VariableDefinition[] =
             this.validateSchema(this.config.variableConfig ?? data.config_schema.properties.variableConfig.value, variableSchema, 'variable schema');
+        console.log('For through them');
         for (const definition of variableDefinitions) {
+            console.log(`${definition}`)
             this.variableDefinitions[definition.name] = new VariableDefinition(definition);
             if (!this.variables[definition.name]) {
+                console.log(`Initialize`);
                 this.initializeVariable(definition.name);
             }
         }
+        console.log('Validate content modifiers');
         Object.values(this.validateSchema(this.config.contentConfig ?? data.config_schema.properties.contentConfig.value, contentSchema, 'content schema'))
             .forEach(contentRule => this.contentRules.push(new ContentRule(contentRule)));
+        console.log('Validate classifiers');
         Object.values(this.validateSchema(this.config.classifierConfig ?? data.config_schema.properties.classifierConfig.value, classifierSchema, 'classifier schema'))
             .forEach(classifier => this.classifiers.push(new Classifier(classifier)));
-
         if (this.classifiers.length > 0) {
+            console.log('Load classifier pipeline');
             // Only bother loading pipeline if classifiers exist.
             this.fallbackPipelinePromise = this.getPipeline();
 
@@ -139,13 +145,13 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
                     }
                 }
             }
+        } else {
+            console.log('No classifiers');
         }
 
+        console.log('Load backend client');
         this.client = await Client.connect("Ravenok/statosphere-backend", {hf_token: import.meta.env.VITE_HF_API_KEY});
-
-        if (!this.config.debugMode) {
-            await this.messenger.updateEnvironment({stage_hidden: true, });
-        }
+        console.log('Loaded client');
 
         console.log('Finished loading Statosphere.');
         return {
