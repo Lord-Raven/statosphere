@@ -312,17 +312,9 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         }
     }
 
-    replaceTags(source: string, replacements: {[name: string]: string}, depth: number = 0) {
-        if (depth == 0) {
-            for (const key of Object.keys(this.variables)) {
-                replacements[key.toLowerCase()] = this.getVariable(key);
-            }
-            for (let ii = 0; ii < 2; ii++) {
-                // Substitute values that themselves have references
-                for (const key of Object.keys(replacements)) {
-                    replacements[key] = this.replaceTags(replacements[key], replacements, 1);
-                }
-            }
+    replaceTags(source: string, replacements: {[name: string]: string}) {
+        for (const key of Object.keys(this.variables)) {
+            replacements[key.toLowerCase()] = this.getVariable(key);
         }
         replacements['content'] = this.content ? this.content.replace(/"/g, '\\"') : this.content;
         return source.replace(/{{([A-z]*)}}/g, (match) => {
