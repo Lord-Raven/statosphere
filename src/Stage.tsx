@@ -193,7 +193,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
     }
 
     writeMessageState(): MessageStateType {
-        Object.entries(this.variables).forEach(([key, value]) => {console.log(key); console.log(this.variableDefinitions[key])});
+        Object.entries(this.variables).forEach(([key, value]) => {console.log(key); console.log(value)});
         return {
             variables: Object.entries(this.variables).filter(([key, value]) => this.variableDefinitions[key] && this.variableDefinitions[key].constant)
         }
