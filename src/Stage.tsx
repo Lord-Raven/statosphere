@@ -102,10 +102,12 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         this.evaluate = create(allWithCustomFunctions).evaluate;
 
         this.readMessageState(messageState);
+        console.log('Constructor complete');
     }
 
     async load(): Promise<Partial<LoadResponse<InitStateType, ChatStateType, MessageStateType>>> {
 
+        console.log('Loading Statosphere...');
         let yamlResponse = await fetch('chub_meta.yaml');
         const data: any = yaml.load(await yamlResponse.text());
 
