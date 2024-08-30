@@ -24,6 +24,7 @@ export class Variable {
 
     constructor(definitionName: any, variableDefinitions: {[key: string]: VariableDefinition}, stage: Stage) {
         this.definitionName = definitionName;
+        console.log(variableDefinitions[definitionName].initialValue);
         this.value = stage.evaluate(variableDefinitions[definitionName].initialValue);
     }
 }
