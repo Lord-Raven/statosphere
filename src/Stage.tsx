@@ -120,6 +120,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
             const newFuncFactory = factory(func.name, [], () => func.createFunction());
             this.customFunctionMap = {...this.customFunctionMap, newFuncFactory};
         });
+        console.log(this.customFunctionMap);
         this.evaluate = create(this.customFunctionMap).evaluate;
 
         console.log('Validate variables');
