@@ -26,5 +26,6 @@ export class Variable {
         this.definitionName = definitionName;
         console.log(variableDefinitions[definitionName].initialValue);
         this.value = stage.evaluate(stage.replaceTags(variableDefinitions[definitionName].initialValue, {}));
+        console.log(this.value);
     }
 }
