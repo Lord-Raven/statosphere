@@ -1,0 +1,25 @@
+{
+  "title": "Functions",
+  "type": "array",
+  "minItems": 0,
+  "items": {
+    "type": "object",
+    "properties": {
+      "name": {
+        "title": "Name",
+        "description": "Name by which this function is referenced throughout the stage.",
+        "type": "string"
+      },
+      "parameters": {
+        "title": "Parameters",
+        "description": "String-delimited list of parameters.",
+        "type": "string"
+      },
+      "body": {
+        "title": "Function Body",
+        "description": "The body of this function.",
+        "type": "string"
+      }
+    }
+  }
+}

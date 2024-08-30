@@ -11,8 +11,9 @@ import {env, pipeline} from "@xenova/transformers";
 import Ajv from "ajv";
 import classifierSchema from "./assets/classifier-schema.json";
 import contentSchema from "./assets/content-schema.json";
+import functionSchema from "./assets/function-schema.json";
 import variableSchema from "./assets/variable-schema.json";
-
+import {CustomFunction} from "./CustomFunction";
 type MessageStateType = any;
 type ConfigType = any;
 type InitStateType = any;
@@ -49,7 +50,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
     debugMode: boolean;
     evaluate: any;
     content: string = '';
-
+    customFunctions: CustomFunction[];
 
     constructor(data: InitialData<InitStateType, ChatStateType, MessageStateType, ConfigType>) {
         super(data);
@@ -64,6 +65,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         this.user = users[Object.keys(users)[0]];
         this.variables = {};
         this.variableDefinitions = {};
+        this.customFunctions = [];
         this.contentRules = [];
         this.classifiers = [];
         this.config = config;
@@ -130,6 +132,10 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         console.log('Validate classifiers');
         Object.values(this.validateSchema(this.config.classifierConfig ?? data.config_schema.properties.classifierConfig.value, classifierSchema, 'classifier schema'))
             .forEach(classifier => this.classifiers.push(new Classifier(classifier)));
+        console.log('Validate functions');
+        Object.values(this.validateSchema(this.config.functionConfig ?? data.config_schema.properties.functionConfig.value, functionSchema, 'function schema'))
+            .forEach(customFunction => this.customFunctions.push(new CustomFunction(customFunction)));
+
         if (this.classifiers.length > 0) {
             console.log('Load classifier pipeline');
             // Only bother loading pipeline if classifiers exist.
@@ -148,6 +154,10 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         } else {
             console.log('No classifiers');
         }
+
+        this.customFunctions.forEach(func => {
+            this.evaluate.scope[func.name] = func;
+        })
 
         console.log('Load backend client');
         this.client = await Client.connect("Ravenok/statosphere-backend", {hf_token: import.meta.env.VITE_HF_API_KEY});
@@ -200,6 +210,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
 
     writeMessageState(): MessageStateType {
         Object.entries(this.variables).forEach(([key, value]) => {console.log(key); console.log(value)});
+        console.log(Object.entries(this.variables).filter(([key, value]) => this.variableDefinitions[key] && this.variableDefinitions[key].constant));
         return {
             variables: Object.entries(this.variables).filter(([key, value]) => this.variableDefinitions[key] && this.variableDefinitions[key].constant)
         }

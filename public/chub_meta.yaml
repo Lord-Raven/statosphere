@@ -15,6 +15,7 @@ But it could also be fun to play with as-is. If you can't read all of the notes 
 The stage is comprised of three core, configurable elements:<br>
 <ul>
 <li>Variable definitions with per-turn, post-input, and post-response assignment options
+<li>Function definitions for creating re-usable logic
 <li>Zero-shot classification rules to use inference on inputs and responses and apply updates to variables as a result
 <li>Content modification rules which alter input, response, system messages (post-response details), and stage directions (additional LLM instruction) based on specified conditions
 </ul>
@@ -96,6 +97,12 @@ config_schema:
   title: Statosphere Settings
   type: object
   properties:
+    functionConfig:
+      title: Function Configuration
+      description: A JSON array of function definitions in one disgusting line.
+      type: string
+      value: >
+        []
     variableConfig:
       title: Variable Configuration
       description: A JSON array of variable definitions in one disgusting line.
