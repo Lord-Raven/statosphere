@@ -326,8 +326,9 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
 
     replaceTags(source: string, replacements: {[name: string]: string}) {
         for (const key of Object.keys(this.variables)) {
-            console.log(`${typeof this.getVariable(key)}:${this.getVariable(key)}`)
-            replacements[key.toLowerCase()] = this.getVariable(key);
+            const stringVal = typeof this.getVariable(key) === 'object' ? JSON.stringify(this.getVariable(key)) : key;
+            console.log(`${typeof this.getVariable(key)}:${stringVal}`)
+            replacements[key.toLowerCase()] = stringVal;
         }
         replacements['content'] = this.content ? this.content.replace(/"/g, '\\"') : this.content;
         return source.replace(/{{([A-z]*)}}/g, (match) => {
