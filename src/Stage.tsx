@@ -1,7 +1,7 @@
 import {ReactElement} from "react";
 import {Character, InitialData, Message, StageBase, StageResponse, User} from "@chub-ai/stages-ts";
 import {LoadResponse} from "@chub-ai/stages-ts/dist/types/load";
-import math, {all, create, factory, FactoryFunctionMap} from "mathjs";
+import {all, create, factory, FactoryFunctionMap} from "mathjs";
 import {Variable, VariableDefinition} from "./Variable";
 import * as yaml from 'js-yaml';
 import {Client} from "@gradio/client";
@@ -80,6 +80,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
             ...all,
 
             contains: factory('contains', [], () => function contains(a: any, b: any) {
+                console.log(`contains: ${a}, ${b}`);
                 if (typeof a === 'string' && typeof b === 'string') {
                     return a.toLowerCase().includes(b.toLowerCase());
                 }
