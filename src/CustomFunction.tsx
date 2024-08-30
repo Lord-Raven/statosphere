@@ -13,8 +13,6 @@ export class CustomFunction {
 
     // Method to create the function dynamically
     createFunction() {
-        const params = this.parameters;
-        const functionBody = `return (${this.body});`;
-        return new Function(params, functionBody);
+        return new Function(this.parameters, this.body);
     }
 }
