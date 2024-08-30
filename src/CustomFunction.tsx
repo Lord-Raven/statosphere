@@ -7,12 +7,12 @@ export class CustomFunction {
 
     constructor(data: any) {
         this.name = stripComments(data.name);
-        this.parameters = data.parameters;
+        this.parameters = stripComments(data.parameters);
         this.body = stripComments(data.body);
     }
 
     // Method to create the function dynamically
     createFunction() {
-        return new Function(this.parameters, this.body);
+        return new Function(...this.parameters.split(','), this.body);
     }
 }
