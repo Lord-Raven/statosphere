@@ -13,6 +13,10 @@ export class CustomFunction {
 
     // Method to create the function dynamically
     createFunction() {
-        return new Function(...this.parameters.split(','), this.body);
+        if (this.parameters && this.parameters.trim().length > 0) {
+            return new Function(...this.parameters.split(','), this.body);
+        } else {
+            return new Function(this.body);
+        }
     }
 }
