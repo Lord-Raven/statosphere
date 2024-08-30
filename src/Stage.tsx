@@ -1,7 +1,7 @@
 import {ReactElement} from "react";
 import {Character, InitialData, Message, StageBase, StageResponse, User} from "@chub-ai/stages-ts";
 import {LoadResponse} from "@chub-ai/stages-ts/dist/types/load";
-import {all, create, factory} from "mathjs";
+import math, {all, create, factory, FactoryFunctionMap} from "mathjs";
 import {Variable, VariableDefinition} from "./Variable";
 import * as yaml from 'js-yaml';
 import {Client} from "@gradio/client";
@@ -51,6 +51,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
     evaluate: any;
     content: string = '';
     customFunctions: CustomFunction[];
+    customFunctionMap: FactoryFunctionMap;
 
     constructor(data: InitialData<InitStateType, ChatStateType, MessageStateType, ConfigType>) {
         super(data);
@@ -75,7 +76,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         env.allowRemoteModels = false;
 
         // Set up mathjs:
-        const allWithCustomFunctions = {
+        this.customFunctionMap = {
             ...all,
 
             contains: factory('contains', [], () => function contains(a: any, b: any) {
@@ -97,12 +98,9 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
                 } else {
                     return '';
                 }
-            }),
-            array: factory('array', [], () => function array(size: number, defaultValue: string) {
-                return Array.apply(defaultValue, Array(size));
             })
         };
-        this.evaluate = create(allWithCustomFunctions).evaluate;
+        this.evaluate = create(this.customFunctionMap).evaluate;
 
         this.readMessageState(messageState);
         console.log('Constructor complete');
@@ -117,10 +115,11 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         console.log('Validate functions');
         Object.values(this.validateSchema(this.config.functionConfig ?? data.config_schema.properties.functionConfig.value, functionSchema, 'function schema'))
             .forEach(customFunction => this.customFunctions.push(new CustomFunction(customFunction)));
-
         this.customFunctions.forEach(func => {
-            this.evaluate.scope[func.name] = func.createFunction();
-        })
+            const newFuncFactory = factory(func.name, [], () => func.createFunction());
+            this.customFunctionMap = {...this.customFunctionMap, newFuncFactory};
+        });
+        this.evaluate = create(this.customFunctionMap).evaluate;
 
         console.log('Validate variables');
         const variableDefinitions: VariableDefinition[] =
