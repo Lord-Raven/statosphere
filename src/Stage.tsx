@@ -114,27 +114,32 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         let yamlResponse = await fetch('chub_meta.yaml');
         const data: any = yaml.load(await yamlResponse.text());
 
+        console.log('Validate functions');
+        Object.values(this.validateSchema(this.config.functionConfig ?? data.config_schema.properties.functionConfig.value, functionSchema, 'function schema'))
+            .forEach(customFunction => this.customFunctions.push(new CustomFunction(customFunction)));
+
+        this.customFunctions.forEach(func => {
+            this.evaluate.scope[func.name] = func.createFunction();
+        })
+
         console.log('Validate variables');
         const variableDefinitions: VariableDefinition[] =
             this.validateSchema(this.config.variableConfig ?? data.config_schema.properties.variableConfig.value, variableSchema, 'variable schema');
         console.log('For through them');
         for (const definition of variableDefinitions) {
-            console.log(`${definition}`)
             this.variableDefinitions[definition.name] = new VariableDefinition(definition);
             if (!this.variables[definition.name]) {
-                console.log(`Initialize`);
                 this.initializeVariable(definition.name);
             }
         }
+
         console.log('Validate content modifiers');
         Object.values(this.validateSchema(this.config.contentConfig ?? data.config_schema.properties.contentConfig.value, contentSchema, 'content schema'))
             .forEach(contentRule => this.contentRules.push(new ContentRule(contentRule)));
+
         console.log('Validate classifiers');
         Object.values(this.validateSchema(this.config.classifierConfig ?? data.config_schema.properties.classifierConfig.value, classifierSchema, 'classifier schema'))
             .forEach(classifier => this.classifiers.push(new Classifier(classifier)));
-        console.log('Validate functions');
-        Object.values(this.validateSchema(this.config.functionConfig ?? data.config_schema.properties.functionConfig.value, functionSchema, 'function schema'))
-            .forEach(customFunction => this.customFunctions.push(new CustomFunction(customFunction)));
 
         if (this.classifiers.length > 0) {
             console.log('Load classifier pipeline');
@@ -151,17 +156,13 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
                     }
                 }
             }
+
+            console.log('Load backend client');
+            this.client = await Client.connect("Ravenok/statosphere-backend", {hf_token: import.meta.env.VITE_HF_API_KEY});
+            console.log('Loaded client');
         } else {
             console.log('No classifiers');
         }
-
-        this.customFunctions.forEach(func => {
-            this.evaluate.scope[func.name] = func;
-        })
-
-        console.log('Load backend client');
-        this.client = await Client.connect("Ravenok/statosphere-backend", {hf_token: import.meta.env.VITE_HF_API_KEY});
-        console.log('Loaded client');
 
         console.log('Finished loading Statosphere.');
         return {
@@ -209,7 +210,6 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
     }
 
     writeMessageState(): MessageStateType {
-        Object.entries(this.variables).forEach(([key, value]) => {console.log(key); console.log(value)});
         console.log(Object.entries(this.variables).filter(([key, value]) => this.variableDefinitions[key] && this.variableDefinitions[key].constant));
         return {
             variables: Object.entries(this.variables).filter(([key, value]) => this.variableDefinitions[key] && this.variableDefinitions[key].constant)
