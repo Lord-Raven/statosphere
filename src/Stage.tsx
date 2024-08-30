@@ -80,7 +80,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
             ...all,
 
             contains: factory('contains', [], () => function contains(a: any, b: any) {
-                console.log(`contains: ${a}, ${b}`);
+                //console.log(`contains: ${a}, ${b}`);
                 if (typeof a === 'string' && typeof b === 'string') {
                     return a.toLowerCase().includes(b.toLowerCase());
                 }
@@ -119,7 +119,6 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         this.customFunctions.forEach(func => {
             this.customFunctionMap[`${func.name}`] = factory(func.name, [], () => func.createFunction());
         });
-        console.log(this.customFunctionMap);
         this.evaluate = create(this.customFunctionMap, {matrix: 'Array'}).evaluate;
 
         console.log('Validate variables');
@@ -327,12 +326,12 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
     replaceTags(source: string, replacements: {[name: string]: string}) {
         for (const key of Object.keys(this.variables)) {
             const stringVal = typeof this.getVariable(key) === 'object' ? JSON.stringify(this.getVariable(key)) : this.getVariable(key);
-            console.log(`${typeof this.getVariable(key)}:${stringVal}`)
+            //console.log(`${typeof this.getVariable(key)}:${stringVal}`)
             replacements[key.toLowerCase()] = stringVal;
         }
         replacements['content'] = this.content ? this.content.replace(/"/g, '\\"') : this.content;
         return source.replace(/{{([A-z]*)}}/g, (match) => {
-            console.log('Subbing:' + source + ':' + match.substring(2, match.length - 2).toLowerCase() + ":" + replacements[match.substring(2, match.length - 2).toLowerCase()]);
+            //console.log('Subbing:' + source + ':' + match.substring(2, match.length - 2).toLowerCase() + ":" + replacements[match.substring(2, match.length - 2).toLowerCase()]);
             return replacements[match.substring(2, match.length - 2).toLowerCase()];
         });
     }
