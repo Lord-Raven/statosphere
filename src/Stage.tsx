@@ -236,7 +236,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
     }
     updateVariable(name: string, formula: string) {
         let finalFormula = this.replaceTags(formula, {});
-        console.log(`Update ${name}: ${finalFormula} = ${this.evaluate(finalFormula)}`);
+        console.log(`Update ${name}: ${finalFormula}`);// = ${this.evaluate(finalFormula)}`);
         this.setVariable(name, this.evaluate(finalFormula));
     }
 
