@@ -119,6 +119,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         this.customFunctions.forEach(func => {
             this.customFunctionMap[`${func.name}`] = factory(func.name, [], () => func.createFunction());
         });
+        console.log(this.customFunctionMap);
         this.evaluate = create(this.customFunctionMap, {matrix: 'Array'}).evaluate;
 
         console.log('Validate variables');
