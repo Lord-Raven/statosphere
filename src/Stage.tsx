@@ -241,7 +241,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
     }
 
     initializeVariable(name: string) {
-        this.variables[name] = new Variable(name, this.variableDefinitions);
+        this.variables[name] = new Variable(name, this.variableDefinitions, this);
     }
 
     async processVariablesPerTurn() {

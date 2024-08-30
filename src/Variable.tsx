@@ -1,4 +1,4 @@
-import {stripComments} from "./Stage";
+import {Stage, stripComments} from "./Stage";
 
 export class VariableDefinition {
     name: string;
@@ -22,8 +22,8 @@ export class Variable {
     definitionName: string;
     value: any;
 
-    constructor(definitionName: any, variableDefinitions: {[key: string]: VariableDefinition}) {
+    constructor(definitionName: any, variableDefinitions: {[key: string]: VariableDefinition}, stage: Stage) {
         this.definitionName = definitionName;
-        this.value = variableDefinitions[definitionName].initialValue;
+        this.value = stage.evaluate(variableDefinitions[definitionName].initialValue);
     }
 }
