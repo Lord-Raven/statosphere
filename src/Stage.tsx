@@ -117,8 +117,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         Object.values(this.validateSchema(this.config.functionConfig ?? data.config_schema.properties.functionConfig.value, functionSchema, 'function schema'))
             .forEach(customFunction => this.customFunctions.push(new CustomFunction(customFunction)));
         this.customFunctions.forEach(func => {
-            const newFuncFactory = factory(func.name, [], () => func.createFunction());
-            this.customFunctionMap = {...this.customFunctionMap, newFuncFactory};
+            this.customFunctionMap[`${func.name}`] = factory(func.name, [], () => func.createFunction());
         });
         console.log(this.customFunctionMap);
         this.evaluate = create(this.customFunctionMap).evaluate;
