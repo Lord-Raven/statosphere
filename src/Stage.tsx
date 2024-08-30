@@ -199,6 +199,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
 
     readMessageState(messageState: MessageStateType) {
         if (messageState != null) {
+            console.log(messageState.variables);
             this.variables = messageState.variables ?? {};
             // Initialize variables that maybe didn't exist when this message state was written.
             for (const definition of Object.values(this.variableDefinitions)) {
@@ -210,9 +211,9 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
     }
 
     writeMessageState(): MessageStateType {
-        console.log(Object.entries(this.variables).filter(([key, value]) => this.variableDefinitions[key] && this.variableDefinitions[key].constant));
+        console.log(Object.entries(this.variables).filter(([key, value]) => this.variableDefinitions[key] && !this.variableDefinitions[key].constant));
         return {
-            variables: Object.entries(this.variables).filter(([key, value]) => this.variableDefinitions[key] && this.variableDefinitions[key].constant)
+            variables: Object.entries(this.variables).filter(([key, value]) => this.variableDefinitions[key] && !this.variableDefinitions[key].constant)
         }
     }
 
@@ -328,8 +329,6 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
             replacements[key.toLowerCase()] = this.getVariable(key);
         }
         replacements['content'] = this.content ? this.content.replace(/"/g, '\\"') : this.content;
-        console.log('About to replace');
-
         return source.replace(/{{([A-z]*)}}/g, (match) => {
             console.log('Subbing:' + match.substring(2, match.length - 2).toLowerCase() + ":" + replacements[match.substring(2, match.length - 2).toLowerCase()]);
             return replacements[match.substring(2, match.length - 2).toLowerCase()];
