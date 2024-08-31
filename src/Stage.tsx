@@ -104,7 +104,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
             })//,
             //testFunction: factory('testFunction', [], () => function testFunction() {return true;})
         };
-        math.import({
+        /*math.import({
             contains: factory('contains', [], () => function contains(a: any, b: any) {
                 //console.log(`contains: ${a}, ${b}`);
                 if (typeof a === 'string' && typeof b === 'string') {
@@ -126,7 +126,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
                     return '';
                 }
             })
-        });
+        });*/
         this.evaluate = math.evaluate;
 
         this.readMessageState(messageState);
@@ -146,13 +146,14 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
             //this.customFunctionMap[`${key}`] = factory(key, dependencies, () => value);
             let importData: any = {};
             console.log(`${key} dependencies: ${[...dependencies]}`)
-            importData[`${key}`] = factory(key, [...dependencies], () => value);
-            math.import(importData);
+            //importData[`${key}`] = factory(key, [...dependencies], () => value);
+            //math.import(importData);
+            this.customFunctionMap[`${key}`] = factory(key, [...dependencies], () => value);
             dependencies.push(key);
         });
         //this.customFunctionMap[`testFunction`] = factory('testFunction', [], () => function testFunction() {return true;});
         console.log(this.customFunctionMap);
-        //this.evaluate = create(this.customFunctionMap, {matrix: 'Array'}).evaluate;
+        this.evaluate = create(this.customFunctionMap, {matrix: 'Array'}).evaluate;
 
         console.log('Validate variables');
         const variableDefinitions: VariableDefinition[] =
