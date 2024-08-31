@@ -103,6 +103,11 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         };
         this.evaluate = create(this.customFunctionMap, {matrix: 'Array'}).evaluate;
 
+        let thing = factory('thing', [], () => function replace(input: string, oldValue: string, newValue: string) {
+            return input.replace(new RegExp(oldValue, 'g'), newValue);
+        });
+
+
         this.readMessageState(messageState);
         console.log('Constructor complete');
     }
@@ -117,7 +122,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         Object.values(this.validateSchema(this.config.functionConfig ?? data.config_schema.properties.functionConfig.value, functionSchema, 'function schema'))
             .forEach(customFunction => this.customFunctions.push(new CustomFunction(customFunction)));
         this.customFunctions.forEach(func => {
-            this.customFunctionMap[`${func.name}`] = factory(func.name, [], () => func.createFunction());
+            this.customFunctionMap[`${func.name}`] = factory(func.name, [], () => function generalFunction(...args: any[]): any {return func.createFunction().call(args)});
         });
         console.log(this.customFunctionMap);
         this.evaluate = create(this.customFunctionMap, {matrix: 'Array'}).evaluate;
