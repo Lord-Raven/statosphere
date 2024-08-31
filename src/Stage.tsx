@@ -122,12 +122,12 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         console.log('Validate functions');
         Object.values(this.validateSchema(this.config.functionConfig ?? data.config_schema.properties.functionConfig.value, functionSchema, 'function schema'))
             .forEach(funcData => {let customFunction = new CustomFunction(funcData); this.functions[customFunction.name] = customFunction.createFunction()});
-        Object.entries(this.functions).forEach(([key, value]) => {
+        /*Object.entries(this.functions).forEach(([key, value]) => {
             this.customFunctionMap[`${key}`] = factory(key, [], () => function functionWrapper(...args: any[]): any {return value(args);});
-        });
+        });*/
         // this.customFunctionMap[`testFunction`] = factory('testFunction', [], () => function testFunction(): number {return 1;});
         console.log(this.customFunctionMap);
-        this.evaluate = create(this.customFunctionMap, {matrix: 'Array'}).evaluate;
+        //this.evaluate = create(this.customFunctionMap, {matrix: 'Array'}).evaluate;
 
         console.log('Validate variables');
         const variableDefinitions: VariableDefinition[] =
