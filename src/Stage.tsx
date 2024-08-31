@@ -100,14 +100,9 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
                     return '';
                 }
             }),
-            testFunction: factory('testFunction', [], () => function testFunction() {return true;})
+            testFunction: factory('testFunction', [], () => function testFunction(): boolean {return true;})
         };
         this.evaluate = create(this.customFunctionMap, {matrix: 'Array'}).evaluate;
-
-        let thing = factory('thing', [], () => function replace(input: string, oldValue: string, newValue: string) {
-            return input.replace(new RegExp(oldValue, 'g'), newValue);
-        });
-
 
         this.readMessageState(messageState);
         console.log('Constructor complete');
