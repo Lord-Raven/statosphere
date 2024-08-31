@@ -99,8 +99,8 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
                 } else {
                     return '';
                 }
-            }),
-            testFunction: factory('testFunction', [], () => function testFunction() {return true;})
+            })//,
+            //testFunction: factory('testFunction', [], () => function testFunction() {return true;})
         };
         this.evaluate = create(this.customFunctionMap, {matrix: 'Array'}).evaluate;
 
@@ -120,7 +120,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         /*Object.entries(this.functions).forEach(([key, value]) => {
             this.customFunctionMap[`${key}`] = factory(key, [], () => function functionWrapper(...args: any[]): any {return value(args);});
         });*/
-        // this.customFunctionMap[`testFunction`] = factory('testFunction', [], () => function testFunction(): number {return 1;});
+        this.customFunctionMap[`testFunction`] = factory('testFunction', [], () => function testFunction() {return true;});
         console.log(this.customFunctionMap);
         //this.evaluate = create(this.customFunctionMap, {matrix: 'Array'}).evaluate;
 
