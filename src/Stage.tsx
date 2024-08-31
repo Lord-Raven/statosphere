@@ -19,6 +19,8 @@ type ConfigType = any;
 type InitStateType = any;
 type ChatStateType = any;
 
+const math = create(all, {matrix: 'Array'});
+
 export function stripComments(input: string) {
     if (!input) return input;
     // Remove single-line comments
@@ -77,8 +79,6 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
 
         // Set up mathjs:
         this.customFunctionMap = {
-            ...all,
-
             contains: factory('contains', [], () => function contains(a: any, b: any) {
                 //console.log(`contains: ${a}, ${b}`);
                 if (typeof a === 'string' && typeof b === 'string') {
@@ -102,7 +102,30 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
             })//,
             //testFunction: factory('testFunction', [], () => function testFunction() {return true;})
         };
-        this.evaluate = create(this.customFunctionMap, {matrix: 'Array'}).evaluate;
+        math.import({
+            contains: function contains(a: any, b: any) {
+                //console.log(`contains: ${a}, ${b}`);
+                if (typeof a === 'string' && typeof b === 'string') {
+                    return a.toLowerCase().includes(b.toLowerCase());
+                }
+                return a.includes(b);
+            },
+            capture: function capture(input: string, regex: string) {
+                let matches = [...input.matchAll(new RegExp(regex, 'g'))];
+                return matches && matches.length > 0 ? matches.map(match => match.slice(1)) : null;
+            },
+            replace: function replace(input: string, oldValue: string, newValue: string) {
+                return input.replace(new RegExp(oldValue, 'g'), newValue);
+            },
+            join: function join(a: any[], b: string) {
+                if (a) {
+                    return a.join(b);
+                } else {
+                    return '';
+                }
+            }
+        });
+        this.evaluate = math.evaluate;
 
         this.readMessageState(messageState);
         console.log('Constructor complete');
@@ -117,12 +140,14 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         console.log('Validate functions');
         Object.values(this.validateSchema(this.config.functionConfig ?? data.config_schema.properties.functionConfig.value, functionSchema, 'function schema'))
             .forEach(funcData => {let customFunction = new CustomFunction(funcData); this.functions[customFunction.name] = customFunction.createFunction()});
+        let functionMap: any = {};
         Object.entries(this.functions).forEach(([key, value]) => {
-            this.customFunctionMap[`${key}`] = factory(key, [], () => value);//function functionWrapper(...args: any[]): any {return value(args);});
+            functionMap[`${key}`] = value;//function functionWrapper(...args: any[]): any {return value(args);});
         });
         //this.customFunctionMap[`testFunction`] = factory('testFunction', [], () => function testFunction() {return true;});
-        console.log(this.customFunctionMap);
-        this.evaluate = create(this.customFunctionMap, {matrix: 'Array'}).evaluate;
+        console.log(functionMap);
+        math.import(functionMap);
+        this.evaluate = math.evaluate;
 
         console.log('Validate variables');
         const variableDefinitions: VariableDefinition[] =
