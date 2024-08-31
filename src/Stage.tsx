@@ -50,7 +50,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
     debugMode: boolean;
     evaluate: any;
     content: string = '';
-    customFunctions: CustomFunction[];
+    functions: {[key: string]: Function};
     customFunctionMap: FactoryFunctionMap;
 
     constructor(data: InitialData<InitStateType, ChatStateType, MessageStateType, ConfigType>) {
@@ -66,7 +66,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         this.user = users[Object.keys(users)[0]];
         this.variables = {};
         this.variableDefinitions = {};
-        this.customFunctions = [];
+        this.functions = {};
         this.contentRules = [];
         this.classifiers = [];
         this.config = config;
@@ -120,9 +120,9 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
 
         console.log('Validate functions');
         Object.values(this.validateSchema(this.config.functionConfig ?? data.config_schema.properties.functionConfig.value, functionSchema, 'function schema'))
-            .forEach(customFunction => this.customFunctions.push(new CustomFunction(customFunction)));
-        this.customFunctions.forEach(func => {
-            this.customFunctionMap[`${func.name}`] = factory(func.name, [], () => function generalFunction(...args: any[]): any {return func.createFunction().call(args)});
+            .forEach(funcData => {let customFunction = new CustomFunction(funcData); this.functions[customFunction.name] = customFunction.createFunction()});
+        Object.entries(this.functions).forEach(([key, value]) => {
+            this.customFunctionMap[`${key}`] = factory(key, [], () => function generalFunction(...args: any[]): any {return value.call(args)});
         });
         console.log(this.customFunctionMap);
         this.evaluate = create(this.customFunctionMap, {matrix: 'Array'}).evaluate;
