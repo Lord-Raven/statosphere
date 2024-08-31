@@ -100,7 +100,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
                     return '';
                 }
             }),
-            testFunction: factory('testFunction', [], () => function testFunction(): boolean {return true;})
+            testFunction: factory('testFunction', [], () => function testFunction() {return true;})
         };
         this.evaluate = create(this.customFunctionMap, {matrix: 'Array'}).evaluate;
 
