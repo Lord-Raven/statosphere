@@ -99,7 +99,8 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
                 } else {
                     return '';
                 }
-            })
+            }),
+            testFunction: factory('testFunction', [], () => function testFunction(): number {return 1;})
         };
         this.evaluate = create(this.customFunctionMap, {matrix: 'Array'}).evaluate;
 
@@ -124,9 +125,9 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         //Object.entries(this.functions).forEach(([key, value]) => {
         //    this.customFunctionMap[`${key}`] = factory(key, [], () => function testFunction(): any {return 1;});
         //});
-        this.customFunctionMap[`testFunction`] = factory('testFunction', [], () => function testFunction(): number {return 1;});
+       // this.customFunctionMap[`testFunction`] = factory('testFunction', [], () => function testFunction(): number {return 1;});
         console.log(this.customFunctionMap);
-        this.evaluate = create(this.customFunctionMap, {matrix: 'Array'}).evaluate;
+        //this.evaluate = create(this.customFunctionMap, {matrix: 'Array'}).evaluate;
 
         console.log('Validate variables');
         const variableDefinitions: VariableDefinition[] =
