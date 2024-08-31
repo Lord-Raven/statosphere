@@ -19,6 +19,8 @@ type ConfigType = any;
 type InitStateType = any;
 type ChatStateType = any;
 
+const math = create(all, {matrix: 'Array'});
+
 export function stripComments(input: string) {
     if (!input) return input;
     // Remove single-line comments
@@ -102,7 +104,30 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
             })//,
             //testFunction: factory('testFunction', [], () => function testFunction() {return true;})
         };
-        this.evaluate = create(this.customFunctionMap, {matrix: 'Array'}).evaluate;
+        math.import({
+            contains: factory('contains', [], () => function contains(a: any, b: any) {
+                //console.log(`contains: ${a}, ${b}`);
+                if (typeof a === 'string' && typeof b === 'string') {
+                    return a.toLowerCase().includes(b.toLowerCase());
+                }
+                return a.includes(b);
+            }),
+            capture: factory('capture', [], () => function capture(input: string, regex: string) {
+                let matches = [...input.matchAll(new RegExp(regex, 'g'))];
+                return matches && matches.length > 0 ? matches.map(match => match.slice(1)) : null;
+            }),
+            replace: factory('replace', [], () => function replace(input: string, oldValue: string, newValue: string) {
+                return input.replace(new RegExp(oldValue, 'g'), newValue);
+            }),
+            join: factory('join', [], () => function join(a: any[], b: string) {
+                if (a) {
+                    return a.join(b);
+                } else {
+                    return '';
+                }
+            })
+        });
+        this.evaluate = math.evaluate;
 
         this.readMessageState(messageState);
         console.log('Constructor complete');
@@ -118,12 +143,15 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         Object.values(this.validateSchema(this.config.functionConfig ?? data.config_schema.properties.functionConfig.value, functionSchema, 'function schema'))
             .forEach(funcData => {let customFunction = new CustomFunction(funcData); this.functions[customFunction.name] = customFunction.createFunction()});
         Object.entries(this.functions).forEach(([key, value]) => {
-            this.customFunctionMap[`${key}`] = factory(key, dependencies, () => value);
+            //this.customFunctionMap[`${key}`] = factory(key, dependencies, () => value);
+            let importData: any = {};
+            importData[`${key}`] = factory(key, dependencies, () => value);
+            math.import(importData);
             dependencies.push(key);
         });
         //this.customFunctionMap[`testFunction`] = factory('testFunction', [], () => function testFunction() {return true;});
         console.log(this.customFunctionMap);
-        this.evaluate = create(this.customFunctionMap, {matrix: 'Array'}).evaluate;
+        //this.evaluate = create(this.customFunctionMap, {matrix: 'Array'}).evaluate;
 
         console.log('Validate variables');
         const variableDefinitions: VariableDefinition[] =
