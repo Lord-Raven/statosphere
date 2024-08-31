@@ -145,6 +145,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         Object.entries(this.functions).forEach(([key, value]) => {
             //this.customFunctionMap[`${key}`] = factory(key, dependencies, () => value);
             let importData: any = {};
+            console.log(`${key} dependencies: ${[...dependencies]}`)
             importData[`${key}`] = factory(key, [...dependencies], () => value);
             math.import(importData);
             dependencies.push(key);
