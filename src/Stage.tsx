@@ -137,6 +137,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         Object.values(this.functions).forEach(thisFunction => {
             thisFunction.body = this.updateFunctionArguments(thisFunction.body);
 
+            console.log(thisFunction.body);
             this.customFunctionMap[`${thisFunction.name}`] = thisFunction.createFunction();
         });
 
@@ -465,8 +466,30 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
     updateFunctionArguments(input: string) {
         if (!input) return input;
         Object.values(this.functions).forEach(knownFunction => {
-            const regex = new RegExp(`(${knownFunction.name}\\([^\\)]*)\\)`, 'g');
-            input = input.replace(regex, `$1${knownFunction.dependencies}`);
+            let start = input.indexOf(`${knownFunction.name}(`);
+            let parens = 1;
+            while(start > -1) {
+                let index = start + knownFunction.name.length + 1;
+                while (index < input.length && parens > 0) {
+                    switch(input.charAt(index)) {
+                        case '(':
+                            parens++;
+                            break;
+                        case ')':
+                            parens--;
+                            break;
+                        default:
+                            break;
+                    }
+                    if (parens != 0) {
+                        index++;
+                    }
+                }
+                console.log('before substitution:' + input);
+                input = input.slice(0, index) + knownFunction.dependencies + input.slice(index);
+                console.log('after substitution:' + input);
+                start = input.indexOf(`${knownFunction.name}(`, index);
+            }
         });
         // Clean up functions with no initial parameter "(,"
         input = input.replace(/\(,/, '(');
