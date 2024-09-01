@@ -69,7 +69,6 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         // Set up mathjs:
         this.customFunctionMap = {
             contains: function contains(a: any, b: any) {
-                //console.log(`contains: ${a}, ${b}`);
                 if (typeof a === 'string' && typeof b === 'string') {
                     return a.toLowerCase().includes(b.toLowerCase());
                 }
@@ -88,14 +87,10 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
                 } else {
                     return '';
                 }
-            },
-            //testFunctionDos: function testFunctionDos() {console.log('okay...');return true;},
-            //testFunction: new Function('testFunctionDos', 'return (testFunctionDos());')
-
+            }
         };
         math.import(this.customFunctionMap);
         this.evaluate = math.evaluate;
-        this.customFunctionMap = {};
 
         this.readMessageState(messageState);
         console.log('Constructor complete');
@@ -491,11 +486,14 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
                 start = input.indexOf(`${knownFunction.name}(`, index);
             }
         });
+        console.log('replace (,');
         // Clean up functions with no initial parameter "(,"
         input = input.replace(/\(,/, '(');
 
         return input;
     }
+
+
 
 
     render(): ReactElement {

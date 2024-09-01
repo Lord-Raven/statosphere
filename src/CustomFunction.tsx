@@ -17,6 +17,9 @@ export class CustomFunction {
         let finalParameters = [...(this.parameters ? this.parameters.split(',').filter(item => item).map(item => item.trim()) : []),
             ...(this.dependencies ? this.dependencies.split(',').filter(item => item).map(item => item.trim()) : [])];
 
+        console.log('Creating function');
+        console.log(finalParameters);
+        console.log(this.body);
         if (finalParameters.length > 0) {
             return new Function(...finalParameters, this.body);
         } else {
