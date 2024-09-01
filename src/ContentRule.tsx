@@ -1,4 +1,4 @@
-import {Stage, stripComments} from "./Stage";
+import {Stage} from "./Stage";
 
 export enum ContentCategory {
     Input = 'Input',
@@ -12,17 +12,17 @@ export class ContentRule {
     condition: string;
     modification: string;
 
-    constructor(data: any) {
+    constructor(data: any, stage: Stage) {
         this.category = data.category;
-        this.condition = stripComments(data.condition);
-        this.modification = stripComments(data.modification ?? '{{content}}');
+        this.condition = stage.processCode(data.condition);
+        this.modification = stage.processCode(data.modification ?? '{{content}}');
     }
 
     evaluateAndApply(stage: Stage, targetCategory: ContentCategory, replacements: any): string {
-        if (this.category == targetCategory && stage.evaluate(stage.replaceTags(this.condition.toLowerCase(), replacements), stage.functions)) {
+        if (this.category == targetCategory && stage.evaluate(stage.replaceTags(this.condition.toLowerCase(), replacements))) {
             console.log(this.modification);
             console.log(replacements);
-            return stage.evaluate(stage.replaceTags(this.modification, replacements), stage.functions);
+            return stage.evaluate(stage.replaceTags(this.modification, replacements));
         }
         return stage.content;
     }

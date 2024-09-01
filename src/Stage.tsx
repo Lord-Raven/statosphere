@@ -21,17 +21,6 @@ type ChatStateType = any;
 
 const math = create(all, {matrix: 'Array'});
 
-export function stripComments(input: string) {
-    if (!input) return input;
-    // Remove single-line comments
-    input = input.replace(/\/\/.*$/gm, '');
-
-    // Remove block comments
-    input = input.replace(/\/\*[\s\S]*?\*\//g, '');
-
-    return input;
-}
-
 export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateType, ConfigType> {
 
     readonly DEFAULT_THRESHOLD = 0.8;
@@ -121,7 +110,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         // Build basic functions
         Object.values(this.validateSchema(this.config.functionConfig ?? data.config_schema.properties.functionConfig.value, functionSchema, 'function schema'))
             .forEach(funcData => {
-                let customFunction = new CustomFunction(funcData);
+                let customFunction = new CustomFunction(funcData, this);
                 this.functions[customFunction.name] = customFunction;
             });
         // Update based on dependencies:
@@ -137,11 +126,15 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
                     // Looking at each function in new dependencies to check for their dependencies.
                     Object.keys(this.functions).filter(thirdKey => otherFunc.body.includes(`${thirdKey}(`)).forEach(potentialDependency => {
                         if (!thisFunction.dependencies.includes(potentialDependency)) {
-                            newDependencies=`${newDependencies},${potentialDependency}`;
+                            newDependencies = `${newDependencies},${potentialDependency}`;
                         }
                     });
                 });
             }
+        });
+        // All dependencies updated; now persist arguments to calls:
+        Object.values(this.functions).forEach(thisFunction => {
+
 
             this.customFunctionMap[`${thisFunction.name}`] = thisFunction.createFunction();
         });
@@ -156,7 +149,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
             this.validateSchema(this.config.variableConfig ?? data.config_schema.properties.variableConfig.value, variableSchema, 'variable schema');
         console.log('For through them');
         for (const definition of variableDefinitions) {
-            this.variableDefinitions[definition.name] = new VariableDefinition(definition);
+            this.variableDefinitions[definition.name] = new VariableDefinition(definition, this);
             if (!this.variables[definition.name]) {
                 this.initializeVariable(definition.name);
             }
@@ -164,11 +157,11 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
 
         console.log('Validate content modifiers');
         Object.values(this.validateSchema(this.config.contentConfig ?? data.config_schema.properties.contentConfig.value, contentSchema, 'content schema'))
-            .forEach(contentRule => this.contentRules.push(new ContentRule(contentRule)));
+            .forEach(contentRule => this.contentRules.push(new ContentRule(contentRule, this)));
 
         console.log('Validate classifiers');
         Object.values(this.validateSchema(this.config.classifierConfig ?? data.config_schema.properties.classifierConfig.value, classifierSchema, 'classifier schema'))
-            .forEach(classifier => this.classifiers.push(new Classifier(classifier)));
+            .forEach(classifier => this.classifiers.push(new Classifier(classifier, this)));
 
         if (this.classifiers.length > 0) {
             console.log('Load classifier pipeline');
@@ -451,6 +444,32 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
             systemMessage: this.content.trim() != '' ? this.content : null,
             chatState: null
         };
+    }
+
+    processCode(input: string) {
+        return this.updateFunctionArguments(this.stripComments(input));
+    }
+
+    stripComments(input: string) {
+        if (!input) return input;
+        // Remove single-line comments
+        input = input.replace(/\/\/.*$/gm, '');
+
+        // Remove block comments
+        input = input.replace(/\/\*[\s\S]*?\*\//g, '');
+
+        return input;
+    }
+
+    updateFunctionArguments(input: string) {
+        Object.values(this.functions).forEach(knownFunction => {
+            const regex = new RegExp(`(${knownFunction.name}\\([^\\)]*)\\)`, 'g');
+            input = input.replace(regex, `$1,${knownFunction.dependencies}`);
+        });
+        // Clean up functions with no initial parameter "(,"
+        input = input.replace(/\(,/, '(');
+
+        return input;
     }
 
 

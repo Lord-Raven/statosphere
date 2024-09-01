@@ -1,4 +1,4 @@
-import {stripComments} from "./Stage";
+import {Stage} from "./Stage";
 
 export class CustomFunction {
     name: string;
@@ -6,16 +6,16 @@ export class CustomFunction {
     dependencies: string = '';
     body: string;
 
-    constructor(data: any) {
-        this.name = stripComments(data.name);
-        this.parameters = stripComments(data.parameters);
-        this.body = stripComments(data.body);
+    constructor(data: any, stage: Stage) {
+        this.name = stage.stripComments(data.name);
+        this.parameters = stage.stripComments(data.parameters);
+        this.body = stage.stripComments(data.body);
     }
 
     // Method to create the function dynamically
     createFunction() {
         let finalParameters = [...(this.parameters ? this.parameters.split(',').filter(item => item).map(item => item.trim()) : []),
-            ...(this.dependencies ? this.dependencies.split(',').filter(item => item).map(item => `${item.trim()}=${item.trim()}`) : [])];
+            ...(this.dependencies ? this.dependencies.split(',').filter(item => item).map(item => item.trim()) : [])];
 
         if (finalParameters.length > 0) {
             return new Function(...finalParameters, this.body);

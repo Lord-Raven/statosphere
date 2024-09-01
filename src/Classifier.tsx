@@ -1,4 +1,4 @@
-import {stripComments} from "./Stage";
+import {Stage} from "./Stage";
 
 export class Classifier {
     name: string;
@@ -8,15 +8,15 @@ export class Classifier {
     responseHypothesis: any;
     classifications: {[key: string]: Classification};
 
-    constructor(data: any) {
-        this.name = stripComments(data.name);
-        this.inputTemplate = stripComments(data.inputTemplate);
-        this.responseTemplate = stripComments(data.responseTemplate);
-        this.inputHypothesis = stripComments(data.inputHypothesis);
-        this.responseHypothesis = stripComments(data.responseHypothesis);
+    constructor(data: any, stage: Stage) {
+        this.name = stage.processCode(data.name);
+        this.inputTemplate = stage.processCode(data.inputTemplate);
+        this.responseTemplate = stage.processCode(data.responseTemplate);
+        this.inputHypothesis = stage.processCode(data.inputHypothesis);
+        this.responseHypothesis = stage.processCode(data.responseHypothesis);
         this.classifications = {};
         for (let classification of data.classifications) {
-            this.classifications[classification.label] = new Classification(classification);
+            this.classifications[classification.label] = new Classification(classification, stage);
         }
     }
 }
@@ -27,12 +27,12 @@ export class Classification {
     threshold: number;
     updates: {[key: string]: string}
 
-    constructor(data: any) {
-        this.label = stripComments(data.label);
-        this.category = stripComments(data.category);
+    constructor(data: any, stage: Stage) {
+        this.label = stage.processCode(data.label);
+        this.category = stage.processCode(data.category);
         this.threshold = data.threshold;
         this.updates = {};
         const updates: any[] = data.updates;
-        Object.values(updates).forEach(update => this.updates[update.variable] = stripComments(update.setTo));
+        Object.values(updates).forEach(update => this.updates[update.variable] = stage.processCode(update.setTo));
     }
 }
