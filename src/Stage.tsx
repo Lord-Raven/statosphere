@@ -131,10 +131,11 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
                     });
                 });
             }
+            thisFunction.dependencies = thisFunction.dependencies.replace(/,,/, ',');
         });
         // All dependencies updated; now persist arguments to calls:
         Object.values(this.functions).forEach(thisFunction => {
-
+            thisFunction.body = this.updateFunctionArguments(thisFunction.body);
 
             this.customFunctionMap[`${thisFunction.name}`] = thisFunction.createFunction();
         });
@@ -465,7 +466,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         if (!input) return input;
         Object.values(this.functions).forEach(knownFunction => {
             const regex = new RegExp(`(${knownFunction.name}\\([^\\)]*)\\)`, 'g');
-            input = input.replace(regex, `$1,${knownFunction.dependencies}`);
+            input = input.replace(regex, `$1${knownFunction.dependencies}`);
         });
         // Clean up functions with no initial parameter "(,"
         input = input.replace(/\(,/, '(');
