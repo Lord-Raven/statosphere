@@ -148,12 +148,14 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
             console.log(`${key} dependencies: ${[...dependencies]}`)
             //importData[`${key}`] = factory(key, [...dependencies], () => value);
             //math.import(importData);
-            this.customFunctionMap[`${key}`] = factory(key, [...dependencies], () => value);
+            this.customFunctionMap[`${key}`] = factory(key, [...dependencies], (math) => value);
             dependencies.push(key);
         });
         //this.customFunctionMap[`testFunction`] = factory('testFunction', [], () => function testFunction() {return true;});
         console.log(this.customFunctionMap);
-        this.evaluate = create(this.customFunctionMap, {matrix: 'Array'}).evaluate;
+        math.import(this.customFunctionMap);
+        this.evaluate = math.evaluate;
+        //this.evaluate = create(this.customFunctionMap, {matrix: 'Array'}).evaluate;
 
         console.log('Validate variables');
         const variableDefinitions: VariableDefinition[] =
