@@ -106,6 +106,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         };
         math.import(this.customFunctionMap);
         this.evaluate = math.evaluate;
+        this.customFunctionMap = {};
 
         this.readMessageState(messageState);
         console.log('Constructor complete');
