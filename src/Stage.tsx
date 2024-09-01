@@ -52,8 +52,8 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
     debugMode: boolean;
     evaluate: any;
     content: string = '';
-    functions: any;
-    //customFunctionMap: FactoryFunctionMap;
+    functions: {[key: string]: Function};
+    customFunctionMap: FactoryFunctionMap;
 
     constructor(data: InitialData<InitStateType, ChatStateType, MessageStateType, ConfigType>) {
         super(data);
@@ -78,7 +78,9 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         env.allowRemoteModels = false;
 
         // Set up mathjs:
-        this.functions = {
+        this.customFunctionMap = {
+            ...all,
+
             contains: factory('contains', [], () => function contains(a: any, b: any) {
                 //console.log(`contains: ${a}, ${b}`);
                 if (typeof a === 'string' && typeof b === 'string') {
@@ -99,8 +101,9 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
                 } else {
                     return '';
                 }
-            })//,
-            //testFunction: factory('testFunction', [], () => function testFunction() {return true;})
+            }),
+            testFunction: factory('testFunction', [], () => new Function('return testFunctionDos();')),
+            testFunctionDos: factory('testFunctionDos', [], () => function testFunctionDos() {return true;})
         };
         /*math.import({
             contains: factory('contains', [], () => function contains(a: any, b: any) {
@@ -125,6 +128,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
                 }
             })
         });*/
+        math.import(this.customFunctionMap);
         this.evaluate = math.evaluate;
 
         this.readMessageState(messageState);
@@ -140,21 +144,21 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         Object.values(this.validateSchema(this.config.functionConfig ?? data.config_schema.properties.functionConfig.value, functionSchema, 'function schema'))
             .forEach(funcData => {
                 let customFunction = new CustomFunction(funcData);
-                /*let dependencies: any = [];
+                let dependencies: any = [];
                 let dependencyFunctions: any ={};
                 Object.keys(this.functions).filter(key => customFunction.body.includes(`${key}(`)).forEach(dep => {
                     dependencies.push(dep);
                     dependencyFunctions[dep] = this.functions[dep];
-                });*/
+                });
                 this.functions[customFunction.name] = customFunction.createFunction();
 
-                //console.log(`${customFunction.name} dependencies: ${dependencies}`);
+                console.log(`${customFunction.name} dependencies: ${dependencies}`);
 
-                //this.customFunctionMap[`${customFunction.name}`] = factory(customFunction.name, dependencies, () => customFunction.createFunction());
+                this.customFunctionMap[`${customFunction.name}`] = factory(customFunction.name, dependencies, (dependencyFunctions) => customFunction.createFunction());
             });
+
         //this.customFunctionMap[`testFunction`] = factory('testFunction', [], () => function testFunction() {return true;});
-        //console.log(this.customFunctionMap);
-        console.log(this.functions);
+        console.log(this.customFunctionMap);
         //math.import(this.customFunctionMap);
         this.evaluate = math.evaluate;
         //this.evaluate = create(this.customFunctionMap, {matrix: 'Array'}).evaluate;
@@ -275,7 +279,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
     updateVariable(name: string, formula: string) {
         let finalFormula = this.replaceTags(formula, {});
         console.log(`Update ${name}: ${finalFormula}`);// = ${this.evaluate(finalFormula)}`);
-        this.setVariable(name, this.evaluate(`(${finalFormula})`, this.functions));
+        this.setVariable(name, this.evaluate(`(${finalFormula})`));
     }
 
     initializeVariable(name: string) {
