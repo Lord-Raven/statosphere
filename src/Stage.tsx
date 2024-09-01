@@ -138,19 +138,22 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         console.log('Loading Statosphere...');
         let yamlResponse = await fetch('chub_meta.yaml');
         const data: any = yaml.load(await yamlResponse.text());
-        let dependencies: any = ['contains','capture','replace','join'];
         console.log('Validate functions');
         Object.values(this.validateSchema(this.config.functionConfig ?? data.config_schema.properties.functionConfig.value, functionSchema, 'function schema'))
-            .forEach(funcData => {let customFunction = new CustomFunction(funcData); this.functions[customFunction.name] = customFunction.createFunction()});
-        Object.entries(this.functions).forEach(([key, value]) => {
-            //this.customFunctionMap[`${key}`] = factory(key, dependencies, () => value);
-            let importData: any = {};
-            console.log(`${key} dependencies: ${[...dependencies]}`)
-            //importData[`${key}`] = factory(key, [...dependencies], () => value);
-            //math.import(importData);
-            this.customFunctionMap[`${key}`] = factory(key, [...dependencies], (math) => value);
-            dependencies.push(key);
-        });
+            .forEach(funcData => {
+                let customFunction = new CustomFunction(funcData);
+                let dependencies: any = [];
+                let dependencyFunctions: any ={};
+                Object.keys(this.functions).filter(key => customFunction.body.includes(`${key}(`)).forEach(dep => {
+                    dependencies.push(dep);
+                    dependencyFunctions[dep] = this.functions[dep];
+                });
+                this.functions[customFunction.name] = customFunction.createFunction();
+
+                console.log(`${customFunction.name} dependencies: ${dependencies}`);
+
+                this.customFunctionMap[`${customFunction.name}`] = factory(customFunction.name, dependencies, (dependencyFunctions) => customFunction.createFunction());
+            });
         //this.customFunctionMap[`testFunction`] = factory('testFunction', [], () => function testFunction() {return true;});
         console.log(this.customFunctionMap);
         math.import(this.customFunctionMap);
