@@ -100,8 +100,9 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
                     return '';
                 }
             }),
-            testFunction: factory('testFunction', [], () => new Function('return testFunctionDos();')),
-            testFunctionDos: factory('testFunctionDos', [], () => function testFunctionDos() {console.log('okay...');return true;})
+            testFunctionDos: factory('testFunctionDos', [], () => function testFunctionDos() {console.log('okay...');return true;}),
+            testFunction: factory('testFunction', [], () => new Function('return testFunctionDos();'))
+
         };
         /*math.import({
             contains: factory('contains', [], () => function contains(a: any, b: any) {
