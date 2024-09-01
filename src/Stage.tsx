@@ -152,7 +152,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
 
                 console.log(`${customFunction.name} dependencies: ${dependencies}`);
 
-                this.customFunctionMap[`${customFunction.name}`] = factory(customFunction.name, dependencies, (dependencyFunctions) => customFunction.createFunction());
+                this.customFunctionMap[`${customFunction.name}`] = factory(customFunction.name, dependencies, () => customFunction.createFunction());
             });
         //this.customFunctionMap[`testFunction`] = factory('testFunction', [], () => function testFunction() {return true;});
         console.log(this.customFunctionMap);
