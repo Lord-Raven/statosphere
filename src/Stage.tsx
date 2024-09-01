@@ -79,8 +79,6 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
 
         // Set up mathjs:
         this.customFunctionMap = {
-            ...all,
-
             contains: factory('contains', [], () => function contains(a: any, b: any) {
                 //console.log(`contains: ${a}, ${b}`);
                 if (typeof a === 'string' && typeof b === 'string') {
