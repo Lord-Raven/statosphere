@@ -101,7 +101,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
                 }
             },
             testFunctionDos: function testFunctionDos() {console.log('okay...');return true;},
-            testFunction: new Function('return (testFunctionDos());')
+            testFunction: new Function('', 'return (testFunctionDos());')
 
         };
         math.import(this.customFunctionMap);
