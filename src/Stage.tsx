@@ -53,7 +53,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
     evaluate: any;
     content: string = '';
     functions: {[key: string]: Function};
-    customFunctionMap: FactoryFunctionMap;
+    customFunctionMap: any;
 
     constructor(data: InitialData<InitStateType, ChatStateType, MessageStateType, ConfigType>) {
         super(data);
@@ -79,54 +79,31 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
 
         // Set up mathjs:
         this.customFunctionMap = {
-            contains: factory('contains', [], () => function contains(a: any, b: any) {
+            contains: function contains(a: any, b: any) {
                 //console.log(`contains: ${a}, ${b}`);
                 if (typeof a === 'string' && typeof b === 'string') {
                     return a.toLowerCase().includes(b.toLowerCase());
                 }
                 return a.includes(b);
-            }),
-            capture: factory('capture', [], () => function capture(input: string, regex: string) {
+            },
+            capture: function capture(input: string, regex: string) {
                 let matches = [...input.matchAll(new RegExp(regex, 'g'))];
                 return matches && matches.length > 0 ? matches.map(match => match.slice(1)) : null;
-            }),
-            replace: factory('replace', [], () => function replace(input: string, oldValue: string, newValue: string) {
+            },
+            replace: function replace(input: string, oldValue: string, newValue: string) {
                 return input.replace(new RegExp(oldValue, 'g'), newValue);
-            }),
-            join: factory('join', [], () => function join(a: any[], b: string) {
+            },
+            join: function join(a: any[], b: string) {
                 if (a) {
                     return a.join(b);
                 } else {
                     return '';
                 }
-            }),
-            testFunctionDos: factory('testFunctionDos', [], () => function testFunctionDos() {console.log('okay...');return true;}),
-            testFunction: factory('testFunction', [], () => new Function('return testFunctionDos();'))
+            },
+            testFunctionDos: function testFunctionDos() {console.log('okay...');return true;},
+            testFunction: new Function('return (testFunctionDos());')
 
         };
-        /*math.import({
-            contains: factory('contains', [], () => function contains(a: any, b: any) {
-                //console.log(`contains: ${a}, ${b}`);
-                if (typeof a === 'string' && typeof b === 'string') {
-                    return a.toLowerCase().includes(b.toLowerCase());
-                }
-                return a.includes(b);
-            }),
-            capture: factory('capture', [], () => function capture(input: string, regex: string) {
-                let matches = [...input.matchAll(new RegExp(regex, 'g'))];
-                return matches && matches.length > 0 ? matches.map(match => match.slice(1)) : null;
-            }),
-            replace: factory('replace', [], () => function replace(input: string, oldValue: string, newValue: string) {
-                return input.replace(new RegExp(oldValue, 'g'), newValue);
-            }),
-            join: factory('join', [], () => function join(a: any[], b: string) {
-                if (a) {
-                    return a.join(b);
-                } else {
-                    return '';
-                }
-            })
-        });*/
         math.import(this.customFunctionMap);
         this.evaluate = math.evaluate;
 
