@@ -52,7 +52,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
     debugMode: boolean;
     evaluate: any;
     content: string = '';
-    functions: {[key: string]: Function};
+    functions: {[key: string]: CustomFunction};
     customFunctionMap: any;
 
     constructor(data: InitialData<InitStateType, ChatStateType, MessageStateType, ConfigType>) {
@@ -100,8 +100,8 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
                     return '';
                 }
             },
-            testFunctionDos: function testFunctionDos() {console.log('okay...');return true;},
-            testFunction: new Function('testFunctionDos', 'return (testFunctionDos());')
+            //testFunctionDos: function testFunctionDos() {console.log('okay...');return true;},
+            //testFunction: new Function('testFunctionDos', 'return (testFunctionDos());')
 
         };
         math.import(this.customFunctionMap);
@@ -117,25 +117,36 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         let yamlResponse = await fetch('chub_meta.yaml');
         const data: any = yaml.load(await yamlResponse.text());
         console.log('Validate functions');
+        // Build basic functions
         Object.values(this.validateSchema(this.config.functionConfig ?? data.config_schema.properties.functionConfig.value, functionSchema, 'function schema'))
             .forEach(funcData => {
                 let customFunction = new CustomFunction(funcData);
-                let dependencies: any = [];
-                let dependencyFunctions: any ={};
-                Object.keys(this.functions).filter(key => customFunction.body.includes(`${key}(`)).forEach(dep => {
-                    dependencies.push(dep);
-                    dependencyFunctions[dep] = this.functions[dep];
-                });
-                this.functions[customFunction.name] = customFunction.createFunction();
-
-                console.log(`${customFunction.name} dependencies: ${dependencies}`);
-
-                this.customFunctionMap[`${customFunction.name}`] = factory(customFunction.name, dependencies, (dependencyFunctions) => customFunction.createFunction());
+                this.functions[customFunction.name] = customFunction;
             });
+        // Update based on dependencies:
+        Object.values(this.functions).forEach(thisFunction => {
+            let newDependencies = thisFunction.name;
 
-        //this.customFunctionMap[`testFunction`] = factory('testFunction', [], () => function testFunction() {return true;});
+            while (newDependencies.length > 0) {
+                thisFunction.dependencies = `${thisFunction.dependencies},${newDependencies}`;
+
+                const splitDependencies = newDependencies.split(',');
+                newDependencies = '';
+                splitDependencies.map(otherName => this.functions[otherName]).filter(otherFunc => otherFunc).forEach(otherFunc => {
+                    // Looking at each function in new dependencies to check for their dependencies.
+                    Object.keys(this.functions).filter(thirdKey => otherFunc.body.includes(`${thirdKey}(`)).forEach(potentialDependency => {
+                        if (!thisFunction.dependencies.includes(potentialDependency)) {
+                            newDependencies=`${newDependencies},${potentialDependency}`;
+                        }
+                    });
+                });
+            }
+
+            this.customFunctionMap[`${thisFunction.name}`] = thisFunction.createFunction();
+        });
+
         console.log(this.customFunctionMap);
-        //math.import(this.customFunctionMap);
+        math.import(this.customFunctionMap);
         this.evaluate = math.evaluate;
         //this.evaluate = create(this.customFunctionMap, {matrix: 'Array'}).evaluate;
 

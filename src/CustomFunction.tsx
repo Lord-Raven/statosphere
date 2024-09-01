@@ -3,6 +3,7 @@ import {stripComments} from "./Stage";
 export class CustomFunction {
     name: string;
     parameters: string;
+    dependencies: string = '';
     body: string;
 
     constructor(data: any) {
@@ -13,10 +14,13 @@ export class CustomFunction {
 
     // Method to create the function dynamically
     createFunction() {
-        if (this.parameters && this.parameters.trim().length > 0) {
-            return new Function(...this.parameters.split(','), this.body);
+        let finalParameters = [...(this.parameters ? this.parameters.split(',').filter(item => item).map(item => item.trim()) : []),
+            ...(this.dependencies ? this.dependencies.split(',').filter(item => item).map(item => `${item.trim()}=${item.trim()}`) : [])];
+
+        if (finalParameters.length > 0) {
+            return new Function(...finalParameters, this.body);
         } else {
-            return new Function(this.body);
+            return new Function('', this.body);
         }
     }
 }
