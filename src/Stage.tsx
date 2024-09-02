@@ -66,6 +66,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         this.fallbackPipeline = null;
         env.allowRemoteModels = false;
 
+        this.customFunctionMap = {};
         this.evaluate = math.evaluate;
 
         this.readMessageState(messageState);
