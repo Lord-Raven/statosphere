@@ -129,7 +129,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
                     });
                 });
             }
-            thisFunction.dependencies = thisFunction.dependencies.replace(/,,/, ',');
+            thisFunction.dependencies = thisFunction.dependencies.replace(/,,/g, ',');
         });
         // All dependencies updated; now persist arguments to calls:
         Object.values(this.functions).forEach(thisFunction => {
