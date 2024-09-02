@@ -43,6 +43,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
     content: string = '';
     functions: {[key: string]: CustomFunction};
     customFunctionMap: any;
+    scope: {[key: string]: any};
 
     constructor(data: InitialData<InitStateType, ChatStateType, MessageStateType, ConfigType>) {
         super(data);
@@ -64,6 +65,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         this.debugMode = false;
         this.fallbackMode = false; // Backend temporarily disabled by default.
         this.fallbackPipeline = null;
+        this.scope = {};
         env.allowRemoteModels = false;
 
         this.customFunctionMap = {};
@@ -254,7 +256,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
     updateVariable(name: string, formula: string) {
         let finalFormula = this.replaceTags(formula, {});
         console.log(`Update ${name}: ${finalFormula}`);// = ${this.evaluate(finalFormula)}`);
-        this.setVariable(name, this.evaluate(`(${finalFormula})`));
+        this.setVariable(name, this.evaluate(`(${finalFormula})`, this.buildScope()));
     }
 
     initializeVariable(name: string) {
@@ -392,6 +394,8 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         await this.processClassifiers(content, 'input', promptForId ?? '');
         await this.processVariablesPostInput();
 
+        this.buildScope();
+
         Object.values(this.contentRules).forEach(contentRule => this.content = contentRule.evaluateAndApply(this, ContentCategory.Input, replacements));
         const modifiedMessage = this.content;
 
@@ -421,6 +425,8 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         this.content = content;
         await this.processClassifiers(content, 'response', anonymizedId);
         await this.processVariablesPostResponse();
+
+        this.buildScope();
 
         const replacements = {'user': this.user.name, 'char': (this.characters[anonymizedId] ? this.characters[anonymizedId].name : '')};
         Object.values(this.contentRules).forEach(contentRule => this.content = contentRule.evaluateAndApply(this, ContentCategory.Response, replacements));
@@ -487,7 +493,13 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         return input;
     }
 
-
+    buildScope() {
+        this.scope = Object.entries(this.variables).reduce((acc, [key, value]) => {
+            acc[key] = value.value;
+            return acc;
+        }, {} as {[key: string]: any});
+        return this.scope;
+    }
 
 
     render(): ReactElement {

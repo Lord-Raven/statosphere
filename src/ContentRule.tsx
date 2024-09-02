@@ -19,10 +19,10 @@ export class ContentRule {
     }
 
     evaluateAndApply(stage: Stage, targetCategory: ContentCategory, replacements: any): string {
-        if (this.category == targetCategory && stage.evaluate(stage.replaceTags(this.condition.toLowerCase(), replacements))) {
+        if (this.category == targetCategory && stage.evaluate(stage.replaceTags(this.condition.toLowerCase(), replacements), stage.scope)) {
             console.log(this.modification);
             console.log(replacements);
-            return stage.evaluate(stage.replaceTags(this.modification, replacements));
+            return stage.evaluate(stage.replaceTags(this.modification, replacements), stage.scope);
         }
         return stage.content;
     }
