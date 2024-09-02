@@ -488,7 +488,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         });
         console.log('replace (,');
         // Clean up functions with no initial parameter "(,"
-        input = input.replace(/\(,/, '(');
+        input = input.replace(/\(,/g, '(');
 
         return input;
     }
