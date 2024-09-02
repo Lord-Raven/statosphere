@@ -472,9 +472,9 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         if (!input) return input;
         Object.values(this.functions).forEach(knownFunction => {
             let start = input.indexOf(`${knownFunction.name}(`);
-            let parens = 1;
             while(start > -1) {
                 let index = start + knownFunction.name.length + 1;
+                let parens = 1;
                 while (index < input.length && parens > 0) {
                     switch(input.charAt(index)) {
                         case '(':
