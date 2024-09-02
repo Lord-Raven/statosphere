@@ -134,7 +134,14 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         // All dependencies updated; now persist arguments to calls:
         Object.values(this.functions).forEach(thisFunction => {
             thisFunction.body = this.updateFunctionArguments(thisFunction.body);
-            this.customFunctionMap[`${thisFunction.name}`] = thisFunction.createFunction();
+            try {
+                this.customFunctionMap[`${thisFunction.name}`] = thisFunction.createFunction();
+            } catch (error) {
+                console.log(error);
+                console.log(thisFunction.parameters);
+                console.log(thisFunction.dependencies);
+                console.log(thisFunction.body);
+            }
         });
 
         math.import(this.customFunctionMap);
