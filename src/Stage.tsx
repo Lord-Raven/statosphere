@@ -132,12 +132,9 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         // All dependencies updated; now persist arguments to calls:
         Object.values(this.functions).forEach(thisFunction => {
             thisFunction.body = this.updateFunctionArguments(thisFunction.body);
-
-            console.log(thisFunction.body);
             this.customFunctionMap[`${thisFunction.name}`] = thisFunction.createFunction();
         });
 
-        console.log(this.customFunctionMap);
         math.import(this.customFunctionMap);
         this.evaluate = math.evaluate;
         //this.evaluate = create(this.customFunctionMap, {matrix: 'Array'}).evaluate;
@@ -145,7 +142,6 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         console.log('Validate variables');
         const variableDefinitions: VariableDefinition[] =
             this.validateSchema(this.config.variableConfig ?? data.config_schema.properties.variableConfig.value, variableSchema, 'variable schema');
-        console.log('For through them');
         for (const definition of variableDefinitions) {
             this.variableDefinitions[definition.name] = new VariableDefinition(definition, this);
             if (!this.variables[definition.name]) {
@@ -481,13 +477,10 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
                         index++;
                     }
                 }
-                console.log('before substitution:' + input);
                 input = input.slice(0, index) + knownFunction.dependencies + input.slice(index);
-                console.log('after substitution:' + input);
                 start = input.indexOf(`${knownFunction.name}(`, index);
             }
         });
-        console.log('replace (,');
         // Clean up functions with no initial parameter "(,"
         input = input.replace(/\(,/g, '(');
 
