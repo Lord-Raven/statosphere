@@ -66,30 +66,6 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         this.fallbackPipeline = null;
         env.allowRemoteModels = false;
 
-        // Set up mathjs:
-        this.customFunctionMap = {
-            contains: function contains(a: any, b: any) {
-                if (typeof a === 'string' && typeof b === 'string') {
-                    return a.toLowerCase().includes(b.toLowerCase());
-                }
-                return a.includes(b);
-            },
-            capture: function capture(input: string, regex: string) {
-                let matches = [...input.matchAll(new RegExp(regex, 'g'))];
-                return matches && matches.length > 0 ? matches.map(match => match.slice(1)) : null;
-            },
-            replace: function replace(input: string, oldValue: string, newValue: string) {
-                return input.replace(new RegExp(oldValue, 'g'), newValue);
-            },
-            join: function join(a: any[], b: string) {
-                if (a) {
-                    return a.join(b);
-                } else {
-                    return '';
-                }
-            }
-        };
-        math.import(this.customFunctionMap);
         this.evaluate = math.evaluate;
 
         this.readMessageState(messageState);
@@ -103,6 +79,30 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         const data: any = yaml.load(await yamlResponse.text());
         console.log('Validate functions');
         // Build basic functions
+        this.functions = {
+            contains: new CustomFunction({name: 'contains', parameters: 'haystack, needle', body: `\
+                        if (typeof haystack === 'string' && typeof needle === 'string') {
+                            return haystack.toLowerCase().includes(needle.toLowerCase());
+                        }
+                        return haystack.includes(needle);`
+            }, this),
+            capture: new CustomFunction({name: 'capture', parameters: 'input, regex', body: `\
+                        let matches = [...input.matchAll(new RegExp(regex, 'g'))];
+                        return matches && matches.length > 0 ? matches.map(match => match.slice(1)) : null;`
+            }, this),
+            replace: new CustomFunction({name: 'replace', parameters: 'input, regex, newValue', body: `\
+                        return input.replace(new RegExp(regex, 'g'), newValue);`
+            }, this),
+            join: new CustomFunction({name: 'join', parameters: 'array, delimiter', body: `\
+                        if (array) {
+                            return array.join(delimiter);
+                        } else {
+                            return '';
+                        }`
+            }, this)
+        };
+
+        // Load additional functions
         Object.values(this.validateSchema(this.config.functionConfig ?? data.config_schema.properties.functionConfig.value, functionSchema, 'function schema'))
             .forEach(funcData => {
                 let customFunction = new CustomFunction(funcData, this);
