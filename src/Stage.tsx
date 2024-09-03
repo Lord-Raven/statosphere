@@ -263,9 +263,13 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         }
     }
     updateVariable(name: string, formula: string) {
-        let finalFormula = this.replaceTags(formula, {});
-        console.log(`Update ${name}: ${finalFormula}`);// = ${this.evaluate(finalFormula)}`);
-        this.setVariable(name, this.evaluate(`(${finalFormula})`, this.buildScope()));
+        try {
+            let finalFormula = this.replaceTags(formula, {});
+            this.setVariable(name, this.evaluate(`(${finalFormula})`, this.buildScope()));
+        } catch (error) {
+            console.log(error);
+            console.log(this.replaceTags(formula, {}));
+        }
     }
 
     initializeVariable(name: string) {
@@ -275,12 +279,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
     async processVariablesPerTurn() {
         for (const entry of Object.values(this.variableDefinitions)) {
             if (entry.perTurnUpdate) {
-                console.log(`${entry.name} per turn update: ${entry.perTurnUpdate}`)
-                try {
-                    this.updateVariable(entry.name, entry.perTurnUpdate);
-                } catch(error) {
-                    console.log(error);
-                }
+                this.updateVariable(entry.name, entry.perTurnUpdate);
             }
         }
     }
@@ -288,12 +287,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
     async processVariablesPostInput() {
         for (const entry of Object.values(this.variableDefinitions)) {
             if (entry.postInputUpdate) {
-                console.log(`${entry.name} post input update: ${entry.postInputUpdate}`)
-                try {
-                    this.updateVariable(entry.name, entry.postInputUpdate);
-                } catch(error) {
-                    console.log(error);
-                }
+                this.updateVariable(entry.name, entry.postInputUpdate);
             }
         }
     }
@@ -301,12 +295,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
     async processVariablesPostResponse() {
         for (const entry of Object.values(this.variableDefinitions)) {
             if (entry.postResponseUpdate) {
-                console.log(`${entry.name} post response update: ${entry.postResponseUpdate}`)
-                try {
-                    this.updateVariable(entry.name, entry.postResponseUpdate);
-                } catch(error) {
-                    console.log(error);
-                }
+                this.updateVariable(entry.name, entry.postResponseUpdate);
             }
         }
     }
@@ -342,9 +331,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
                 // Go through all operations and execute them.
                 for (let classification of Object.values(selectedClassifications)) {
                     for (let variable of Object.keys(classification.updates)) {
-                        let oldValue = this.getVariable(variable);
                         this.updateVariable(variable, classification.updates[variable]);
-                        console.log(`Updated ${variable} from ${oldValue} to ${this.getVariable(variable)}`);
                     }
                 }
             }
@@ -354,12 +341,10 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
     replaceTags(source: string, replacements: {[name: string]: string}) {
         for (const key of Object.keys(this.variables)) {
             const stringVal = typeof this.getVariable(key) === 'object' ? JSON.stringify(this.getVariable(key)) : this.getVariable(key);
-            //console.log(`${typeof this.getVariable(key)}:${stringVal}`)
             replacements[key.toLowerCase()] = stringVal;
         }
         replacements['content'] = this.content ? this.content.replace(/"/g, '\\"') : this.content;
         return source.replace(/{{([A-z]*)}}/g, (match) => {
-            //console.log('Subbing:' + source + ':' + match.substring(2, match.length - 2).toLowerCase() + ":" + replacements[match.substring(2, match.length - 2).toLowerCase()]);
             return replacements[match.substring(2, match.length - 2).toLowerCase()];
         });
     }
