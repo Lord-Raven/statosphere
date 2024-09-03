@@ -21,9 +21,7 @@ export class ContentRule {
     evaluateAndApply(stage: Stage, targetCategory: ContentCategory, replacements: any): string {
         try {
             if (this.category == targetCategory && stage.evaluate(stage.replaceTags(this.condition, replacements), stage.scope)) {
-                console.log(this.modification);
-                console.log(replacements);
-
+                return stage.evaluate(stage.replaceTags(this.modification, replacements), stage.scope);
             }
         } catch (error) {
             console.log(error);
