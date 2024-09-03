@@ -97,8 +97,6 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
                         return input.replace(new RegExp(regex, 'g'), newValue);`
             }, this),
             join: new CustomFunction({name: 'join', parameters: 'arrayToJoin, separator', body: `\
-                        console.log('Testing join');
-                        console.log(arrayToJoin);
                         if (arrayToJoin) {
                             return arrayToJoin.join(separator);
                         } else {
@@ -448,7 +446,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
     stripComments(input: string) {
         if (!input) return input;
         // Remove single-line comments
-        input = input.replace(/\/\/.*$/gm, '');
+        input = input.replace(/ \/\/.*$/gm, '');
 
         // Remove block comments
         input = input.replace(/\/\*[\s\S]*?\*\//g, '');
