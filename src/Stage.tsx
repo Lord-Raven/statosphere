@@ -96,9 +96,11 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
             replace: new CustomFunction({name: 'replace', parameters: 'input, regex, newValue', body: `\
                         return input.replace(new RegExp(regex, 'g'), newValue);`
             }, this),
-            join: new CustomFunction({name: 'join', parameters: 'array, delimiter', body: `\
-                        if (array) {
-                            return array.join(delimiter);
+            join: new CustomFunction({name: 'join', parameters: 'arrayToJoin, separator', body: `\
+                        console.log('Testing join');
+                        console.log(arrayToJoin);
+                        if (arrayToJoin) {
+                            return arrayToJoin.join(separator);
                         } else {
                             return '';
                         }`
