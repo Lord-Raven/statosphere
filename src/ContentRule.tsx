@@ -20,7 +20,7 @@ export class ContentRule {
 
     evaluateAndApply(stage: Stage, targetCategory: ContentCategory, replacements: any): string {
         try {
-            if (this.category == targetCategory && stage.evaluate(stage.replaceTags(this.condition.toLowerCase(), replacements), stage.scope)) {
+            if (this.category == targetCategory && stage.evaluate(stage.replaceTags(this.condition, replacements), stage.scope)) {
                 console.log(this.modification);
                 console.log(replacements);
 
@@ -28,7 +28,7 @@ export class ContentRule {
         } catch (error) {
             console.log(error);
             console.log("Received the above error while attempting to evaluate and apply the following content rule:")
-            console.log(stage.replaceTags(this.condition.toLowerCase(), replacements))
+            console.log(stage.replaceTags(this.condition, replacements))
             console.log(stage.replaceTags(this.modification, replacements));
         }
         return stage.content;
