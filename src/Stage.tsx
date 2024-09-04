@@ -63,7 +63,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         this.classifiers = [];
         this.config = config;
         this.debugMode = false;
-        this.fallbackMode = false; // Backend temporarily disabled by default.
+        this.fallbackMode = false;
         this.fallbackPipeline = null;
         this.scope = {};
         env.allowRemoteModels = false;
@@ -80,6 +80,15 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         console.log('Loading Statosphere...');
         let yamlResponse = await fetch('chub_meta.yaml');
         const data: any = yaml.load(await yamlResponse.text());
+
+        console.log('Loading configuration');
+        const configJson = this.config.configJson ?? data.config_schema.properties.configJson.value;
+        const classifierJson = configJson.classifiers ?? '[]';
+        const contentJson = configJson.content ?? '[]';
+        const functionJson = configJson.functions ?? '[]';
+        const variableJson = configJson.variables ?? '[]';
+
+
         console.log('Validate functions');
         // Build basic functions
         this.functions = {
@@ -106,7 +115,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         };
 
         // Load additional functions
-        Object.values(this.validateSchema(this.config.functionConfig ?? data.config_schema.properties.functionConfig.value, functionSchema, 'function schema'))
+        Object.values(this.validateSchema(functionJson, functionSchema, 'function schema'))
             .forEach(funcData => {
                 let customFunction = new CustomFunction(funcData, this);
                 this.functions[customFunction.name] = customFunction;
@@ -138,8 +147,8 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
                 this.customFunctionMap[`${thisFunction.name}`] = thisFunction.createFunction();
             } catch (error) {
                 console.log(error);
-                console.log(thisFunction.parameters);
-                console.log(thisFunction.dependencies);
+                console.log('Encountered the above error while creating this function from configuration:');
+                console.log(`${thisFunction.parameters} ${thisFunction.dependencies}`);
                 console.log(thisFunction.body);
             }
         });
@@ -150,7 +159,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
 
         console.log('Validate variables');
         const variableDefinitions: VariableDefinition[] =
-            this.validateSchema(this.config.variableConfig ?? data.config_schema.properties.variableConfig.value, variableSchema, 'variable schema');
+            this.validateSchema(variableJson, variableSchema, 'variable schema');
         for (const definition of variableDefinitions) {
             this.variableDefinitions[definition.name] = new VariableDefinition(definition, this);
             if (!this.variables[definition.name]) {
@@ -159,11 +168,11 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         }
 
         console.log('Validate content modifiers');
-        Object.values(this.validateSchema(this.config.contentConfig ?? data.config_schema.properties.contentConfig.value, contentSchema, 'content schema'))
+        Object.values(this.validateSchema(contentJson, contentSchema, 'content schema'))
             .forEach(contentRule => this.contentRules.push(new ContentRule(contentRule, this)));
 
         console.log('Validate classifiers');
-        Object.values(this.validateSchema(this.config.classifierConfig ?? data.config_schema.properties.classifierConfig.value, classifierSchema, 'classifier schema'))
+        Object.values(this.validateSchema(classifierJson, classifierSchema, 'classifier schema'))
             .forEach(classifier => this.classifiers.push(new Classifier(classifier, this)));
 
         if (this.classifiers.length > 0) {

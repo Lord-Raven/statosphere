@@ -97,30 +97,12 @@ config_schema:
   title: Statosphere Settings
   type: object
   properties:
-    functionConfig:
-      title: Function Configuration
-      description: A JSON array of function definitions in one disgusting line.
+    configJson:
+      title: Configuration
+      description: Use [the Statosphere editor](https://lord-raven.github.io/statosphere-editor/) to build configuration JSON to paste here--or paste this into the editor to populate the form and make changes.
       type: string
       value: >
-        []
-    variableConfig:
-      title: Variable Configuration
-      description: A JSON array of variable definitions in one disgusting line.
-      type: string
-      value: >
-        []
-    classifierConfig:
-      title: Classifier Configuration
-      description: A JSON array of classification rules in one disgusting line.
-      type: string
-      value: >
-        []
-    contentConfig:
-      title: Content Configuration
-      description: A JSON array of rules for content modifications.
-      type: string
-      value: >
-        []
+        {}
     debugMode:
       title: Debug Mode
       description: Leave disabled unless you don't care about stability.
