@@ -84,13 +84,13 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         console.log('Loading configuration');
         const configJson = this.config.configJson ?? data.config_schema.properties.configJson.value;
         console.log(configJson);
-        const classifierJson = configJson.classifiers ?? '[]';
+        const classifierJson = configJson['classifiers'] ?? '[]';
         console.log(`classifier:` + classifierJson);
-        const contentJson = configJson.content ?? '[]';
+        const contentJson = configJson['content'] ?? '[]';
         console.log(`content:` + contentJson);
-        const functionJson = configJson.functions ?? '[]';
+        const functionJson = configJson['functions'] ?? '[]';
         console.log(`functions:` + functionJson);
-        const variableJson = configJson.variables ?? '[]';
+        const variableJson = configJson['variables'] ?? '[]';
         console.log(`variables:` + variableJson);
 
 
