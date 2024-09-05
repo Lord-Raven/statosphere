@@ -82,15 +82,15 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         const data: any = yaml.load(await yamlResponse.text());
 
         console.log('Loading configuration');
-        const configJson = this.config.configJson ?? data.config_schema.properties.configJson.value;
+        const configJson = JSON.parse(this.config.configJson ?? data.config_schema.properties.configJson.value);
         console.log(configJson);
-        const classifierJson = configJson['classifiers'] ?? '[]';
+        const classifierJson = configJson.classifiers ?? [];
         console.log(`classifier:` + classifierJson);
-        const contentJson = configJson['content'] ?? '[]';
+        const contentJson = configJson.content ?? [];
         console.log(`content:` + contentJson);
-        const functionJson = configJson['functions'] ?? '[]';
+        const functionJson = configJson.functions ?? [];
         console.log(`functions:` + functionJson);
-        const variableJson = configJson['variables'] ?? '[]';
+        const variableJson = configJson.variables ?? [];
         console.log(`variables:` + variableJson);
 
 
@@ -216,10 +216,9 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         return pipeline("zero-shot-classification", "Xenova/mobilebert-uncased-mnli");
     }
 
-    validateSchema(inputJson: string, schema: any, schemaName: string): any {
+    validateSchema(data: any, schema: any, schemaName: string): any {
         try {
             const validate = new Ajv({multipleOfPrecision: 2}).compile(schema);
-            const data = JSON.parse(inputJson);
             const valid = validate(data);
             if (valid) {
                 return data;
