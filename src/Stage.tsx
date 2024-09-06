@@ -405,6 +405,11 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         Object.values(this.contentRules).forEach(contentRule => this.content = contentRule.evaluateAndApply(this, ContentCategory.Input, replacements));
         const modifiedMessage = this.content;
 
+
+        this.content = '';
+        Object.values(this.contentRules).forEach(contentRule => this.content = contentRule.evaluateAndApply(this, ContentCategory.PostInput, replacements));
+        const systemMessage = this.content;
+
         this.content = '';
         Object.values(this.contentRules).forEach(contentRule => this.content = contentRule.evaluateAndApply(this, ContentCategory.StageDirection, replacements));
         const stageDirections = this.content;
@@ -414,7 +419,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
             stageDirections: stageDirections.trim() != '' ? `[Response Hints]${stageDirections}\n[/Response Hints]` : null,
             messageState: this.writeMessageState(),
             modifiedMessage: modifiedMessage,
-            systemMessage: null,
+            systemMessage: systemMessage.trim() != '' ? systemMessage : null,
             error: null,
             chatState: null
         };
@@ -439,7 +444,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         const modifiedMessage = this.content;
 
         this.content = '';
-        Object.values(this.contentRules).forEach(contentRule => this.content = contentRule.evaluateAndApply(this, ContentCategory.SystemMessage, replacements));
+        Object.values(this.contentRules).forEach(contentRule => this.content = contentRule.evaluateAndApply(this, ContentCategory.PostResponse, replacements));
 
         console.log(`End afterResponse()`);
         return {

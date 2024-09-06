@@ -2,8 +2,9 @@ import {Stage} from "./Stage";
 
 export enum ContentCategory {
     Input = 'Input',
+    PostInput = 'Post Input',
     Response = 'Response',
-    SystemMessage = 'System Message',
+    PostResponse = 'Post Response',
     StageDirection = 'Stage Direction'
 }
 
