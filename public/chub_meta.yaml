@@ -100,7 +100,7 @@ config_schema:
   properties:
     configJson:
       title: Configuration
-      description: Use <a href="https://lord-raven.github.io/statosphere-editor/">the Statosphere editor</a> to build configuration JSON to paste here--or paste this into the editor to populate the form and make changes.
+      description: Drop JSON from the Statosphere editor here--or paste this into the editor to make changes.
       type: string
       value: >
         {}
