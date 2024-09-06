@@ -12,7 +12,7 @@
         "title": "Content Category",
         "description": "Category of content to modify with this rule.",
         "type": "string",
-        "enum": ["Input", "Response", "System Message", "Stage Direction"]
+        "enum": ["Input", "Post Input", "Stage Direction", "Response", "Post Response"]
       },
       "condition": {
         "title": "Condition",
