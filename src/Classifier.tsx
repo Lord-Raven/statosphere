@@ -2,6 +2,7 @@ import {Stage} from "./Stage";
 
 export class Classifier {
     name: string;
+    condition: string;
     inputTemplate: any;
     responseTemplate: any;
     inputHypothesis: any;
@@ -10,6 +11,7 @@ export class Classifier {
 
     constructor(data: any, stage: Stage) {
         this.name = stage.processCode(data.name);
+        this.condition = stage.processCode(data.condition);
         this.inputTemplate = stage.processCode(data.inputTemplate);
         this.responseTemplate = stage.processCode(data.responseTemplate);
         this.inputHypothesis = stage.processCode(data.inputHypothesis);

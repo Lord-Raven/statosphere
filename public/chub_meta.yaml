@@ -9,13 +9,13 @@ tagline: "Give your bots variables and launch them into...the Stat-O-Sphere! (ph
 creator_notes: "
 This is a stage for creating custom variables and rules for stat-tracking, behavior reinforcement, or complex scenario implementation. 
 _Up front, this is pretty experimental, and I'm continuing to play with and expand upon it, so it could be unstable._ 
-But it could also be fun to play with as-is. If you can't read all of the notes below, please refresh this page until the \"Show More\" prompt renders.
+But I think it's already fun to play with as-is! If you can't see all of the notes below, please refresh this page until the \"Show More\" prompt renders--there's a lot more to show.
 <br>
 <br>
-The stage is comprised of four core elements:<br>
+This stage is comprised of four core elements:<br>
 <ul>
 <li>Variable definitions with per-turn, post-input, and post-response update options
-<li>JavaScript Function definitions for creating re-usable logic
+<li>JavaScript function definitions for creating complex, re-usable logic
 <li>Zero-shot classification rules to draw inferences from inputs or responses and apply updates to variables as a result
 <li>Content modification rules which alter input, response, post-input/response (which are \"system messages\" that display in-chat but do not persist to the LLM), and stage directions (additional LLM instruction), all based on specified conditions
 </ul>
@@ -77,11 +77,13 @@ These are items that will hopefully be more addressable in the future.
 <br>
 <br>
 **Pitfalls**<br>
-This a \"bot-maker beware\" sort of stage; I will continue to play with it, and that could mean breakages. There are other items that could warrant concern, as well:<br>
+As excited as I am to present this, it is, unfortunately, a \"bot-maker beware\" sort of stage. There are a number of items that could warrant concern:<br>
 <ul>
-<li>Venus Exclusivity: Remember that stages are a feature of the Venus front-end, and anyone playing your bot in another front-end will not benefit; you may wish to point this out in your creator notes, if you have used this stage to cultivate an intended experience.
+<li>Active development: I am planning to expand the feature set and there is the potential to break your application of the stage.
+<li>Venus exclusivity: Remember that stages are a feature of the Venus front-end, and anyone playing your bot in another front-end will not benefit; you may wish to point this out in your creator notes, if you have used this stage to cultivate an intended experience.
 <li>Obfuscation: the stage can implement some interesting behaviors, but those behaviors may no longer be represented within the bot's definition; savvy users can disable or inspect the bot's configuration, but most users are unlikely to even recognize that a stage is in play--consider mentioning it in your bot descriptions.
 <li>Malicious intent: because the stage is nearly opaque and it does offer powerful options--including evaluation of custom JavaScript functions--, I have some nebulous concern about the potential for abuse.
+<li>Inference backend: The zero-shot classification inference is being conducted on a Hugging Face-hosted backend. I manage this backend and I am not logging requests or anything of that sort, but it is still a third-party call that you should be aware of. If your configuration does not use classifications, the stage never even connects to this backend.
 <li>Stages are a beta feature: I imagine this stage could be broken by future stage releases; bear in mind that your bot's experience could be negatively impacted in that event.
 </ul>
 "

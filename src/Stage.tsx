@@ -320,32 +320,34 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
             let sequenceTemplate = this.replaceTags((contentSource == 'input' ? classifier.inputTemplate : classifier.responseTemplate) ?? '', replacementMapping);
             sequenceTemplate = sequenceTemplate.trim() == '' ? content : sequenceTemplate.replace('{}', content);
             let hypothesisTemplate = this.replaceTags((contentSource == 'input' ? classifier.inputHypothesis : classifier.responseHypothesis) ?? '', replacementMapping);
-            if (hypothesisTemplate.trim() != '') {
-                let candidateLabels: string[] = [];
-                let labelMapping: { [key: string]: string } = {};
-                for (const label of Object.keys(classifier.classifications)) {
-                    let subbedLabel = this.replaceTags(label, replacementMapping);
-                    candidateLabels.push(subbedLabel);
-                    labelMapping[subbedLabel] = label;
+            // No hypothesis (this classifier doesn't apply to this contentSource) or condition set but not true):
+            if (hypothesisTemplate.trim() == '' || (classifier.condition != '' && this.evaluate(this.replaceTags(classifier.condition ?? 'true', replacementMapping)))) {
+                continue;
+            }
+            let candidateLabels: string[] = [];
+            let labelMapping: { [key: string]: string } = {};
+            for (const label of Object.keys(classifier.classifications)) {
+                let subbedLabel = this.replaceTags(label, replacementMapping);
+                candidateLabels.push(subbedLabel);
+                labelMapping[subbedLabel] = label;
+            }
+
+            let response = await this.query({sequence: sequenceTemplate, candidate_labels: candidateLabels, hypothesis_template: hypothesisTemplate, multi_label: true});
+
+            let selectedClassifications: {[key: string]: Classification} = {};
+            let categoryScores: {[key: string]: number} = {};
+            for (let i = 0; i < response.labels.length; i++) {
+                let classification = classifier.classifications[labelMapping[response.labels[i]]];
+                if (response.scores[i] >= Math.max(classification.threshold ?? this.DEFAULT_THRESHOLD, categoryScores[classification.category ?? classification.label] ?? 0)) {
+                    selectedClassifications[classification.category ?? classification.label] = classification;
+                    categoryScores[classification.category ?? classification.label] = response.scores[i];
                 }
+            }
 
-                let response = await this.query({sequence: sequenceTemplate, candidate_labels: candidateLabels, hypothesis_template: hypothesisTemplate, multi_label: true});
-
-                let selectedClassifications: {[key: string]: Classification} = {};
-                let categoryScores: {[key: string]: number} = {};
-                for (let i = 0; i < response.labels.length; i++) {
-                    let classification = classifier.classifications[labelMapping[response.labels[i]]];
-                    if (response.scores[i] >= Math.max(classification.threshold ?? this.DEFAULT_THRESHOLD, categoryScores[classification.category ?? classification.label] ?? 0)) {
-                        selectedClassifications[classification.category ?? classification.label] = classification;
-                        categoryScores[classification.category ?? classification.label] = response.scores[i];
-                    }
-                }
-
-                // Go through all operations and execute them.
-                for (let classification of Object.values(selectedClassifications)) {
-                    for (let variable of Object.keys(classification.updates)) {
-                        this.updateVariable(variable, classification.updates[variable]);
-                    }
+            // Go through all operations and execute them.
+            for (let classification of Object.values(selectedClassifications)) {
+                for (let variable of Object.keys(classification.updates)) {
+                    this.updateVariable(variable, classification.updates[variable]);
                 }
             }
         }
