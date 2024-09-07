@@ -17,29 +17,30 @@ The stage is comprised of four core elements:<br>
 <li>Variable definitions with per-turn, post-input, and post-response update options
 <li>JavaScript Function definitions for creating re-usable logic
 <li>Zero-shot classification rules to draw inferences from inputs or responses and apply updates to variables as a result
-<li>Content modification rules which alter input, response, system messages (details that display in-chat but do not persist to the LLM), and stage directions (additional LLM instruction), all based on specified conditions
+<li>Content modification rules which alter input, response, post-input/response (which are \"system messages\" that display in-chat but do not persist to the LLM), and stage directions (additional LLM instruction), all based on specified conditions
 </ul>
 <br>
 **Example Applications**<br>
 This stage has no default configuration and will do nothing on its own. However, through configuration, a wide variety of effects are possible:<br>
 <ul>
 <li>Stat tracking and display: use inference to roughly gauge changes present in the input or response and translate that into a number to apply to variables
-<li>Scenario escalation tracking: use perTurnUpdate to increase a turn variable, then add prompt rules to feed updated scenario data as time marches on--go crazy and use inference to adjust the pace of escalation
+<li>Scenario escalation: use perTurnUpdate to increase a turn variable, then add prompt rules to feed updated scenario data as time marches on--go crazy and use inference to adjust the pace of escalation
 <li>Rule or behavior reinforcement: apply classifiers or keywords to remind the LLM of your bot's quirks when the user's input should trigger them
 <li>Dynamic response guidance: use inference to detect the nature of the user's input and ask the bot to focus its writing in different ways: is the user examining something? Instruct the bot to be descriptive. Is the user trying to move on? Tell the bot to introduce the next scene.
 <li>Input clean-up: use regex to strip bracketed LLM instruction from the user's input and embed it into stage directions so it doesn't appear in the chat and is only included in the current prompt
-<li>These are just ideas; there are likely all kinds of other creative, insane applications
+<li>Iterate upon one of my other stages: both [Crunchatize](https://venus.chub.ai/extensions/Ravenok/crunchatize-77a78ffcc6a6) and [Alien Infestation](https://venus.chub.ai/extensions/Ravenok/alien-infestation-04c7448f1d14) could be entirely achieved through the functionality offered here
+<li>These are just ideas; there are likely all kinds of creative and insane applications
 </ul>
 <br>
 <br>
 **Configuration**<br>
-Chub's stage configuration UI is not yet prepared for the elaborate requirements of this stage, so the stage configuration is a single blank where you can paste some JSON.
+Chub's stage configuration UI is not yet prepared for the elaborate requirements of this stage, so the configuration modal here in Venus is a single blank where you can paste some JSON.
 Don't worry! You don't have to hand-build any JSON to paste in there; I created [an external tool](https://lord-raven.github.io/statosphere-editor/) 
 that will produce JSON that you can copy and paste into the stage's configuration. You can also paste configuration from your bot (or others'!) into the tool to make modifications.
 <br>
 <br>
 There is a lot more information that I will need to cover here, but I have not had time to do so yet. For the moment, please see my example bots and the configuration of the stage on those bots; 
-you can view this by starting a chat with one and looking at the active stages in the chat settings. 
+you can view this by starting a chat with one and looking at the active stages in the chat settings. You can copy and paste the JSON from the stage's configuration into the tool above to see how the stage has been set up for that bot.
 <br>
 <br>
 **Order of Operations**<br>
@@ -51,7 +52,7 @@ For reference, the rules on this stage are applied in this order:<br>
 <li>Classifiers with an input hypothesis are applied to the input, in the order that classifiers are defined
 <li>Post-input variable operations are performed, in the order that variables are defined
 <li>Input content modifications are executed, in the order that these modifications are defined
-<li>Input system message content modifications are executed, in the order that these modifications are defined
+<li>Post-input message content modifications are executed, in the order that these modifications are defined
 <li>Stage direction modifications are executed, in the order that these modifications are defined
 </ul>
 <li>Bot returns response
@@ -59,16 +60,30 @@ For reference, the rules on this stage are applied in this order:<br>
 <li>Classifiers with a response hypothesis are applied to the response, in the order that classifiers are defined
 <li>Post-response variable operations are performed, in the order that variables are defined
 <li>Response content modifications are executed, in the order that these modifications are defined
-<li>Response system message modifications are executed, in the order that these modifications are defined
+<li>Post-response message modifications are executed, in the order that these modifications are defined
 </ul>
 </ul>
 <br>
 <br>
 **Inference Details**<br>
 This stage makes API calls to a Hugging Face backend that I have set up to leverage a zero-shot classification model. 
-If this backend is unavailable or some other error occurs in calling it, the stage will swap to applying a very small, local, zero-shot model. 
-Chub's stage timeout is pretty short and that can cause the stage to make a second call or give up entirely if these inferences take too long. 
-This is hopefully something that will be more addressable in the future.
+If this backend is unavailable or some other error occurs in calling it, the stage will swap to applying a very small, local, zero-shot model.
+<br>
+<br>
+Neither the local model nor the backend model are going to get you great results without carefully tuned prompts/labels/hypotheses; 
+it can be a struggle to get consistently decent evaluations, so this remains the weakpoint in the stage. 
+Chub's stage timeout is also pretty short and that can cause the stage to make a second call or give up entirely if these inferences take too long. 
+These are items that will hopefully be more addressable in the future.
+<br>
+<br>
+**Pitfalls**<br>
+This a \"bot-maker beware\" sort of stage; I will continue to play with it, and that could mean breakages. There are other items that could warrant concern, as well:<br>
+<ul>
+<li>Venus Exclusivity: Remember that stages are a feature of the Venus front-end, and anyone playing your bot in another front-end will not benefit; you may wish to point this out in your creator notes, if you have used this stage to cultivate an intended experience.
+<li>Obfuscation: the stage can implement some interesting behaviors, but those behaviors may no longer be represented within the bot's definition; savvy users can disable or inspect the bot's configuration, but most users are unlikely to even recognize that a stage is in play--consider mentioning it in your bot descriptions.
+<li>Malicious intent: because the stage is nearly opaque and it does offer powerful options--including evaluation of custom JavaScript functions--, I have some nebulous concern about the potential for abuse.
+<li>Stages are a beta feature: I imagine this stage could be broken by future stage releases; bear in mind that your bot's experience could be negatively impacted in that event.
+</ul>
 "
 
 # 'PUBLIC', 'PRIVATE', or 'UNLISTED'.
