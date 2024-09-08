@@ -32,7 +32,6 @@ This stage has no default configuration and will do nothing on its own. However,
 <li>These are just ideas; there are likely all kinds of creative and insane applications
 </ul>
 <br>
-<br>
 **Configuration**<br>
 Chub's stage configuration UI is not yet prepared for the elaborate requirements of this stage, so the configuration modal here in Venus is a single blank where you can paste some JSON.
 Don't worry! You don't have to hand-build any JSON to paste in there; I created [an external tool](https://lord-raven.github.io/statosphere-editor/) 
@@ -41,7 +40,6 @@ that will produce JSON that you can copy and paste into the stage's configuratio
 <br>
 There is a lot more information that I will need to cover here, but I have not had time to do so yet. For the moment, please see my example bots and the configuration of the stage on those bots; 
 you can view this by starting a chat with one and looking at the active stages in the chat settings. You can copy and paste the JSON from the stage's configuration into the tool above to see how the stage has been set up for that bot.
-<br>
 <br>
 **Order of Operations**<br>
 For reference, the rules on this stage are applied in this order:<br>
@@ -64,7 +62,6 @@ For reference, the rules on this stage are applied in this order:<br>
 </ul>
 </ul>
 <br>
-<br>
 **Inference Details**<br>
 This stage makes API calls to a Hugging Face backend that I have set up to leverage a zero-shot classification model. 
 If this backend is unavailable or some other error occurs in calling it, the stage will swap to applying a very small, local, zero-shot model.
@@ -86,7 +83,6 @@ As excited as I am to present this, it is, unfortunately, a \"bot-maker beware\"
 <li>Inference backend: The zero-shot classification inference is being conducted on a Hugging Face-hosted backend. I manage this backend and I do not log requests, but it is still a third-party call that you may wish to avoid. If your configuration does not use classifications, the stage never even connects to this backend.
 <li>Stages are a beta feature: I imagine this stage could be broken by future stage releases; bear in mind that your bot's experience could be negatively impacted in that event.
 </ul>
-<br>
 <br>
 **What's Next?**<br>
 This stage represents nearly all the essential features I feel I can achieve without further improvements to Venus's stage system. There is certainly room for further improvement within this (or with the configuration editor), 
