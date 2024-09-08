@@ -85,14 +85,9 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         const configJson = JSON.parse(this.config.configJson ?? data.config_schema.properties.configJson.value);
         console.log(configJson);
         const classifierJson = configJson.classifiers ?? [];
-        console.log(`classifier:` + classifierJson);
         const contentJson = configJson.content ?? [];
-        console.log(`content:` + contentJson);
         const functionJson = configJson.functions ?? [];
-        console.log(`functions:` + functionJson);
         const variableJson = configJson.variables ?? [];
-        console.log(`variables:` + variableJson);
-
 
         console.log('Validate functions');
         // Build basic functions
@@ -364,7 +359,6 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
     }
 
     async query(data: any) {
-        console.log(data);
         let result: any = null;
         if (this.client && !this.fallbackMode) {
             try {
@@ -418,7 +412,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
 
         console.log('End beforePrompt()');
         return {
-            stageDirections: stageDirections.trim() != '' ? `[Response Hints]${stageDirections}\n[/Response Hints]` : null,
+            stageDirections: stageDirections.trim() != '' ? `[INST]${stageDirections}\n[/INST]` : null,
             messageState: this.writeMessageState(),
             modifiedMessage: modifiedMessage,
             systemMessage: systemMessage.trim() != '' ? systemMessage : null,
