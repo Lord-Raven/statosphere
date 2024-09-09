@@ -99,7 +99,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
                         return haystack.includes(needle);`
             }, this),
             capture: new CustomFunction({name: 'capture', parameters: 'input, regex', body: `\
-                        let matches = [...input.matchAll(new RegExp(regex, 'g'))];
+                        let matches = [...input.matchAll(new RegExp(regex))];
                         return matches && matches.length > 0 ? matches.map(match => match.slice(1)) : null;`
             }, this),
             replace: new CustomFunction({name: 'replace', parameters: 'input, regex, newValue', body: `\
