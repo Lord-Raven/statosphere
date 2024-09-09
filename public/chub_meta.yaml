@@ -24,6 +24,7 @@ This stage is comprised of four core elements:<br>
 This stage has no default configuration and will do nothing on its own. However, through configuration, a wide variety of effects are possible:<br>
 <ul>
 <li>Stat tracking and display: use inference to roughly gauge changes present in the input or response and translate that into a number to apply to variables
+<li>Content generation: randomize values for variables to build dynamic content--or stage directions to have the LLM append content in a format that the stage can read and remove from the bot's responses
 <li>Scenario escalation: use perTurnUpdate to increase a turn variable, then add prompt rules to feed updated scenario data as time marches on--go crazy and use inference to adjust the pace of escalation
 <li>Rule or behavior reinforcement: apply classifiers or keywords to remind the LLM of your bot's quirks when the user's input should trigger them
 <li>Dynamic response guidance: use inference to detect the nature of the user's input and ask the bot to focus its writing in different ways: is the user examining something? Instruct the bot to be descriptive. Is the user trying to move on? Tell the bot to introduce the next scene.
@@ -67,14 +68,19 @@ This stage makes API calls to a Hugging Face backend that I have set up to lever
 If this backend is unavailable or some other error occurs in calling it, the stage will swap to applying a very small, local, zero-shot model.
 <br>
 <br>
-Neither the local model nor the backend model are going to get you great results without carefully tuned prompts/labels/hypotheses; 
+The backend does not log requests, but the source code is not public at this time. 
+I simply haven't messed with how to expose the source code without opening up the backend to other apps--I need to restrict usage to these stages and block unknown third parties. 
+In the near future, I will try to swap the permissions so others can view the source and verify there's nothing nefarious for themselves (or learn to set up their own for their own stage).
+<br>
+<br>
+Neither the local model nor the backend model are going to get you great results without carefully tuned prompts/labels/hypotheses/thresholds; 
 it can be a struggle to get consistently decent evaluations, so this remains the weakpoint in the stage. 
 Chub's stage timeout is also pretty short and that can cause the stage to make a second call or give up entirely if these inferences take too long. 
 These are items that will hopefully be more addressable in the future.
 <br>
 <br>
 **Pitfalls**<br>
-As excited as I am to present this, it is, unfortunately, a \"bot-maker beware\" sort of stage. There are a number of items that could warrant concern:<br>
+As excited as I am to present this, it is, unfortunately, a \"bot-maker beware\" sort of stage. There are a number of items that could warrant concern, which you may wish to consider before working with this stage:<br>
 <ul>
 <li>Active development: I am planning to expand the feature set, and this comes with the potential to break your application of the stage.
 <li>Venus exclusivity: remember that stages are a feature of the Venus front-end, and anyone playing your bot in another front-end will not benefit; you may wish to point this out in your creator notes, if you have used this stage to cultivate an intended experience.
