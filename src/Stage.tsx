@@ -316,7 +316,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
             sequenceTemplate = sequenceTemplate.trim() == '' ? content : sequenceTemplate.replace('{}', content);
             let hypothesisTemplate = this.replaceTags((contentSource == 'input' ? classifier.inputHypothesis : classifier.responseHypothesis) ?? '', replacementMapping);
             // No hypothesis (this classifier doesn't apply to this contentSource) or condition set but not true):
-            if (hypothesisTemplate.trim() == '' || (classifier.condition != '' && !this.evaluate(this.replaceTags(classifier.condition ?? 'true', replacementMapping)))) {
+            if (hypothesisTemplate.trim() == '' || (classifier.condition != '' && !this.evaluate(this.replaceTags(classifier.condition ?? 'true', replacementMapping), this.scope))) {
                 continue;
             }
             let candidateLabels: string[] = [];
