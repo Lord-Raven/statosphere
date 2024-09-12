@@ -34,6 +34,9 @@ This stage has no default configuration and will do nothing on its own. However,
 </ul>
 <br>
 **Build Your Own Experience**<br>
+You can get started by adding this stage to a chat or bot. If you are a bot maker and your target bot is already public, it may be best to start by adding the stage to a specific chat to test before copying the configuration to the bot.
+<br>
+<br>
 Chub's stage configuration UI was not quite prepared for the elaborate requirements of this stage, so the configuration modal here in Venus is a single blank where you will paste some JSON.
 Don't worry! You don't have to (and shouldn't!) hand-build any JSON to paste in there; I've created [an external tool](https://lord-raven.github.io/statosphere-editor/) 
 that will produce JSON that you can copy and paste into the stage's configuration. You can also drop configuration from your bot (or others'!) into the tool to make modifications.
@@ -122,7 +125,7 @@ because I think this kind of stage holds value for people who want to play with 
 "
 
 # 'PUBLIC', 'PRIVATE', or 'UNLISTED'.
-visibility: 'UNLISTED'
+visibility: 'PUBLIC'
 
 # 'ADJACENT' | 'NONE' | 'COVER' | 'FULLSCREEN'
 # 'ADJACENT' is default. The frame will display on the side of the
