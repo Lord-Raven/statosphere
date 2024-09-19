@@ -19,16 +19,16 @@ export class ContentRule {
         this.modification = stage.processCode(data.modification ?? '{{content}}');
     }
 
-    evaluateAndApply(stage: Stage, targetCategory: ContentCategory, replacements: any): string {
+    evaluateAndApply(stage: Stage, targetCategory: ContentCategory): string {
         try {
-            if (this.category == targetCategory && stage.evaluate(stage.replaceTags(this.condition, replacements), stage.scope)) {
-                return stage.evaluate(stage.replaceTags(this.modification, replacements), stage.scope);
+            if (this.category == targetCategory && stage.evaluate(stage.replaceTags(this.condition), stage.scope)) {
+                return stage.evaluate(stage.replaceTags(this.modification), stage.scope);
             }
         } catch (error) {
             console.log(error);
             console.log("Received the above error while attempting to evaluate and apply the following content rule:")
-            console.log(stage.replaceTags(this.condition, replacements))
-            console.log(stage.replaceTags(this.modification, replacements));
+            console.log(stage.replaceTags(this.condition))
+            console.log(stage.replaceTags(this.modification));
         }
         return stage.content;
     }

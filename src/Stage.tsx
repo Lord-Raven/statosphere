@@ -23,7 +23,7 @@ const math = create(all, {matrix: 'Array'});
 
 export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateType, ConfigType> {
 
-    readonly DEFAULT_THRESHOLD = 0.8;
+    readonly DEFAULT_THRESHOLD = 0.7;
 
     // message-level variables:
     variables: {[key: string]: any}
@@ -44,6 +44,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
     functions: {[key: string]: CustomFunction};
     customFunctionMap: any;
     scope: {[key: string]: any};
+    replacements: any = {};
 
     constructor(data: InitialData<InitStateType, ChatStateType, MessageStateType, ConfigType>) {
         super(data);
@@ -56,6 +57,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         console.log('Constructing Statosphere');
         this.characters = characters;
         this.user = users[Object.keys(users)[0]];
+        this.replacements = {'user': this.user.name, 'char': Object.values(this.characters)[0].name};
         this.variables = {};
         this.variableDefinitions = {};
         this.functions = {};
@@ -272,11 +274,11 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
     }
     updateVariable(name: string, formula: string) {
         try {
-            let finalFormula = this.replaceTags(formula, {});
+            let finalFormula = this.replaceTags(formula);
             this.setVariable(name, this.evaluate(`(${finalFormula})`, this.buildScope()));
         } catch (error) {
             console.log(error);
-            console.log(this.replaceTags(formula, {}));
+            console.log(this.replaceTags(formula));
         }
     }
 
@@ -308,21 +310,20 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         }
     }
 
-    async processClassifiers(content: string, contentSource: string, botId: string) {
+    async processClassifiers(content: string, contentSource: string) {
         for (const classifier of Object.values(this.classifiers)) {
-            const replacementMapping: any = {"user": this.user.name, "char": this.characters[botId]?.name ?? ''};
 
-            let sequenceTemplate = this.replaceTags((contentSource == 'input' ? classifier.inputTemplate : classifier.responseTemplate) ?? '', replacementMapping);
+            let sequenceTemplate = this.replaceTags((contentSource == 'input' ? classifier.inputTemplate : classifier.responseTemplate) ?? '');
             sequenceTemplate = sequenceTemplate.trim() == '' ? content : sequenceTemplate.replace('{}', content);
-            let hypothesisTemplate = this.replaceTags((contentSource == 'input' ? classifier.inputHypothesis : classifier.responseHypothesis) ?? '', replacementMapping);
+            let hypothesisTemplate = this.replaceTags((contentSource == 'input' ? classifier.inputHypothesis : classifier.responseHypothesis) ?? '');
             // No hypothesis (this classifier doesn't apply to this contentSource) or condition set but not true):
-            if (hypothesisTemplate.trim() == '' || (classifier.condition != '' && !this.evaluate(this.replaceTags(classifier.condition ?? 'true', replacementMapping), this.scope))) {
+            if (hypothesisTemplate.trim() == '' || (classifier.condition != '' && !this.evaluate(this.replaceTags(classifier.condition ?? 'true'), this.scope))) {
                 continue;
             }
             let candidateLabels: string[] = [];
             let labelMapping: { [key: string]: string } = {};
             for (const label of Object.keys(classifier.classifications)) {
-                let subbedLabel = this.replaceTags(label, replacementMapping);
+                let subbedLabel = this.replaceTags(label);
                 candidateLabels.push(subbedLabel);
                 labelMapping[subbedLabel] = label;
             }
@@ -348,7 +349,8 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         }
     }
 
-    replaceTags(source: string, replacements: {[name: string]: string}) {
+    replaceTags(source: string) {
+        let replacements = this.replacements;
         for (const key of Object.keys(this.variables)) {
             replacements[key.toLowerCase()] = (typeof this.getVariable(key) === 'object' ? JSON.stringify(this.getVariable(key)) : this.getVariable(key));
         }
@@ -387,27 +389,26 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
             promptForId
         } = userMessage;
         console.log('Start beforePrompt()');
+        this.replacements = {'user': this.user.name, 'char': (this.characters[promptForId ?? ''] ? this.characters[promptForId ?? ''].name : '')};
 
         await this.processVariablesPerTurn();
 
-        const replacements = {'user': this.user.name, 'char': (this.characters[promptForId ?? ''] ? this.characters[promptForId ?? ''].name : '')};
-
         this.content = content;
-        await this.processClassifiers(content, 'input', promptForId ?? '');
+        await this.processClassifiers(content, 'input');
         await this.processVariablesPostInput();
 
         this.buildScope();
 
-        Object.values(this.contentRules).forEach(contentRule => this.content = contentRule.evaluateAndApply(this, ContentCategory.Input, replacements));
+        Object.values(this.contentRules).forEach(contentRule => this.content = contentRule.evaluateAndApply(this, ContentCategory.Input));
         const modifiedMessage = this.content;
 
 
         this.content = '';
-        Object.values(this.contentRules).forEach(contentRule => this.content = contentRule.evaluateAndApply(this, ContentCategory.PostInput, replacements));
+        Object.values(this.contentRules).forEach(contentRule => this.content = contentRule.evaluateAndApply(this, ContentCategory.PostInput));
         const systemMessage = this.content;
 
         this.content = '';
-        Object.values(this.contentRules).forEach(contentRule => this.content = contentRule.evaluateAndApply(this, ContentCategory.StageDirection, replacements));
+        Object.values(this.contentRules).forEach(contentRule => this.content = contentRule.evaluateAndApply(this, ContentCategory.StageDirection));
         const stageDirections = this.content;
 
         console.log('End beforePrompt()');
@@ -428,19 +429,20 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
             anonymizedId
         } = botMessage;
         console.log('Start afterResponse()');
+        this.replacements = {'user': this.user.name, 'char': (this.characters[anonymizedId] ? this.characters[anonymizedId].name : '')};
 
         this.content = content;
-        await this.processClassifiers(content, 'response', anonymizedId);
+        await this.processClassifiers(content, 'response');
         await this.processVariablesPostResponse();
 
         this.buildScope();
 
-        const replacements = {'user': this.user.name, 'char': (this.characters[anonymizedId] ? this.characters[anonymizedId].name : '')};
-        Object.values(this.contentRules).forEach(contentRule => this.content = contentRule.evaluateAndApply(this, ContentCategory.Response, replacements));
+
+        Object.values(this.contentRules).forEach(contentRule => this.content = contentRule.evaluateAndApply(this, ContentCategory.Response));
         const modifiedMessage = this.content;
 
         this.content = '';
-        Object.values(this.contentRules).forEach(contentRule => this.content = contentRule.evaluateAndApply(this, ContentCategory.PostResponse, replacements));
+        Object.values(this.contentRules).forEach(contentRule => this.content = contentRule.evaluateAndApply(this, ContentCategory.PostResponse));
 
         console.log(`End afterResponse()`);
         return {
