@@ -12,9 +12,6 @@ _Up front, this is pretty experimental; it may become unstable and it may not be
 but if you've been thinking about playing with a stage of your own, this may be a less daunting entrypoint.
 <br>
 <br>
-If you can't see all of the notes below, please refresh this page until the \"Show More\" prompt renders--there's a lot more to show.
-<br>
-<br>
 This stage is comprised of four core elements:<br>
 <ul>
 <li>Variable definitions with per-turn, post-input, and post-response update options
@@ -26,7 +23,7 @@ This stage is comprised of four core elements:<br>
 **Example Applications**<br>
 This stage has no default configuration and will do nothing on its own. However, through configuration, a wide variety of effects are possible:<br>
 <ul>
-<li>Stat tracking and display: use inference to roughly gauge changes present in the input or response and translate that into a number to apply to variables
+<li>Stat tracking and display: use inference to roughly gauge changes present in the input or response and translate that into numbers to apply to variables
 <li>Scenario escalation: use perTurnUpdate to increase a turn variable, then add prompt rules to feed updated scenario data as time marches on--go crazy and use inference to adjust the pace of escalation
 <li>Rule or behavior reinforcement: apply classifiers or keywords to remind the LLM of your bot's quirks when the user's input should trigger them
 <li>Dynamic response guidance: use inference to detect the nature of the user's input and ask the bot to focus its writing in different ways: is the user examining something? Instruct the bot to be descriptive. Is the user trying to move on? Tell the bot to introduce the next scene.
@@ -37,23 +34,30 @@ This stage has no default configuration and will do nothing on its own. However,
 </ul>
 <br>
 **Build Your Own Experience**<br>
-You can get started by adding this stage to a chat or bot. If you are a bot maker and your target bot is already public, 
-it would be best to start by adding the stage to a specific chat to test before copying the configuration to the bot and exposing everyone to your work-in-progress configuration.
+There are two steps to using this stage: adding it and configuring it. You can add a stage to a specific chat by viewing the chat's settings and searching for Statosphere in the stage dropdown. 
+You can also add a stage to a bot that you own from the bot's page--there is a Stages section below the Gallery. 
+Stages added to the bot itself will apply to everyone who starts a chat with that bot (although the stage can be disabled by the user in their chat settings); 
+for this reason, I recommend bot-makers test out Statosphere configuration on a specific chat before applying it to a public bot.
 <br>
 <br>
-Chub's stage configuration UI was not quite prepared for the elaborate requirements of this stage, so the configuration modal here in Venus is a single blank where you will paste some JSON.
+Once this stage has been added to a chat or bot, it must be configured in order to do anything. Chub's stage configuration UI was not quite prepared for the elaborate requirements of this stage, 
+so the configuration modal here in Venus is a single blank where you will paste some JSON.
+<br>
+<br>
 Don't worry! You don't have to (and shouldn't!) handcraft any JSON to paste in there; I've created [an external tool](https://lord-raven.github.io/statosphere-editor/) 
-that will produce JSON that you can copy and paste into the stage's configuration. You can also drop configuration from your bot (or others'!) into the tool to make modifications.
+that will produce JSON that you can copy and paste into the stage's configuration. You can also drop configuration from your bot (or others'!) into the tool to make modifications. 
+The general workflow is building your desired functionality in the editor, hitting the copy button at the bottom, pasting into the stage configuration modal, and refreshing the chat to pull in those changes. 
 <br>
 <br>
-When pasting new configuration into an ongoing chat's settings, you will have to refresh the page for changes to take effect.
+There is a lot of debugging output in the console, especially when something does not load or work as expected; I'll continue to improve this aspect, 
+but I think there's usually enough information to indicate approximately where any problems lie.
 <br>
 <br>
-There is a lot more information that I should cover here, but I have not had time to do so yet. For the moment, please see my example bots and the configuration of the stage on those bots; 
-you can view this by starting a chat with one and looking at the active stages in the chat settings. You can copy and paste the JSON from the stage's configuration into the tool above to see how the stage has been set up for that bot.
+I want to include more of a tutorial or guide here, but I have not had time to write that up. For the moment, please see my example bots and the configuration of the stage on those bots; 
+you can view that by starting a chat with one and looking at the active stages in the chat settings. You can copy and paste the JSON from the stage's configuration into the tool above to see how the stage has been set up for that bot.
 <br>
 <br>
-These are just some brief notes for creating your own configurations, to tide folks over 'til I can more properly document things:
+Here are just some brief notes to keep in mind, to tide folks over 'til I can more properly document things:
 <ul>
 <li>With the exception of the Functions section, most value/condition/update fields in this configuration are evaluated mathematical statements which use [MathJS](https://mathjs.org/index.html).
 <ul>
@@ -62,7 +66,7 @@ These are just some brief notes for creating your own configurations, to tide fo
 <li>You can reference your defined variables by name outside of strings.
 <li>You can also reference variables both inside and outside of strings by surrounding them with {{double braces}}; this substitution is performed by the stage before evaluation.
 <li>As a result, you can use double braces to reference {{user}}, {{char}}, and {{content}} (which contains either the last input or response, depending upon when the evaluation is occurring).
-<li>Arrays: Statosphere has MathJS set to handle matrices as arrays, but MathJS still uses one-based array indexing, which will differ from when you reference those arrays in your defined JavaScript functions.
+<li>Statosphere has MathJS set to handle matrices as arrays, but MathJS still uses one-based array indexing, which will differ from when you reference those arrays in your defined JavaScript functions.
 </ul>
 <li>The Functions section allows you to define JavaScript functions, which can then be leveraged in any of the other evaluated fields.
 <ul>

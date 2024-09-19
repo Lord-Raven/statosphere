@@ -239,7 +239,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
             // Initialize variables that maybe didn't exist when this message state was written.
             for (const definition of Object.values(this.variableDefinitions)) {
                 if (!this.variables[definition.name]) {
-                    console.log('Initializing variable in readMessageState:' + definition.name);
+                    console.log(`Initializing variable in readMessageState: ${definition.name}`);
                     this.initializeVariable(definition.name);
                 }
             }
