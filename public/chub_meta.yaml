@@ -64,8 +64,8 @@ Here are just some brief notes to keep in mind, to tide folks over 'til I can mo
 <li>Look at the [functions supported by MathJS](https://mathjs.org/docs/reference/functions.html), as it's quite robust out of the box.
 <li>Surround string values with quotation marks (or else MathJS will try to evaluate them).
 <li>You can reference your defined variables by name outside of strings.
-<li>You can also reference variables both inside and outside of strings by surrounding them with {{double braces}}; this substitution is performed by the stage before evaluation.
-<li>As a result, you can use double braces to reference {{user}}, {{char}}, and {{content}} (which contains either the last input or response, depending upon when the evaluation is occurring).
+<li>You can also reference variables both inside and outside of strings by surrounding them with double braces ({); this substitution is performed by the stage before evaluation.
+<li>You can use double braces user, char, and content (which contains either the last input or response, depending upon when the evaluation is occurring).
 <li>Statosphere has MathJS set to handle matrices as arrays, but MathJS still uses one-based array indexing, which will differ from when you reference those arrays in your defined JavaScript functions.
 </ul>
 <li>The Functions section allows you to define JavaScript functions, which can then be leveraged in any of the other evaluated fields.
@@ -127,7 +127,8 @@ As excited as I am to present this, it is, unfortunately, a \"bot-maker beware\"
 </ul>
 <br>
 **Updates**<br>
-09/18/2024 - Simplified {{user}} and {{char}} substitution, specifically to enable support in variable initialization.
+09/24/2024 - I've had to make some documentation updates due to some recent formatting changes on the site; I cannot actually use double braces in these notes or things get funky.
+09/18/2024 - Simplified user and char substitution, specifically to enable support in variable initialization.
 09/17/2024 - I have updated the configuration builder to incorporate a simple classifier tester so you can view zero-shot classification results for any sample input/response--
 this makes it far easier to test and tweak classifiers.
 <br>
