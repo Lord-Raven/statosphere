@@ -163,9 +163,15 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         const variableDefinitions: VariableDefinition[] =
             this.validateSchema(variableJson, variableSchema, 'variable schema');
         for (const definition of variableDefinitions) {
-            this.variableDefinitions[definition.name] = new VariableDefinition(definition, this);
-            if (!this.variables[definition.name]) {
-                this.initializeVariable(definition.name);
+            try {
+                this.variableDefinitions[definition.name] = new VariableDefinition(definition, this);
+                if (!this.variables[definition.name]) {
+                    this.initializeVariable(definition.name);
+                }
+            } catch(error) {
+                console.log(error);
+                console.log('Encountered the above error while creating variable');
+                console.log(definition);
             }
         }
 
