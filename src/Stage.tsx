@@ -453,6 +453,9 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         this.content = '';
         Object.values(this.contentRules).forEach(contentRule => this.content = contentRule.evaluateAndApply(this, ContentCategory.PostResponse));
 
+        console.log('Testing unexpected system message behavior:');
+        console.log(modifiedMessage);
+        console.log(this.content.trim() != '' ? this.content : null);
         console.log(`End afterResponse()`);
         return {
             stageDirections: null,
