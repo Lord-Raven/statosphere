@@ -417,9 +417,6 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         Object.values(this.contentRules).forEach(contentRule => this.content = contentRule.evaluateAndApply(this, ContentCategory.StageDirection));
         const stageDirections = this.content;
 
-        console.log('Testing unexpected system message behavior:');
-        console.log(stageDirections.trim() != '' ? `[RESPONSE INSTRUCTION]${stageDirections}\n[/RESPONSE INSTRUCTION]` : null);
-        console.log(systemMessage.trim() != '' ? systemMessage : null);
         console.log('End beforePrompt()');
         return {
             stageDirections: stageDirections.trim() != '' ? `[RESPONSE INSTRUCTION]${stageDirections}\n[/RESPONSE INSTRUCTION]` : null,
@@ -453,9 +450,6 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         this.content = '';
         Object.values(this.contentRules).forEach(contentRule => this.content = contentRule.evaluateAndApply(this, ContentCategory.PostResponse));
 
-        console.log('Testing unexpected system message behavior:');
-        console.log(modifiedMessage);
-        console.log(this.content.trim() != '' ? this.content : null);
         console.log(`End afterResponse()`);
         return {
             stageDirections: null,
