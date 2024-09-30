@@ -11,6 +11,7 @@ export class Generator {
     phase: Phase;
     condition: any;
     prompt: any;
+    template: any;
     minTokens: any;
     maxTokens: any;
     updates: {[key: string]: string}
@@ -20,14 +21,15 @@ export class Generator {
         this.phase = data.phase;
         this.condition = data.condition;
         this.prompt = stage.processCode(data.prompt);
+        this.template = stage.processCode(data.template);
         console.log(this.prompt);
-        if (!this.prompt.includes("{{system_prompt}}")) {
+        /*if (!this.prompt.includes("{{system_prompt}}")) {
             this.prompt = `{{system_prompt}}\n${this.prompt}`;
         }
         if (!this.prompt.includes("{{post_history_instructions}}")) {
             console.log("Add post-history");
             this.prompt = `${this.prompt}\n{{post_history_instructions}}`;
-        }
+        }*/
         this.minTokens = data.minSize;
         this.maxTokens = data.maxSize;
         this.updates = {};

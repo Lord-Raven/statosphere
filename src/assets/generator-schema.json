@@ -29,6 +29,11 @@
         "description": "The prompt to send to the LLM. If {{system_prompt}} or {{post_history_instructions}} are not present, they will be added to the beginning and ending of the prompt, respectively, to enforce preservation of this content.",
         "type": "string"
       },
+      "template": {
+        "title": "Template",
+        "description": "",
+        "type": "string"
+      },
       "minTokens": {
         "title": "Minimum Response Tokens",
         "description": "Minimum token size requested for this response.",
