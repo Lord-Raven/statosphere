@@ -127,8 +127,9 @@ As excited as I am to present this, it is, unfortunately, a \"bot-maker beware\"
 </ul>
 <br>
 **Updates**<br>
-09/24/2024 - Improved variable validation debugging output. I also made some documentation updates due to some recent formatting changes on the site; I cannot actually use double braces in these notes or things get funky.
-09/18/2024 - Simplified user and char substitution, specifically to enable support in variable initialization.
+09/29/2024 - Adding a new element to the stage: generators. These are additional LLM calls that can trigger variable updates; I'm still experimenting with this, so there's no documentation up there and I don't recommend trying them out just yet.<br>
+09/24/2024 - Improved variable validation debugging output. I also made some documentation updates due to some recent formatting changes on the site; I cannot actually use double braces in these notes or things get funky.<br>
+09/18/2024 - Simplified user and char substitution, specifically to enable support in variable initialization.<br>
 09/17/2024 - I have updated the configuration builder to incorporate a simple classifier tester so you can view zero-shot classification results for any sample input/response--
 this makes it far easier to test and tweak classifiers.
 <br>

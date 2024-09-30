@@ -20,7 +20,6 @@ export class Classifier {
         for (let classification of data.classifications) {
             this.classifications[classification.label] = new Classification(classification, stage);
         }
-        new RegExp(`\[.+?\]\(https?:\/\/[^\s]+(?:\s+'([^"]+)")?\)`)
     }
 }
 

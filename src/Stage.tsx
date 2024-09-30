@@ -1,5 +1,5 @@
 import {ReactElement} from "react";
-import {Character, InitialData, Message, StageBase, StageResponse, User} from "@chub-ai/stages-ts";
+import {Character, InitialData, Message, StageBase, StageResponse, TextResponse, User} from "@chub-ai/stages-ts";
 import {LoadResponse} from "@chub-ai/stages-ts/dist/types/load";
 import {all, create} from "mathjs";
 import {Variable, VariableDefinition} from "./Variable";
@@ -12,8 +12,10 @@ import Ajv from "ajv";
 import classifierSchema from "./assets/classifier-schema.json";
 import contentSchema from "./assets/content-schema.json";
 import functionSchema from "./assets/function-schema.json";
+import generatorSchema from "./assets/generator-schema.json";
 import variableSchema from "./assets/variable-schema.json";
 import {CustomFunction} from "./CustomFunction";
+import {Generator, Phase} from "./Generator";
 type MessageStateType = any;
 type ConfigType = any;
 type InitStateType = any;
@@ -32,6 +34,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
     variableDefinitions: {[key: string]: VariableDefinition};
     contentRules: ContentRule[];
     classifiers: Classifier[];
+    generators: Generator[];
     characters: {[key: string]: Character};
     user: User;
     client: any;
@@ -63,6 +66,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         this.functions = {};
         this.contentRules = [];
         this.classifiers = [];
+        this.generators = [];
         this.config = config;
         this.debugMode = false;
         this.fallbackMode = false;
@@ -89,6 +93,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         const classifierJson = configJson.classifiers ?? [];
         const contentJson = configJson.content ?? [];
         const functionJson = configJson.functions ?? [];
+        const generatorJson = configJson.generators ?? [];
         const variableJson = configJson.variables ?? [];
 
         console.log('Validate functions');
@@ -175,6 +180,19 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
             }
         }
 
+        console.log('Validate generators');
+        Object.values(this.validateSchema(generatorJson, generatorSchema, 'generator schema'))
+            .forEach(generator => this.generators.push(new Generator(generator, this)));
+        // Update variables that are updated by generators to never be constant.
+        for (let generator of Object.values(this.generators)) {
+            for (let variableName of Object.keys(generator.updates)) {
+                if (this.variableDefinitions[variableName]) {
+                    this.variableDefinitions[variableName].constant = false;
+                }
+            }
+        }
+        const generatorPromises = this.kickOffGenerators(Phase.Initialization);
+
         console.log('Validate content modifiers');
         Object.values(this.validateSchema(contentJson, contentSchema, 'content schema'))
             .forEach(contentRule => this.contentRules.push(new ContentRule(contentRule, this)));
@@ -205,6 +223,8 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         } else {
             console.log('No classifiers');
         }
+
+        await this.processGenerators(generatorPromises);
 
         console.log('Finished loading Statosphere.');
         return {
@@ -355,6 +375,34 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         }
     }
 
+    kickOffGenerators(phase: Phase): {[key: string]: Promise<TextResponse|null>} {
+        let promises: {[key: string]: Promise<TextResponse|null>} = {};
+        for (const generator of Object.values(this.generators)) {
+            if (generator.phase == phase && (generator.condition != '' && !this.evaluate(this.replaceTags(generator.condition ?? 'true'), this.scope))) {
+                promises[generator.name] = this.generator.textGen({prompt: generator.prompt, min_tokens: generator.minTokens, max_tokens: generator.maxTokens});
+            }
+        }
+        return promises;
+    }
+
+    async processGenerators(promises: {[key: string]: Promise<TextResponse|null>}) {
+        for (const generator of Object.values(this.generators)) {
+
+            if (generator.name in promises) {
+                const response = await promises[generator.name];
+                if (response && response.result && response.result != '') {
+                    console.log(`Received response for generator ${generator.name}: ${response.result}`);
+                    this.content = response.result;
+                    for (let variable of Object.keys(generator.updates)) {
+                        this.updateVariable(variable, generator.updates[variable]);
+                    }
+                } else {
+                    console.log(`Empty response for generator ${generator.name}: ${response}`);
+                }
+            }
+        }
+    }
+
     replaceTags(source: string) {
         let replacements = this.replacements;
         for (const key of Object.keys(this.variables)) {
@@ -398,6 +446,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         this.replacements = {'user': this.user.name, 'char': (this.characters[promptForId ?? ''] ? this.characters[promptForId ?? ''].name : '')};
 
         await this.processVariablesPerTurn();
+        const generatorPromises = this.kickOffGenerators(Phase.OnInput);
 
         this.content = content;
         await this.processClassifiers(content, 'input');
@@ -416,6 +465,8 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         this.content = '';
         Object.values(this.contentRules).forEach(contentRule => this.content = contentRule.evaluateAndApply(this, ContentCategory.StageDirection));
         const stageDirections = this.content;
+
+        await this.processGenerators(generatorPromises);
 
         console.log('End beforePrompt()');
         return {
@@ -436,6 +487,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         } = botMessage;
         console.log('Start afterResponse()');
         this.replacements = {'user': this.user.name, 'char': (this.characters[anonymizedId] ? this.characters[anonymizedId].name : '')};
+        const generatorPromises = this.kickOffGenerators(Phase.OnResponse);
 
         this.content = content;
         await this.processClassifiers(content, 'response');
@@ -449,6 +501,9 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
 
         this.content = '';
         Object.values(this.contentRules).forEach(contentRule => this.content = contentRule.evaluateAndApply(this, ContentCategory.PostResponse));
+        const systemMessage = this.content;
+
+        await this.processGenerators(generatorPromises);
 
         console.log(`End afterResponse()`);
         return {
@@ -456,7 +511,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
             messageState: this.writeMessageState(),
             modifiedMessage: modifiedMessage,
             error: null,
-            systemMessage: this.content.trim() != '' ? this.content : null,
+            systemMessage: systemMessage.trim() != '' ? systemMessage : null,
             chatState: null
         };
     }
