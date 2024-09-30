@@ -399,7 +399,8 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
                         this.updateVariable(variable, generator.updates[variable]);
                     }
                 } else {
-                    console.log(`Empty response for generator ${generator.name}: ${response}`);
+                    console.log(`Empty response for generator ${generator.name}:`);
+                    console.log(response);
                 }
             }
         }
