@@ -20,10 +20,12 @@ export class Generator {
         this.phase = data.phase;
         this.condition = data.condition;
         this.prompt = stage.processCode(data.prompt);
+        console.log(this.prompt);
         if (!this.prompt.includes("{{system_prompt}}")) {
             this.prompt = `{{system_prompt}}\n${this.prompt}`;
         }
         if (!this.prompt.includes("{{post_history_instructions}}")) {
+            console.log("Add post-history");
             this.prompt = `${this.prompt}\n{{post_history_instructions}}`;
         }
         this.minTokens = data.minSize;
