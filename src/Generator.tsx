@@ -12,6 +12,7 @@ export class Generator {
     condition: any;
     prompt: any;
     template: any;
+    include_history: any;
     minTokens: any;
     maxTokens: any;
     updates: {[key: string]: string}
@@ -22,7 +23,7 @@ export class Generator {
         this.condition = data.condition;
         this.prompt = stage.processCode(data.prompt);
         this.template = stage.processCode(data.template);
-        console.log(this.prompt);
+        this.include_history = data.include_history;
         /*if (!this.prompt.includes("{{system_prompt}}")) {
             this.prompt = `{{system_prompt}}\n${this.prompt}`;
         }

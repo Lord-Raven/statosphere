@@ -34,6 +34,11 @@
         "description": "",
         "type": "string"
       },
+      "includeHistory": {
+        "title": "Include History",
+        "description": "",
+        "type": "boolean"
+      },
       "minTokens": {
         "title": "Minimum Response Tokens",
         "description": "Minimum token size requested for this response.",
