@@ -380,7 +380,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         for (const generator of Object.values(this.generators)) {
             console.log(`Consider generator of phase ${generator.phase}: ${generator.phase == phase} && ${generator.condition} != '' && ${this.evaluate(this.replaceTags(generator.condition ?? 'true'), this. buildScope())}`);
             if (generator.phase == phase && (generator.condition == '' || this.evaluate(this.replaceTags(generator.condition ?? 'true'), this.buildScope()))) {
-                console.log('Kicking off a generator');
+                console.log('Kicking off a generator with prompt: ' + generator.prompt);
                 promises[generator.name] = this.generator.textGen({prompt: generator.prompt, min_tokens: generator.minTokens, max_tokens: generator.maxTokens});
             }
         }
