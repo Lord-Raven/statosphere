@@ -24,13 +24,13 @@ export class Generator {
         this.prompt = stage.processCode(data.prompt);
         this.template = stage.processCode(data.template);
         this.include_history = data.include_history;
-        /*if (!this.prompt.includes("{{system_prompt}}")) {
-            this.prompt = `{{system_prompt}}\n${this.prompt}`;
+        if (!this.prompt.includes("{{prefix}}")) {
+            this.prompt = `{{prefix}}\n${this.prompt}`;
         }
-        if (!this.prompt.includes("{{post_history_instructions}}")) {
+        if (!this.prompt.includes("{{suffix}}")) {
             console.log("Add post-history");
-            this.prompt = `${this.prompt}\n{{post_history_instructions}}`;
-        }*/
+            this.prompt = `${this.prompt}\n{{suffix}}`;
+        }
         this.minTokens = data.minSize;
         this.maxTokens = data.maxSize;
         this.updates = {};
