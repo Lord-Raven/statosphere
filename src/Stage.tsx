@@ -464,11 +464,11 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         Object.values(this.contentRules).forEach(contentRule => this.content = contentRule.evaluateAndApply(this, ContentCategory.PostInput));
         const systemMessage = this.content;
 
+        await this.processGenerators(generatorPromises);
+
         this.content = '';
         Object.values(this.contentRules).forEach(contentRule => this.content = contentRule.evaluateAndApply(this, ContentCategory.StageDirection));
         const stageDirections = this.content;
-
-        await this.processGenerators(generatorPromises);
 
         console.log('End beforePrompt()');
         return {
