@@ -445,6 +445,8 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
             promptForId
         } = userMessage;
         console.log('Start beforePrompt()');
+        const previousBackground = this.scope.background ?? '';
+
         this.replacements = {'user': this.user.name, 'char': (this.characters[promptForId ?? ''] ? this.characters[promptForId ?? ''].name : '')};
 
         await this.processVariablesPerTurn();
@@ -470,6 +472,10 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         Object.values(this.contentRules).forEach(contentRule => this.content = contentRule.evaluateAndApply(this, ContentCategory.StageDirection));
         const stageDirections = this.content;
 
+        if (previousBackground != this.scope.background ?? '') {
+            console.log(`Background changing from ${previousBackground} to ${this.scope.background}`);
+            await this.messenger.updateEnvironment({background: this.scope.background ?? ''});
+        }
         console.log('End beforePrompt()');
         return {
             stageDirections: stageDirections.trim() != '' ? `[RESPONSE INSTRUCTION]${stageDirections}\n[/RESPONSE INSTRUCTION]` : null,
@@ -488,6 +494,8 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
             anonymizedId
         } = botMessage;
         console.log('Start afterResponse()');
+        const previousBackground = this.scope.background ?? '';
+
         this.replacements = {'user': this.user.name, 'char': (this.characters[anonymizedId] ? this.characters[anonymizedId].name : '')};
         const generatorPromises = this.kickOffGenerators(Phase.OnResponse);
 
@@ -507,6 +515,10 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
 
         await this.processGenerators(generatorPromises);
 
+        if (previousBackground != this.scope.background ?? '') {
+            console.log(`Background changing from ${previousBackground} to ${this.scope.background}`);
+            await this.messenger.updateEnvironment({background: this.scope.background ?? ''});
+        }
         console.log(`End afterResponse()`);
         return {
             stageDirections: null,

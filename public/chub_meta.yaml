@@ -12,11 +12,12 @@ _Up front, this is pretty experimental; it may become unstable and it may not be
 but if you've been thinking about playing with a stage of your own, this may be a less daunting entrypoint.
 <br>
 <br>
-This stage is comprised of four core elements:<br>
+This stage is comprised of five core elements:<br>
 <ul>
 <li>Variable definitions with per-turn, post-input, and post-response update options
 <li>JavaScript function definitions for creating complex, re-usable logic
 <li>Zero-shot classification rules to draw inferences from inputs or responses and apply updates to variables as a result
+<li>Generators which make LLM calls to request additional content
 <li>Content modification rules which alter input, response, post-input/response (which are \"system messages\" that display in-chat but do not persist to the LLM), and stage directions (additional LLM instruction), all based on specified conditions
 </ul>
 <br>
@@ -28,7 +29,7 @@ This stage has no default configuration and will do nothing on its own. However,
 <li>Rule or behavior reinforcement: apply classifiers or keywords to remind the LLM of your bot's quirks when the user's input should trigger them
 <li>Dynamic response guidance: use inference to detect the nature of the user's input and ask the bot to focus its writing in different ways: is the user examining something? Instruct the bot to be descriptive. Is the user trying to move on? Tell the bot to introduce the next scene.
 <li>Input clean-up: use regex to strip bracketed LLM instruction from the user's input and embed it into stage directions so it doesn't appear in the chat and is only included in the current prompt
-<li>Content generation: randomize values for variables to build procedural content--or use stage directions to have the LLM generate content in a format that the stage can read and remove from the bot's responses (this could be pretty iffy, depending on the user's settings)
+<li>Content generation and management: randomize values for variables to build procedural content or use generators to request creative content from the LLM
 <li>Show up one of my other stages: both [Crunchatize](https://venus.chub.ai/extensions/Ravenok/crunchatize-77a78ffcc6a6) and [Alien Infestation](https://venus.chub.ai/extensions/Ravenok/alien-infestation-04c7448f1d14) could be entirely achieved through the functionality offered here
 <li>These are just ideas; there are likely all kinds of creative and insane applications
 </ul>
@@ -122,6 +123,7 @@ As excited as I am to present this, it is, unfortunately, a \"bot-maker beware\"
 <li>Obfuscation: the stage can implement some interesting behaviors, but those behaviors may no longer be represented within the bot's definition; savvy users can disable or inspect the stage's configuration, but most users are unlikely to even recognize that a stage is in play--please consider mentioning it in the bot's creator notes.
 <li>Configuration is public: On the other hand, because users can still view your stage configuration, any cool thing you make with this stage will not remain proprietary--of course, the same goes for any bot on the site.
 <li>Malicious intent: because the stage is nearly opaque and it does offer powerful options--including evaluation of custom JavaScript functions--, I have some nebulous concern about the potential for abuse.
+<li>Generators make additional LLM calls: consider warning users if your bot is leveraging this feature, as it will lead to slower responses and increased token utilization.
 <li>Inference backend: the zero-shot classification inference is being conducted on a Hugging Face-hosted backend. I manage this backend and I do not log requests, but it is still a third-party call that you may wish to avoid. If your configuration does not use classifications, the stage never even connects to this backend.
 <li>Stages are a beta feature: I imagine this stage could be broken by future Venus updates; bear in mind that your bot's experience could be negatively impacted in that event.
 </ul>
@@ -136,12 +138,10 @@ this makes it far easier to test and tweak classifiers.
 <br>
 **What's Next?**<br>
 This stage represents nearly all the essential features I feel I can achieve without further improvements to Venus's stage system. There is certainly room for further improvement within this (or with the configuration editor), 
-but my primary outstanding goals are dependent upon presumed features that will hopefully become a reality some day. For instance, prompt templating improvements could empower the stage to make additional calls to the LLM, 
-and the stage could (more easily) generate non-narrative content. While stages in general can make these calls today, they do not have access to the user's jailbreak, and that makes it somewhat risky to incorporate this option at this time.
-<br>
+but my primary outstanding goals are dependent upon presumed features that will hopefully become a reality some day.<br>
 <br>
 Perhaps future Stage improvements will permit stages to easily swap between positions and I can add functionality for displaying content in other places? 
-Maybe it will be easier to load lorebooks or other bot details into the stage, and I could enable creators to leverage that data in who knows what kind of interesting ways? 
+Maybe it will be easier to capture lorebooks or other bot details within the stage, and I could enable creators to leverage that data in who knows what kind of interesting ways? 
 Could be the chat tree will become accessible, and you could do...something, I'm sure? Whatever comes, I will try to keep this stage on top of it, 
 because I think this kind of stage holds value for people who want to play with these concepts but who don't want to build out their own stage to do so.
 "
