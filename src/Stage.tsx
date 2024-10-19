@@ -348,7 +348,9 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
             }
             let candidateLabels: string[] = [];
             let labelMapping: { [key: string]: string } = {};
+            console.log('Preparing labels for classifier: ' + classifier.name);
             for (const label of Object.keys(classifier.classifications)) {
+                console.log(label);
                 let dynamicLabels = this.evaluate(`(${this.replaceTags(label)})`);
                 if (typeof dynamicLabels === 'string') {
                     dynamicLabels = [dynamicLabels];
