@@ -67,6 +67,12 @@
               "maximum": 1,
               "multipleOf": 0.01
             },
+            "dynamic": {
+              "title": "Dynamic",
+              "description": "If true, label is evaluated to a string or array of strings, potentially resulting in multiple labels.",
+              "type": "boolean",
+              "default": false
+            },
             "updates": {
               "title": "Updates",
               "description": "An array of variable updates to make when this classification is applied.",
