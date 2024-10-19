@@ -34,7 +34,7 @@ export class Classification {
         this.label = stage.processCode(data.label);
         this.category = stage.processCode(data.category);
         this.threshold = data.threshold;
-        this.dynamic = data.dynamic;
+        this.dynamic = data.dynamic ?? false;
         this.updates = {};
         const updates: any[] = data.updates;
         Object.values(updates).forEach(update => this.updates[update.variable] = stage.processCode(update.setTo));
