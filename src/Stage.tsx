@@ -349,26 +349,37 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
             let candidateLabels: string[] = [];
             let labelMapping: { [key: string]: string } = {};
             for (const label of Object.keys(classifier.classifications)) {
-                let subbedLabel = this.replaceTags(label);
-                candidateLabels.push(subbedLabel);
-                labelMapping[subbedLabel] = label;
+                let dynamicLabels = this.evaluate(`(${this.replaceTags(label)})`);
+                if (typeof dynamicLabels === 'string') {
+                    dynamicLabels = [dynamicLabels];
+                }
+                if (Array.isArray(dynamicLabels)) {
+                    for (let dynamicLabel in dynamicLabels) {
+                        candidateLabels.push(dynamicLabel);
+                        labelMapping[dynamicLabel] = label;
+                    }
+                }
             }
 
             let response = await this.query({sequence: sequenceTemplate, candidate_labels: candidateLabels, hypothesis_template: hypothesisTemplate, multi_label: true});
 
+            let specificLabels: {[key: string]: string} = {};
             let selectedClassifications: {[key: string]: Classification} = {};
             let categoryScores: {[key: string]: number} = {};
             for (let i = 0; i < response.labels.length; i++) {
-                let classification = classifier.classifications[labelMapping[response.labels[i]]];
+                const classification = classifier.classifications[labelMapping[response.labels[i]]];
                 if (response.scores[i] >= Math.max(classification.threshold ?? this.DEFAULT_THRESHOLD, categoryScores[classification.category ?? classification.label] ?? 0)) {
                     selectedClassifications[classification.category ?? classification.label] = classification;
+                    specificLabels[classification.category ?? classification.label] = response.labels[i];
                     categoryScores[classification.category ?? classification.label] = response.scores[i];
                 }
             }
 
             // Go through all operations and execute them.
-            for (let classification of Object.values(selectedClassifications)) {
+            for (let key of Object.keys(selectedClassifications)) {
+                const classification = selectedClassifications[key];
                 for (let variable of Object.keys(classification.updates)) {
+                    this.replacements['label'] = specificLabels[key];
                     this.updateVariable(variable, classification.updates[variable]);
                 }
             }

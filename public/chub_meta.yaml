@@ -129,6 +129,9 @@ As excited as I am to present this, it is, unfortunately, a \"bot-maker beware\"
 </ul>
 <br>
 **Updates**<br>
+10/19/2024 - Breaking change: classification labels that are string literals should now be in quotation marks. These labels are now evaluated and if they evaluate to an array of strings, each item will be passed into the classification. 
+{{label}} is also a new variable that can be referenced by classification updates, to feed the triggering label back into the desired operation. You could, for instance, generate a label per character in the scene, 
+then feed that label into a function that can parse and operate on the result.<br>
 09/30/2024 - Added a new element to the stage: generators. These are additional LLM calls that can trigger variable updates; I'm still experimenting with this, so there's no documentation, and I don't recommend trying them out just yet.<br>
 09/24/2024 - Improved variable validation debugging output. I also made some documentation updates due to some recent formatting changes on the site; I cannot actually use double braces in these notes or things get funky.<br>
 09/18/2024 - Simplified user and char substitution, specifically to enable support in variable initialization.<br>
