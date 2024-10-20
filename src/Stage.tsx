@@ -353,7 +353,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
 
                 if (classifier.classifications[label].dynamic) {
                     try {
-                        let dynamicLabels = this.evaluate(subbedLabel);
+                        let dynamicLabels = this.evaluate(subbedLabel, this.scope);
                         if (typeof dynamicLabels === 'string') {
                             dynamicLabels = [dynamicLabels];
                         }
