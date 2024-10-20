@@ -352,13 +352,17 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
                 let subbedLabel = this.replaceTags(label);
 
                 if (classifier.classifications[label].dynamic) {
+                    console.log('Processing a dynamic label');
                     try {
                         let dynamicLabels = this.evaluate(subbedLabel, this.scope);
+                        console.log(dynamicLabels);
                         if (typeof dynamicLabels === 'string') {
+                            console.log('Dynamic label resulted in a string');
                             dynamicLabels = [dynamicLabels];
                         }
                         if (Array.isArray(dynamicLabels)) {
-                            for (let dynamicLabel in dynamicLabels) {
+                            console.log('Add labels to mappings');
+                            for (let dynamicLabel of dynamicLabels) {
                                 candidateLabels.push(dynamicLabel);
                                 labelMapping[dynamicLabel] = label;
                             }
