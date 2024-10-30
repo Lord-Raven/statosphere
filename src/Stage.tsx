@@ -352,16 +352,12 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
                 let subbedLabel = this.replaceTags(label);
 
                 if (classifier.classifications[label].dynamic) {
-                    console.log('Processing a dynamic label');
                     try {
                         let dynamicLabels = this.evaluate(subbedLabel, this.scope);
-                        console.log(dynamicLabels);
                         if (typeof dynamicLabels === 'string') {
-                            console.log('Dynamic label resulted in a string');
                             dynamicLabels = [dynamicLabels];
                         }
                         if (Array.isArray(dynamicLabels)) {
-                            console.log('Add labels to mappings');
                             for (let dynamicLabel of dynamicLabels) {
                                 candidateLabels.push(dynamicLabel);
                                 labelMapping[dynamicLabel] = label;
@@ -420,7 +416,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
                 const response = await promises[generator.name];
                 if (response && response.result && response.result != '') {
                     console.log(`Received response for generator ${generator.name}: ${response.result}`);
-                    this.content = response.result;
+                    this.setContent(response.result);
                     for (let variable of Object.keys(generator.updates)) {
                         this.updateVariable(variable, generator.updates[variable]);
                     }
@@ -479,24 +475,24 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         await this.processVariablesPerTurn();
         const generatorPromises = this.kickOffGenerators(Phase.OnInput);
 
-        this.content = content;
+        this.setContent(content);
         await this.processClassifiers(content, 'input');
         await this.processVariablesPostInput();
 
         this.buildScope();
 
-        Object.values(this.contentRules).forEach(contentRule => this.content = contentRule.evaluateAndApply(this, ContentCategory.Input));
+        Object.values(this.contentRules).forEach(contentRule => this.setContent(contentRule.evaluateAndApply(this, ContentCategory.Input)));
         const modifiedMessage = this.content;
 
 
-        this.content = '';
-        Object.values(this.contentRules).forEach(contentRule => this.content = contentRule.evaluateAndApply(this, ContentCategory.PostInput));
+        this.setContent('');
+        Object.values(this.contentRules).forEach(contentRule => this.setContent(contentRule.evaluateAndApply(this, ContentCategory.PostInput)));
         const systemMessage = this.content;
 
         await this.processGenerators(generatorPromises);
 
-        this.content = '';
-        Object.values(this.contentRules).forEach(contentRule => this.content = contentRule.evaluateAndApply(this, ContentCategory.StageDirection));
+        this.setContent('');
+        Object.values(this.contentRules).forEach(contentRule => this.setContent(contentRule.evaluateAndApply(this, ContentCategory.StageDirection)));
         const stageDirections = this.content;
 
         if (previousBackground != this.scope.background ?? '') {
@@ -526,18 +522,20 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         this.replacements = {'user': this.user.name, 'char': (this.characters[anonymizedId] ? this.characters[anonymizedId].name : '')};
         const generatorPromises = this.kickOffGenerators(Phase.OnResponse);
 
-        this.content = content;
+        this.setContent(content);
+        this.buildScope(); // Make content available to dynamic label functions
         await this.processClassifiers(content, 'response');
         await this.processVariablesPostResponse();
 
         this.buildScope();
 
 
-        Object.values(this.contentRules).forEach(contentRule => this.content = contentRule.evaluateAndApply(this, ContentCategory.Response));
+        Object.values(this.contentRules).forEach(contentRule => this.setContent(contentRule.evaluateAndApply(this, ContentCategory.Response)));
         const modifiedMessage = this.content;
 
-        this.content = '';
-        Object.values(this.contentRules).forEach(contentRule => this.content = contentRule.evaluateAndApply(this, ContentCategory.PostResponse));
+        this.setContent('');
+        this.buildScope();
+        Object.values(this.contentRules).forEach(contentRule => this.setContent(contentRule.evaluateAndApply(this, ContentCategory.PostResponse)));
         const systemMessage = this.content;
 
         await this.processGenerators(generatorPromises);
@@ -609,7 +607,13 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
             acc[key] = value.value;
             return acc;
         }, {} as {[key: string]: any});
+        this.scope['content'] = this.content;
         return this.scope;
+    }
+
+    setContent(content: string) {
+        this.content = content;
+        this.buildScope();
     }
 
 
