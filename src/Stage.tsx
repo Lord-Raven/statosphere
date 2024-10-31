@@ -155,7 +155,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         Object.values(this.functions).forEach(thisFunction => {
             thisFunction.body = this.updateFunctionArguments(thisFunction.body);
             try {
-                console.log(`Built function ${thisFunction.name}(${thisFunction.parameters}) {\n${thisFunction.body}\n}`);
+                console.log(`Built function ${thisFunction.name}(${thisFunction.parameters}, ${thisFunction.dependencies}) {\n${thisFunction.body}\n}`);
                 this.customFunctionMap[`${thisFunction.name}`] = thisFunction.createFunction();
             } catch (error) {
                 console.log(error);
