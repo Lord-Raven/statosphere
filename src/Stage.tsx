@@ -153,6 +153,8 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         Object.values(this.functions).forEach(thisFunction => {
             thisFunction.body = this.updateFunctionArguments(thisFunction.body);
             try {
+                console.log('Built a function with this updated body:');
+                console.log(thisFunction.body);
                 this.customFunctionMap[`${thisFunction.name}`] = thisFunction.createFunction();
             } catch (error) {
                 console.log(error);
@@ -358,6 +360,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
 
                 if (classifier.classifications[label].dynamic) {
                     try {
+                        console.log(`Substituted label: ${subbedLabel}`);
                         let dynamicLabels = this.evaluate(subbedLabel, this.scope);
                         if (typeof dynamicLabels === 'string') {
                             dynamicLabels = [dynamicLabels];
