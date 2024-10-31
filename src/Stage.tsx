@@ -131,6 +131,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
             });
         // Update based on dependencies:
         Object.values(this.functions).forEach(thisFunction => {
+            console.log(`Looking at function ${thisFunction.name}`);
             let newDependencies = thisFunction.name;
 
             while (newDependencies.length > 0) {
@@ -142,6 +143,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
                     // Looking at each function in new dependencies to check for their dependencies.
                     Object.keys(this.functions).filter(thirdKey => otherFunc.body.includes(`${thirdKey}(`)).forEach(potentialDependency => {
                         if (!thisFunction.dependencies.includes(potentialDependency)) {
+                            console.log(`${thisFunction.name} adding dependency ${potentialDependency}`);
                             newDependencies = `${newDependencies},${potentialDependency}`;
                         }
                     });
