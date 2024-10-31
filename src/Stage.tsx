@@ -131,7 +131,6 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
             });
         // Update based on dependencies:
         Object.values(this.functions).forEach(thisFunction => {
-            console.log(`Looking at function ${thisFunction.name}`);
             let newDependencies = thisFunction.name;
 
             while (newDependencies.length > 0) {
@@ -143,7 +142,6 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
                     // Looking at each function in new dependencies to check for their dependencies.
                     Object.keys(this.functions).filter(thirdKey => otherFunc.body.includes(`${thirdKey}(`)).forEach(potentialDependency => {
                         if (!thisFunction.dependencies.includes(potentialDependency)) {
-                            console.log(`${thisFunction.name} adding dependency ${potentialDependency}`);
                             newDependencies = `${newDependencies},${potentialDependency}`;
                         }
                     });
@@ -155,13 +153,11 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         Object.values(this.functions).forEach(thisFunction => {
             thisFunction.body = this.updateFunctionArguments(thisFunction.body);
             try {
-                console.log(`Built function ${thisFunction.name}(${thisFunction.parameters}${thisFunction.dependencies}) {\n${thisFunction.body}\n}`);
+                //console.log(`Built function ${thisFunction.name}(${thisFunction.parameters}${thisFunction.dependencies}) {\n${thisFunction.body}\n}`);
                 this.customFunctionMap[`${thisFunction.name}`] = thisFunction.createFunction();
             } catch (error) {
                 console.log(error);
-                console.log('Encountered the above error while creating this function from configuration:');
-                console.log(`${thisFunction.parameters} ${thisFunction.dependencies}`);
-                console.log(thisFunction.body);
+                console.log(`Encountered the above error while creating function\n${thisFunction.name}(${thisFunction.parameters}${thisFunction.dependencies}) {\n${thisFunction.body}\n}`);
             }
         });
 
