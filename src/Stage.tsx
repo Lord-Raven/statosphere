@@ -166,7 +166,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         });
 
         math.import(this.customFunctionMap);
-        for(let name in Object.keys(this.customFunctionMap)) {
+        for(let name of Object.keys(this.customFunctionMap)) {
             console.log(`Checking whether ${name} was imported into mathJS: ${math.isFunction(name)}`);
         }
 
