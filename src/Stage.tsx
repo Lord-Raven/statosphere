@@ -15,7 +15,7 @@ import functionSchema from "./assets/function-schema.json";
 import generatorSchema from "./assets/generator-schema.json";
 import variableSchema from "./assets/variable-schema.json";
 import {CustomFunction} from "./CustomFunction";
-import {Generator, Phase} from "./Generator";
+import {Generator, GeneratorPromise, Phase} from "./Generator";
 type MessageStateType = any;
 type ConfigType = any;
 type InitStateType = any;
@@ -34,7 +34,8 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
     variableDefinitions: {[key: string]: VariableDefinition};
     contentRules: ContentRule[];
     classifiers: Classifier[];
-    generators: Generator[];
+    generators: {[key: string]: Generator};
+    generatorPromises: {[key: string]: GeneratorPromise};
     characters: {[key: string]: Character};
     user: User;
     client: any;
@@ -66,7 +67,8 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         this.functions = {};
         this.contentRules = [];
         this.classifiers = [];
-        this.generators = [];
+        this.generators = {};
+        this.generatorPromises = {};
         this.config = config;
         this.debugMode = false;
         this.fallbackMode = false;
@@ -182,7 +184,10 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
 
         console.log('Validate generators');
         Object.values(this.validateSchema(generatorJson, generatorSchema, 'generator schema'))
-            .forEach(generator => this.generators.push(new Generator(generator, this)));
+            .forEach(generatorData => {
+                const generator = new Generator(generatorData, this);
+                this.generators[generator.name] = generator;
+            });
         // Update variables that are updated by generators to never be constant.
         for (let generator of Object.values(this.generators)) {
             for (let variableName of Object.keys(generator.updates)) {
@@ -191,7 +196,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
                 }
             }
         }
-        const generatorPromises = this.kickOffGenerators(Phase.Initialization);
+        this.kickOffGenerators(Phase.Initialization);
 
         console.log('Validate content modifiers');
         Object.values(this.validateSchema(contentJson, contentSchema, 'content schema'))
@@ -224,7 +229,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
             console.log('No classifiers');
         }
 
-        await this.processGenerators(generatorPromises);
+        await this.processGenerators();
 
         console.log('Finished loading Statosphere.');
         return {
@@ -398,34 +403,41 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         }
     }
 
-    kickOffGenerators(phase: Phase): {[key: string]: Promise<TextResponse|null>} {
-        let promises: {[key: string]: Promise<TextResponse|null>} = {};
+    kickOffGenerators(phase: Phase) {
         for (const generator of Object.values(this.generators)) {
-            if (generator.phase == phase && (generator.condition == '' || this.evaluate(this.replaceTags(generator.condition ?? 'true'), this.buildScope()))) {
+            if (generator.phase == phase && !(generator.name in this.generatorPromises) &&
+                    (generator.condition == '' || this.evaluate(this.replaceTags(generator.condition ?? 'true'), this.buildScope()))) {
                 console.log('Kicking off a generator with prompt: ' + generator.prompt);
-                promises[generator.name] = this.generator.textGen({prompt: generator.prompt, min_tokens: generator.minTokens, max_tokens: generator.maxTokens});
+                this.generatorPromises[generator.name] = new GeneratorPromise(generator.name, this.generator.textGen({prompt: generator.prompt, min_tokens: generator.minTokens, max_tokens: generator.maxTokens}));
             }
         }
-        return promises;
     }
 
-    async processGenerators(promises: {[key: string]: Promise<TextResponse|null>}) {
+    async processGenerators() {
         for (const generator of Object.values(this.generators)) {
-
-            if (generator.name in promises) {
-                const response = await promises[generator.name];
-                if (response && response.result && response.result != '') {
-                    console.log(`Received response for generator ${generator.name}: ${response.result}`);
-                    this.setContent(response.result);
-                    for (let variable of Object.keys(generator.updates)) {
-                        this.updateVariable(variable, generator.updates[variable]);
+            if (generator.name in this.generatorPromises) {
+                if (generator.lazy) {
+                    if (this.generatorPromises[generator.name].complete) {
+                        this.processGeneratorResponse(generator, this.generatorPromises[generator.name].response);
                     }
                 } else {
-                    console.log(`Empty response for generator ${generator.name}:`);
-                    console.log(response);
+                    this.processGeneratorResponse(generator, await this.generatorPromises[generator.name].promise);
                 }
             }
         }
+    }
+
+    processGeneratorResponse(generator: Generator, response: TextResponse | null) {
+        if (response && response.result && response.result != '') {
+            console.log(`Received response for generator ${generator.name}: ${response.result}`);
+            this.setContent(response.result);
+            for (let variable of Object.keys(generator.updates)) {
+                this.updateVariable(variable, generator.updates[variable]);
+            }
+        } else {
+            console.log(`Empty response for generator ${generator.name}:`);
+        }
+        delete this.generatorPromises[generator.name];
     }
 
     replaceTags(source: string) {
@@ -473,7 +485,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         this.replacements = {'user': this.user.name, 'char': (this.characters[promptForId ?? ''] ? this.characters[promptForId ?? ''].name : '')};
 
         await this.processVariablesPerTurn();
-        const generatorPromises = this.kickOffGenerators(Phase.OnInput);
+        this.kickOffGenerators(Phase.OnInput);
 
         this.setContent(content);
         await this.processClassifiers(content, 'input');
@@ -489,7 +501,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         Object.values(this.contentRules).forEach(contentRule => this.setContent(contentRule.evaluateAndApply(this, ContentCategory.PostInput)));
         const systemMessage = this.content;
 
-        await this.processGenerators(generatorPromises);
+        await this.processGenerators();
 
         this.setContent('');
         Object.values(this.contentRules).forEach(contentRule => this.setContent(contentRule.evaluateAndApply(this, ContentCategory.StageDirection)));
@@ -520,7 +532,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         const previousBackground = this.scope.background ?? '';
 
         this.replacements = {'user': this.user.name, 'char': (this.characters[anonymizedId] ? this.characters[anonymizedId].name : '')};
-        const generatorPromises = this.kickOffGenerators(Phase.OnResponse);
+        this.kickOffGenerators(Phase.OnResponse);
 
         this.setContent(content);
         this.buildScope(); // Make content available to dynamic label functions
@@ -538,7 +550,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         Object.values(this.contentRules).forEach(contentRule => this.setContent(contentRule.evaluateAndApply(this, ContentCategory.PostResponse)));
         const systemMessage = this.content;
 
-        await this.processGenerators(generatorPromises);
+        await this.processGenerators();
 
         if (previousBackground != this.scope.background ?? '') {
             console.log(`Background changing from ${previousBackground} to ${this.scope.background}`);

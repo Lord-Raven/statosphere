@@ -19,6 +19,12 @@
         "type": "string",
         "enum": ["Initialization", "On Input", "On Response"]
       },
+      "lazy": {
+        "title": "Lazy",
+        "description": "Lazy generators are fired during their phase, but don't hold up the chat; this can be useful for generating content in the background. Bear in mind that this can cause inconsistencies across swipes and other activity that occurs between kick-off and completion.",
+        "type": "boolean",
+        "default": false
+      },
       "condition": {
         "title": "Condition",
         "description": "This generator only runs if this condition is met. Generators are calls to the LLM, so minimizing utilization is strongly recommended.",

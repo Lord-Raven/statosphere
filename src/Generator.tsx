@@ -1,4 +1,5 @@
 import {Stage} from "./Stage";
+import {TextResponse} from "@chub-ai/stages-ts";
 
 export enum Phase {
     Initialization = 'Initialization',
@@ -9,6 +10,7 @@ export enum Phase {
 export class Generator {
     name: any;
     phase: Phase;
+    lazy: boolean;
     condition: any;
     prompt: any;
     template: any;
@@ -20,6 +22,7 @@ export class Generator {
     constructor(data: any, stage: Stage) {
         this.name = data.name;
         this.phase = data.phase;
+        this.lazy = data.lazy;
         this.condition = data.condition;
         this.prompt = stage.processCode(data.prompt);
         this.template = stage.processCode(data.template);
@@ -36,5 +39,26 @@ export class Generator {
         this.updates = {};
         const updates: any[] = data.updates;
         Object.values(updates).forEach(update => this.updates[update.variable] = stage.processCode(update.setTo));
+    }
+}
+
+export class GeneratorPromise {
+    complete = false;
+    generatorName: string;
+    promise: Promise<TextResponse | null>;
+    response: TextResponse | null;
+
+    constructor(generatorName: string, promise: Promise<TextResponse | null>) {
+        this.generatorName = generatorName;
+        this.promise = promise;
+        this.response = {result: ''};
+        this.promise.then(
+            (response) => {
+                this.response = response;
+                this.complete = true;
+            },
+            () => {
+                this.complete = true;
+            });
     }
 }

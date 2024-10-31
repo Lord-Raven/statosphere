@@ -129,7 +129,8 @@ As excited as I am to present this, it is, unfortunately, a \"bot-maker beware\"
 </ul>
 <br>
 **Updates**<br>
-10/30/2024 - Removed some extraneous debugging for dynamic labels now that I've confirmed they are working as expected. I added content to MathJS's scope; this should make it easier to manipulate in different places (such as basing dynamic labels on the content).
+10/30/2024 - Added a 'lazy' flag to generators. Lazy generators are fired (if conditions are met and the generator is not already running) and checked during their target phase but don't hold the phase up. 
+Use them for content generation that isn't time-sensitive. Also, added content to MathJS's scope; this should make it easier to leverage content in different places (such as basing dynamic classifier labels on the user's input).
 10/19/2024 - Briefly broke classification labels, then walked that back. Instead, I've added a dynamic flag to labels; if ticked, the label will be evaluated, and if that results in an array of strings, each string will be used as a label. 
 {{label}} is now a special variable that is subbed for the label that is being processed; this allows you to have variable updates that utilize the dynamic label's value.<br>
 09/30/2024 - Added a new element to the stage: generators. These are additional LLM calls that can trigger variable updates; I'm still experimenting with this, so there's no documentation, and I don't recommend trying them out just yet.<br>
