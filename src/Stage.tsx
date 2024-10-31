@@ -166,9 +166,6 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         });
 
         math.import(this.customFunctionMap);
-        for(let name of Object.keys(this.customFunctionMap)) {
-            console.log(`Checking whether ${name} was imported into mathJS: ${math.isFunction(name)}`);
-        }
 
         this.evaluate = math.evaluate;
         //this.evaluate = create(this.customFunctionMap, {matrix: 'Array'}).evaluate;
@@ -361,7 +358,8 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
             let candidateLabels: string[] = [];
             let labelMapping: { [key: string]: string } = {};
             for (const label of Object.keys(classifier.classifications)) {
-                let subbedLabel = this.replaceTags(label);
+                // The label key here does not contain code alterations, which are essential for dynamic labels; use the label from the classification object for substitution
+                let subbedLabel = this.replaceTags(classifier.classifications[label].label);
 
                 if (classifier.classifications[label].dynamic) {
                     try {
