@@ -32,6 +32,7 @@ export class Classification {
 
     constructor(data: any, stage: Stage) {
         this.label = stage.processCode(data.label);
+        console.log(`Processed label: ${this.label}`);
         this.category = stage.processCode(data.category);
         this.threshold = data.threshold;
         this.dynamic = data.dynamic ?? false;
