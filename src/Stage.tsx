@@ -410,7 +410,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
             try {
                 if (generator.phase == phase && !(generator.name in this.generatorPromises) &&
                     (generator.condition == '' || this.evaluate(this.replaceTags(generator.condition ?? 'true'), this.buildScope()))) {
-                    const prompt = this.evaluate(generator.prompt, this.scope);
+                    const prompt = generator.buildPrompt(this);
                     console.log('Kicking off a generator with prompt: ' + prompt);
                     this.generatorPromises[generator.name] = new GeneratorPromise(generator.name, this.generator.textGen({
                         prompt: prompt,

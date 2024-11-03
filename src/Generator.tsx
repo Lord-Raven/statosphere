@@ -27,18 +27,23 @@ export class Generator {
         this.prompt = stage.processCode(data.prompt);
         this.template = stage.processCode(data.template);
         this.include_history = data.include_history;
-        if (!this.prompt.includes("{{prefix}}")) {
-            this.prompt = `{{prefix}}\n${this.prompt}`;
-        }
-        if (!this.prompt.includes("{{suffix}}")) {
-            console.log("Add post-history");
-            this.prompt = `${this.prompt}\n{{suffix}}`;
-        }
+
         this.minTokens = data.minSize;
         this.maxTokens = data.maxSize;
         this.updates = {};
         const updates: any[] = data.updates;
         Object.values(updates).forEach(update => this.updates[update.variable] = stage.processCode(update.setTo));
+    }
+
+    buildPrompt(stage: Stage): string {
+        let prompt = stage.evaluate(this.prompt, stage.scope);
+        if (prompt.includes("{{prefix}}")) {
+            prompt = `{{prefix}}\n${this.prompt}`;
+        }
+        if (prompt.includes("{{suffix}}")) {
+            prompt = `${this.prompt}\n{{suffix}}`;
+        }
+        return prompt;
     }
 }
 
