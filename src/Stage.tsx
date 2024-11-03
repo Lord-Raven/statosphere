@@ -487,15 +487,20 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
 
         this.replacements = {'user': this.user.name, 'char': (this.characters[promptForId ?? ''] ? this.characters[promptForId ?? ''].name : '')};
 
+        console.log('Process per-turn variables');
         await this.processVariablesPerTurn();
         this.kickOffGenerators(Phase.OnInput);
 
+        console.log('Process input classifiers');
         this.setContent(content);
         await this.processClassifiers(content, 'input');
+
+        console.log('Process post-input variables')
         await this.processVariablesPostInput();
 
         this.buildScope();
 
+        console.log('Apply input content rules');
         Object.values(this.contentRules).forEach(contentRule => this.setContent(contentRule.evaluateAndApply(this, ContentCategory.Input)));
         const modifiedMessage = this.content;
 
