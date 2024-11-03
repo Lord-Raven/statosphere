@@ -407,11 +407,20 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
 
     kickOffGenerators(phase: Phase) {
         for (const generator of Object.values(this.generators)) {
-            if (generator.phase == phase && !(generator.name in this.generatorPromises) &&
+            try {
+                if (generator.phase == phase && !(generator.name in this.generatorPromises) &&
                     (generator.condition == '' || this.evaluate(this.replaceTags(generator.condition ?? 'true'), this.buildScope()))) {
-                const prompt = this.evaluate(generator.prompt, this.scope);
-                console.log('Kicking off a generator with prompt: ' + prompt);
-                this.generatorPromises[generator.name] = new GeneratorPromise(generator.name, this.generator.textGen({prompt: prompt, min_tokens: generator.minTokens, max_tokens: generator.maxTokens}));
+                    const prompt = this.evaluate(generator.prompt, this.scope);
+                    console.log('Kicking off a generator with prompt: ' + prompt);
+                    this.generatorPromises[generator.name] = new GeneratorPromise(generator.name, this.generator.textGen({
+                        prompt: prompt,
+                        min_tokens: generator.minTokens,
+                        max_tokens: generator.maxTokens
+                    }));
+                }
+            } catch (e) {
+                console.error(e);
+                console.log(`Encountered the above while processing generator ${generator.name}\nCondition: ${generator.condition}\nPrompt: ${generator.prompt}`);
             }
         }
     }
@@ -489,6 +498,8 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
 
         console.log('Process per-turn variables');
         await this.processVariablesPerTurn();
+
+        console.log('Kick off generators');
         this.kickOffGenerators(Phase.OnInput);
 
         console.log('Process input classifiers');
