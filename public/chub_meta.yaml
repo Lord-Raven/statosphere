@@ -129,8 +129,9 @@ As excited as I am to present this, it is, unfortunately, a \"bot-maker beware\"
 </ul>
 <br>
 **Updates**<br>
+11/02/2024 - The generator prompt field is now evaluated. If you have an existing generator, this will be a breaking change, resolved by surrounding your prompt with quotation marks. The benefit of this is that you can build dynamic prompts more easily than before.<br>
 10/30/2024 - Added a 'lazy' flag to generators. Lazy generators are fired (if conditions are met and the generator is not already running) and checked during their target phase but don't hold the phase up. 
-Use them for content generation that isn't time-sensitive. Also, added content to MathJS's scope; this should make it easier to leverage content in different places (such as basing dynamic classifier labels on the user's input).
+Use them for content generation that isn't time-sensitive. Also, added content to MathJS's scope; this should make it easier to leverage content in different places (such as basing dynamic classifier labels on the user's input).<br>
 10/19/2024 - Briefly broke classification labels, then walked that back. Instead, I've added a dynamic flag to labels; if ticked, the label will be evaluated, and if that results in an array of strings, each string will be used as a label. 
 {{label}} is now a special variable that is subbed for the label that is being processed; this allows you to have variable updates that utilize the dynamic label's value.<br>
 09/30/2024 - Added a new element to the stage: generators. These are additional LLM calls that can trigger variable updates; I'm still experimenting with this, so there's no documentation, and I don't recommend trying them out just yet.<br>

@@ -23,7 +23,7 @@ export class Generator {
         this.name = data.name;
         this.phase = data.phase;
         this.lazy = data.lazy;
-        this.condition = data.condition;
+        this.condition = stage.processCode(data.condition);
         this.prompt = stage.processCode(data.prompt);
         this.template = stage.processCode(data.template);
         this.include_history = data.include_history;
