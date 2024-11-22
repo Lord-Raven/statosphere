@@ -85,18 +85,22 @@ For reference, the rules on this stage are applied in this order:<br>
 <li>User submits input
 <ul>
 <li>Per-turn variable operations are performed, in the order that variables are defined
+<li>Input-phase generators are kicked off (they cannot incorporate anything else that happens in this phase)
 <li>Classifiers with an input hypothesis are applied to the input, in the order that classifiers are defined
 <li>Post-input variable operations are performed, in the order that variables are defined
 <li>Input content modifications are executed, in the order that these modifications are defined
 <li>Post-input message content modifications are executed, in the order that these modifications are defined
+<li>Input-phase generator results are processed
 <li>Stage direction modifications are executed, in the order that these modifications are defined
 </ul>
 <li>Bot returns response
 <ul>
+<li>Response-phase generators are kicked off (they cannot incorporate anything else that happens in this phase)
 <li>Classifiers with a response hypothesis are applied to the response, in the order that classifiers are defined
 <li>Post-response variable operations are performed, in the order that variables are defined
 <li>Response content modifications are executed, in the order that these modifications are defined
 <li>Post-response message modifications are executed, in the order that these modifications are defined
+<li>Response-phase generator results are processed
 </ul>
 </ul>
 <br>
@@ -107,7 +111,7 @@ If this backend is unavailable or some other error occurs in calling it, the sta
 <br>
 The backend does not log requests, but the source code is not public at this time. 
 I simply haven't messed with how to expose the source code without opening up the backend to other apps--I need to restrict usage to these stages and block unknown third parties. 
-In the near future, I will try to swap the permissions so others can view the source and verify there's nothing nefarious for themselves (or learn to set up a similar service, if they like).
+In the future, I will try to swap the permissions so others can view the source and verify there's nothing nefarious for themselves (or learn to set up a similar service, if they like).
 <br>
 <br>
 Neither the local model nor the backend model are going to get you great results without carefully tuned prompts/labels/hypotheses/thresholds; 
@@ -129,6 +133,8 @@ As excited as I am to present this, it is, unfortunately, a \"bot-maker beware\"
 </ul>
 <br>
 **Updates**<br>
+11/22/2024 - Added support for image generation. Generators can be set to have an \"Image\" type, and will result in content being set to a URL to the final image they generate; 
+the image can then be incorporated into variables or displayed in a system message or something. Also added the include_history flag for text generation requests.<br>
 11/03/2024 - The generator prompt field is now evaluated. If you have an existing generator, this will be a breaking change, resolved by surrounding your prompt with quotation marks. The benefit of this is that you can build dynamic prompts more easily than before.<br>
 10/30/2024 - Added a 'lazy' flag to generators. Lazy generators are fired (if conditions are met and the generator is not already running) during their target phase but don't hold the phase up--
 they will be checked at every point where generators can be kicked off and processed when they complete. 

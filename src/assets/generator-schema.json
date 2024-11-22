@@ -13,6 +13,12 @@
         "description": "A name for this generator. This is used for internal reference and should be unique.",
         "type": "string"
       },
+      "type": {
+        "title": "Type",
+        "description": "The type of content this generator creates: text or images.",
+        "type": "string",
+        "enum": ["Text", "Image"]
+      },
       "phase": {
         "title": "Phase",
         "description": "The phase when this generator runs. \"Initialization\" is *every time* the stage starts up--please include a condition to avoid needless LLM calls.",
@@ -35,14 +41,24 @@
         "description": "The prompt to send to the LLM. If {{system_prompt}} or {{post_history_instructions}} are not present, they will be added to the beginning and ending of the prompt, respectively, to enforce preservation of this content.",
         "type": "string"
       },
+      "negativePrompt": {
+        "title": "Negative Prompt",
+        "description": "Content that is undesired in the final image.",
+        "type": "string"
+      },
       "template": {
         "title": "Template",
-        "description": "",
+        "description": "Unused at the moment",
         "type": "string"
       },
       "includeHistory": {
         "title": "Include History",
-        "description": "",
+        "description": "When true, chat history will be included with the prompt.",
+        "type": "boolean"
+      },
+      "removeBackground": {
+        "title": "Remove Background",
+        "description": "When true, an attempt will be made to remove the background from the generated image.",
         "type": "boolean"
       },
       "minTokens": {
@@ -55,6 +71,11 @@
         "title": "Maximum Response Tokens",
         "description": "Maximum token size requested for this response.",
         "default": 250,
+        "type": "string"
+      },
+      "aspectRatio": {
+        "title": "Aspect Ratio",
+        "description": "The desired aspect ratio for the generated image.",
         "type": "string"
       },
       "updates": {

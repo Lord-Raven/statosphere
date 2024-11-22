@@ -1,5 +1,14 @@
 import {ReactElement} from "react";
-import {Character, InitialData, Message, StageBase, StageResponse, TextResponse, User} from "@chub-ai/stages-ts";
+import {
+    Character,
+    ImagineResponse,
+    InitialData,
+    Message,
+    StageBase,
+    StageResponse,
+    TextResponse,
+    User
+} from "@chub-ai/stages-ts";
 import {LoadResponse} from "@chub-ai/stages-ts/dist/types/load";
 import {all, create} from "mathjs";
 import {Variable, VariableDefinition} from "./Variable";
@@ -15,7 +24,8 @@ import functionSchema from "./assets/function-schema.json";
 import generatorSchema from "./assets/generator-schema.json";
 import variableSchema from "./assets/variable-schema.json";
 import {CustomFunction} from "./CustomFunction";
-import {Generator, GeneratorPromise, Phase} from "./Generator";
+import {Generator, GeneratorPhase, GeneratorPromise, GeneratorType} from "./Generator";
+
 type MessageStateType = any;
 type ConfigType = any;
 type InitStateType = any;
@@ -196,7 +206,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
                 }
             }
         }
-        this.kickOffGenerators(Phase.Initialization);
+        this.kickOffGenerators(GeneratorPhase.Initialization);
 
         console.log('Validate content modifiers');
         Object.values(this.validateSchema(contentJson, contentSchema, 'content schema'))
@@ -405,18 +415,31 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         }
     }
 
-    kickOffGenerators(phase: Phase) {
+    kickOffGenerators(phase: GeneratorPhase) {
         for (const generator of Object.values(this.generators)) {
             try {
                 if (generator.phase == phase && !(generator.name in this.generatorPromises) &&
                     (generator.condition == '' || this.evaluate(this.replaceTags(generator.condition ?? 'true'), this.buildScope()))) {
-                    const prompt = generator.buildPrompt(this);
-                    console.log('Kicking off a generator with prompt: ' + prompt);
-                    this.generatorPromises[generator.name] = new GeneratorPromise(generator.name, this.generator.textGen({
-                        prompt: prompt,
-                        min_tokens: generator.minTokens,
-                        max_tokens: generator.maxTokens
-                    }));
+                    if (generator.type == GeneratorType.Image) {
+                        const prompt = this.evaluate(generator.prompt, this.scope);
+                        const negativePrompt = this.evaluate(generator.negativePrompt, this.scope);
+                        console.log('Kicking off an image generator with prompt: ' + prompt);
+                        this.generatorPromises[generator.name] = new GeneratorPromise(generator.name, this.generator.makeImage({
+                            prompt: prompt,
+                            negative_prompt: negativePrompt,
+                            aspect_ratio: generator.aspectRatio,
+                            remove_background: generator.removeBackground
+                        }));
+                    } else {
+                        const prompt = this.evaluate(generator.prompt, this.scope);
+                        console.log('Kicking off a text generator with prompt: ' + prompt);
+                        this.generatorPromises[generator.name] = new GeneratorPromise(generator.name, this.generator.textGen({
+                            prompt: prompt,
+                            min_tokens: generator.minTokens,
+                            max_tokens: generator.maxTokens,
+                            include_history: generator.includeHistory
+                        }));
+                    }
                 }
             } catch (e) {
                 console.error(e);
@@ -439,10 +462,11 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         }
     }
 
-    processGeneratorResponse(generator: Generator, response: TextResponse | null) {
-        if (response && response.result && response.result != '') {
-            console.log(`Received response for generator ${generator.name}: ${response.result}`);
-            this.setContent(response.result);
+    processGeneratorResponse(generator: Generator, response: TextResponse | ImagineResponse | null) {
+        const result = response ? ('result' in response ? response.result : response.url) : '';
+        if (result != '') {
+            console.log(`Received response for generator ${generator.name}: ${result}`);
+            this.setContent(result);
             for (let variable of Object.keys(generator.updates)) {
                 this.updateVariable(variable, generator.updates[variable]);
             }
@@ -500,7 +524,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         await this.processVariablesPerTurn();
 
         console.log('Kick off generators');
-        this.kickOffGenerators(Phase.OnInput);
+        this.kickOffGenerators(GeneratorPhase.OnInput);
 
         console.log('Process input classifiers');
         this.setContent(content);
@@ -551,7 +575,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         const previousBackground = this.scope.background ?? '';
 
         this.replacements = {'user': this.user.name, 'char': (this.characters[anonymizedId] ? this.characters[anonymizedId].name : '')};
-        this.kickOffGenerators(Phase.OnResponse);
+        this.kickOffGenerators(GeneratorPhase.OnResponse);
 
         this.setContent(content);
         this.buildScope(); // Make content available to dynamic label functions

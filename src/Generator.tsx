@@ -1,59 +1,60 @@
 import {Stage} from "./Stage";
-import {TextResponse} from "@chub-ai/stages-ts";
+import {AspectRatio, ImagineResponse, TextResponse} from "@chub-ai/stages-ts";
 
-export enum Phase {
+export enum GeneratorPhase {
     Initialization = 'Initialization',
     OnInput = 'On Input',
     OnResponse = 'On Response'
 }
 
+export enum GeneratorType {
+    Text = 'Text',
+    Image = 'Image'
+}
+
 export class Generator {
     name: any;
-    phase: Phase;
+    type: GeneratorType;
+    phase: GeneratorPhase;
     lazy: boolean;
     condition: any;
     prompt: any;
+    negativePrompt: any;
     template: any;
-    include_history: any;
+    includeHistory: boolean;
     minTokens: any;
     maxTokens: any;
+    aspectRatio: any;
+    removeBackground: boolean;
     updates: {[key: string]: string}
 
     constructor(data: any, stage: Stage) {
         this.name = data.name;
+        this.type = data.type;
         this.phase = data.phase;
-        this.lazy = data.lazy;
+        this.lazy = data.lazy ?? false;
         this.condition = stage.processCode(data.condition);
         this.prompt = stage.processCode(data.prompt);
+        this.negativePrompt = stage.processCode(data.negativePrompt);
         this.template = stage.processCode(data.template);
-        this.include_history = data.include_history;
-
+        this.includeHistory = data.includeHistory ?? false;
         this.minTokens = data.minSize;
         this.maxTokens = data.maxSize;
+        this.aspectRatio = data.aspectRatio ?? AspectRatio.PHOTO_HORIZONTAL;
+        this.removeBackground = data.removeBackground ?? false;
         this.updates = {};
         const updates: any[] = data.updates;
         Object.values(updates).forEach(update => this.updates[update.variable] = stage.processCode(update.setTo));
-    }
-
-    buildPrompt(stage: Stage): string {
-        let prompt = stage.evaluate(this.prompt, stage.scope);
-        if (prompt.includes("{{prefix}}")) {
-            prompt = `{{prefix}}\n${this.prompt}`;
-        }
-        if (prompt.includes("{{suffix}}")) {
-            prompt = `${this.prompt}\n{{suffix}}`;
-        }
-        return prompt;
     }
 }
 
 export class GeneratorPromise {
     complete = false;
     generatorName: string;
-    promise: Promise<TextResponse | null>;
-    response: TextResponse | null;
+    promise: Promise<TextResponse | ImagineResponse | null>;
+    response: TextResponse | ImagineResponse | null;
 
-    constructor(generatorName: string, promise: Promise<TextResponse | null>) {
+    constructor(generatorName: string, promise: Promise<TextResponse | ImagineResponse | null>) {
         this.generatorName = generatorName;
         this.promise = promise;
         this.response = {result: ''};
