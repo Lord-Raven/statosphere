@@ -27,6 +27,7 @@ export class Generator {
     aspectRatio: any;
     removeBackground: boolean;
     updates: {[key: string]: string}
+    dependencies: string[];
 
     constructor(data: any, stage: Stage) {
         this.name = data.name;
@@ -42,6 +43,7 @@ export class Generator {
         this.maxTokens = data.maxSize;
         this.aspectRatio = data.aspectRatio ?? AspectRatio.PHOTO_HORIZONTAL;
         this.removeBackground = data.removeBackground ?? false;
+        this.dependencies = data.dependencies ?? [];
         this.updates = {};
         const updates: any[] = data.updates;
         Object.values(updates).forEach(update => this.updates[update.variable] = stage.processCode(update.setTo));
