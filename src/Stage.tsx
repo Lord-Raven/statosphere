@@ -438,9 +438,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
                 if (generator.phase == phase && !(generator.name in this.generatorPromises) &&
                     (generator.condition == '' || this.evaluate(this.replaceTags(generator.condition ?? 'true'), this.buildScope()))) {
                     if (generator.type == GeneratorType.Image) {
-                        let prompt = this.replaceTags(generator.prompt);
-                        console.log(prompt);
-                        prompt = this.evaluate(prompt, this.scope);
+                        const prompt = this.evaluate(this.replaceTags(generator.prompt), this.scope);
                         const negativePrompt = this.evaluate(this.replaceTags(generator.negativePrompt), this.scope);
                         console.log('Kicking off an image generator with prompt: ' + prompt);
                         this.generatorPromises[generator.name] = new GeneratorPromise(generator.name, this.generator.makeImage({
