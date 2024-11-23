@@ -133,8 +133,9 @@ As excited as I am to present this, it is, unfortunately, a \"bot-maker beware\"
 </ul>
 <br>
 **Updates**<br>
-11/22/2024 - Added support for image generation. Generators can be set to have an \"Image\" type, and will result in content being set to a URL to the final image they generate; 
-the image can then be incorporated into variables or displayed in a system message or something. Also added the include_history flag for text generation requests.<br>
+11/22/2024 - Added support for image generation, implemented include_history flag for text generation, and adjusted classifiers to run in parallel. 
+Generators can now be set to have an \"Image\" type, and will result in content being set to a URL to the final image they generate; 
+the image can then be incorporated into variables or displayed in a system message or something.<br>
 11/03/2024 - The generator prompt field is now evaluated. If you have an existing generator, this will be a breaking change, resolved by surrounding your prompt with quotation marks. The benefit of this is that you can build dynamic prompts more easily than before.<br>
 10/30/2024 - Added a 'lazy' flag to generators. Lazy generators are fired (if conditions are met and the generator is not already running) during their target phase but don't hold the phase up--
 they will be checked at every point where generators can be kicked off and processed when they complete. 

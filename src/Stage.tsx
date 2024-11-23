@@ -352,7 +352,12 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
     }
 
     async processClassifiers(content: string, contentSource: string) {
-        for (const classifier of Object.values(this.classifiers)) {
+
+        let resultMap: {[key: string]: Promise<any>} = {};
+        let labelMapping: {[key: string]: {[key: string]: string}} = {};
+
+        // Kick off classifiers
+        for (const classifier of this.classifiers) {
 
             let sequenceTemplate = this.replaceTags((contentSource == 'input' ? classifier.inputTemplate : classifier.responseTemplate) ?? '');
             sequenceTemplate = sequenceTemplate.trim() == '' ? content : sequenceTemplate.replace('{}', content);
@@ -362,7 +367,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
                 continue;
             }
             let candidateLabels: string[] = [];
-            let labelMapping: { [key: string]: string } = {};
+            let thisLabelMapping: { [key: string]: string } = {};
             for (const label of Object.keys(classifier.classifications)) {
                 // The label key here does not contain code alterations, which are essential for dynamic labels; use the label from the classification object for substitution
                 let subbedLabel = this.replaceTags(classifier.classifications[label].label);
@@ -377,7 +382,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
                         if (Array.isArray(dynamicLabels)) {
                             for (let dynamicLabel of dynamicLabels) {
                                 candidateLabels.push(dynamicLabel);
-                                labelMapping[dynamicLabel] = label;
+                                thisLabelMapping[dynamicLabel] = label;
                             }
                         }
                     } catch (error) {
@@ -386,17 +391,29 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
                     }
                 } else {
                     candidateLabels.push(subbedLabel);
-                    labelMapping[subbedLabel] = label;
+                    thisLabelMapping[subbedLabel] = label;
                 }
             }
 
-            let response = await this.query({sequence: sequenceTemplate, candidate_labels: candidateLabels, hypothesis_template: hypothesisTemplate, multi_label: true});
+            labelMapping[classifier.name] = thisLabelMapping;
 
+            resultMap[classifier.name] = this.query({
+                sequence: sequenceTemplate,
+                candidate_labels: candidateLabels,
+                hypothesis_template: hypothesisTemplate,
+                multi_label: true
+            });
+        }
+
+        // Process results
+        for (const classifier of this.classifiers) {
+            if (!resultMap[classifier.name]) continue;
+            const response = await resultMap[classifier.name];
             let specificLabels: {[key: string]: string} = {};
             let selectedClassifications: {[key: string]: Classification} = {};
             let categoryScores: {[key: string]: number} = {};
             for (let i = 0; i < response.labels.length; i++) {
-                const classification = classifier.classifications[labelMapping[response.labels[i]]];
+                const classification = classifier.classifications[labelMapping[classifier.name][response.labels[i]]];
                 if (response.scores[i] >= Math.max(classification.threshold ?? this.DEFAULT_THRESHOLD, categoryScores[classification.category ?? classification.label] ?? 0)) {
                     selectedClassifications[classification.category ?? classification.label] = classification;
                     specificLabels[classification.category ?? classification.label] = response.labels[i];
