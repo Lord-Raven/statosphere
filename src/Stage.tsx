@@ -438,8 +438,8 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
                 if (generator.phase == phase && !(generator.name in this.generatorPromises) &&
                     (generator.condition == '' || this.evaluate(this.replaceTags(generator.condition ?? 'true'), this.buildScope()))) {
                     if (generator.type == GeneratorType.Image) {
-                        const prompt = this.evaluate(generator.prompt, this.scope);
-                        const negativePrompt = this.evaluate(generator.negativePrompt, this.scope);
+                        const prompt = this.evaluate(this.replaceTags(generator.prompt), this.scope);
+                        const negativePrompt = this.evaluate(this.replaceTags(generator.negativePrompt), this.scope);
                         console.log('Kicking off an image generator with prompt: ' + prompt);
                         this.generatorPromises[generator.name] = new GeneratorPromise(generator.name, this.generator.makeImage({
                             prompt: prompt,
@@ -448,7 +448,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
                             remove_background: generator.removeBackground
                         }));
                     } else {
-                        const prompt = this.evaluate(generator.prompt, this.scope);
+                        const prompt = this.evaluate(this.replaceTags(generator.prompt), this.scope);
                         console.log('Kicking off a text generator with prompt: ' + prompt);
                         this.generatorPromises[generator.name] = new GeneratorPromise(generator.name, this.generator.textGen({
                             prompt: prompt,
