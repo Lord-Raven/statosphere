@@ -12,7 +12,7 @@
       },
       "parameters": {
         "title": "Parameters",
-        "description": "String-delimited list of parameters.",
+        "description": "Comma-delimited list of parameters.",
         "type": "string"
       },
       "body": {
