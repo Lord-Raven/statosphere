@@ -123,7 +123,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
                         console.log(regex);
                         console.log(matches);
                         console.log(matches.length > 0 ? matches.map(match => match.slice(1)) : null);
-                        return matches && matches.length > 0 ? matches.map(match => match.slice(1)) : null;`
+                        return matches && matches.length > 0 ? matches.map(match => match.slice(1)) : [];`
             }, this),
             replace: new CustomFunction({name: 'replace', parameters: 'input, regex, newValue', body: `\
                         return input.replace(new RegExp(regex, 'g'), newValue);`
