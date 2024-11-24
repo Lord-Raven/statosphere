@@ -119,6 +119,8 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
             }, this),
             capture: new CustomFunction({name: 'capture', parameters: 'input, regex, regexFlags', body: `\
                         const matches = [...input.matchAll(new RegExp(regex, regexFlags ? regexFlags : 'g'))];
+                        console.log(input);
+                        console.log(regex);
                         console.log(matches);
                         console.log(matches.length > 0 ? matches.map(match => match.slice(1)) : null);
                         return matches && matches.length > 0 ? matches.map(match => match.slice(1)) : null;`
