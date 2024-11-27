@@ -376,18 +376,17 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
     kickOffRequests(phase: GeneratorPhase): boolean {
         let finished = true;
         for (const classifier of this.classifiers.filter(classifier => !this.completedRequests.includes(classifier.name) && !this.skippedRequests.includes(classifier.name))) {
-            finished = false;
-            this.kickOffClassifier(classifier, phase)
+            finished = finished && this.kickOffClassifier(classifier, phase);
         }
         for (const generator of Object.values(this.generators).filter(generator => !this.completedRequests.includes(generator.name) && !this.skippedRequests.includes(generator.name))) {
-            finished = false;
-            this.kickOffGenerator(generator, phase);
+            finished = finished && this.kickOffGenerator(generator, phase);
         }
 
         return finished;
     }
 
-    kickOffClassifier(classifier: Classifier, phase: GeneratorPhase) {
+    kickOffClassifier(classifier: Classifier, phase: GeneratorPhase): boolean {
+        let complete = true;
         try {
             // If classifier has a skipped dependency, skip it, too:
             if (classifier.dependencies.map(dependency => this.skippedRequests.includes(dependency)).length > 0) {
@@ -402,6 +401,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
                 } else {
                     let candidateLabels: string[] = [];
                     let thisLabelMapping: { [key: string]: string } = {};
+                    complete = false;
                     for (const label of Object.keys(classifier.classifications)) {
                         // The label key here does not contain code alterations, which are essential for dynamic labels; use the label from the classification object for substitution
                         let subbedLabel = this.replaceTags(classifier.classifications[label].label);
@@ -438,23 +438,28 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
                         multi_label: true
                     });
                 }
+            } else {
+                this.skippedRequests.push(classifier.name);
             }
         } catch (e) {
             console.error(e);
             console.log(`Encountered the above while processing classifier ${classifier.name}\nCondition: ${classifier.condition}`);
             this.skippedRequests.push(classifier.name);
         }
+
+        return complete;
     }
 
-    kickOffGenerator(generator: Generator, phase: GeneratorPhase) {
+    kickOffGenerator(generator: Generator, phase: GeneratorPhase): boolean {
+        let complete = true;
         try {
             // If classifier has a skipped dependency, skip it, too:
             if (generator.dependencies.map(dependency => this.skippedRequests.includes(dependency)).length > 0) {
                 this.skippedRequests.push(generator.name);
-            }
-            if (generator.phase == phase && !(generator.name in this.generatorPromises) &&
+            } else if (generator.phase == phase && !(generator.name in this.generatorPromises) &&
                 (generator.condition == '' || this.evaluate(this.replaceTags(generator.condition ?? 'true'), this.buildScope())) &&
                 generator.dependencies.filter(dependency => !this.completedRequests.includes(dependency)).length == 0) {
+                complete = false;
                 if (generator.type == GeneratorType.Image) {
                     const prompt = this.evaluate(this.replaceTags(generator.prompt), this.scope);
                     const negativePrompt = this.evaluate(this.replaceTags(generator.negativePrompt), this.scope);
@@ -475,12 +480,16 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
                         include_history: generator.includeHistory
                     }));
                 }
+            } else {
+                this.skippedRequests.push(generator.name);
             }
         } catch (e) {
             console.error(e);
             console.log(`Encountered the above while processing generator ${generator.name}\nCondition: ${generator.condition}\nPrompt: ${generator.prompt}`);
             this.skippedRequests.push(generator.name);
         }
+
+        return complete;
     }
 
     async processRequests() {
