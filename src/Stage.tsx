@@ -374,6 +374,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
     }
 
     kickOffRequests(phase: GeneratorPhase): boolean {
+        console.log('kickOffRequests()');
         let finished = true;
         for (const classifier of this.classifiers.filter(classifier => !this.completedRequests.includes(classifier.name) && !this.skippedRequests.includes(classifier.name))) {
             finished = finished && this.kickOffClassifier(classifier, phase);
@@ -381,7 +382,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         for (const generator of Object.values(this.generators).filter(generator => !this.completedRequests.includes(generator.name) && !this.skippedRequests.includes(generator.name))) {
             finished = finished && this.kickOffGenerator(generator, phase);
         }
-
+        console.log(`end kickOffRequests(); finished: ${finished}`);
         return finished;
     }
 
@@ -389,9 +390,9 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         let complete = true;
         try {
             // If classifier has a skipped dependency, skip it, too:
-            if (classifier.dependencies.map(dependency => this.skippedRequests.includes(dependency)).length > 0) {
+            if (classifier.dependencies.filter(dependency => this.skippedRequests.includes(dependency)).length > 0) {
                 this.skippedRequests.push(classifier.name);
-            } else if (classifier.dependencies.map(dependency => this.skippedRequests.includes(dependency)).length == 0) {
+            } else if (classifier.dependencies.filter(dependency => !this.completedRequests.includes(dependency)).length == 0) {
                 let sequenceTemplate = this.replaceTags((phase == GeneratorPhase.OnInput ? classifier.inputTemplate : classifier.responseTemplate) ?? '');
                 sequenceTemplate = sequenceTemplate.trim() == '' ? this.content : sequenceTemplate.replace('{}', this.content);
                 let hypothesisTemplate = this.replaceTags((phase == GeneratorPhase.OnInput ? classifier.inputHypothesis : classifier.responseHypothesis) ?? '');
@@ -438,8 +439,6 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
                         multi_label: true
                     });
                 }
-            } else {
-                this.skippedRequests.push(classifier.name);
             }
         } catch (e) {
             console.error(e);
@@ -453,35 +452,37 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
     kickOffGenerator(generator: Generator, phase: GeneratorPhase): boolean {
         let complete = true;
         try {
-            // If classifier has a skipped dependency, skip it, too:
-            if (generator.dependencies.map(dependency => this.skippedRequests.includes(dependency)).length > 0) {
+            // If generator has a skipped dependency, skip it, too:
+            if (generator.dependencies.filter(dependency => this.skippedRequests.includes(dependency)).length > 0) {
                 this.skippedRequests.push(generator.name);
-            } else if (generator.phase == phase && !(generator.name in this.generatorPromises) &&
-                (generator.condition == '' || this.evaluate(this.replaceTags(generator.condition ?? 'true'), this.buildScope())) &&
-                generator.dependencies.filter(dependency => !this.completedRequests.includes(dependency)).length == 0) {
-                complete = false;
-                if (generator.type == GeneratorType.Image) {
-                    const prompt = this.evaluate(this.replaceTags(generator.prompt), this.scope);
-                    const negativePrompt = this.evaluate(this.replaceTags(generator.negativePrompt), this.scope);
-                    console.log('Kicking off an image generator with prompt: ' + prompt);
-                    this.generatorPromises[generator.name] = new GeneratorPromise(generator.name, this.generator.makeImage({
-                        prompt: prompt,
-                        negative_prompt: negativePrompt,
-                        aspect_ratio: generator.aspectRatio,
-                        remove_background: generator.removeBackground
-                    }));
+            } else if (generator.dependencies.filter(dependency => !this.completedRequests.includes(dependency)).length == 0) {
+                if (generator.phase == phase && !(generator.name in this.generatorPromises) &&
+                    (generator.condition == '' || this.evaluate(this.replaceTags(generator.condition ?? 'true'), this.buildScope()))) {
+                    complete = false;
+                    if (generator.type == GeneratorType.Image) {
+                        const prompt = this.evaluate(this.replaceTags(generator.prompt), this.scope);
+                        const negativePrompt = this.evaluate(this.replaceTags(generator.negativePrompt), this.scope);
+                        console.log('Kicking off an image generator with prompt: ' + prompt);
+                        this.generatorPromises[generator.name] = new GeneratorPromise(generator.name, this.generator.makeImage({
+                            prompt: prompt,
+                            negative_prompt: negativePrompt,
+                            aspect_ratio: generator.aspectRatio,
+                            remove_background: generator.removeBackground
+                        }));
+                    } else {
+                        const prompt = this.evaluate(this.replaceTags(generator.prompt), this.scope);
+                        console.log('Kicking off a text generator with prompt: ' + prompt);
+                        this.generatorPromises[generator.name] = new GeneratorPromise(generator.name, this.generator.textGen({
+                            prompt: prompt,
+                            min_tokens: generator.minTokens,
+                            max_tokens: generator.maxTokens,
+                            include_history: generator.includeHistory
+                        }));
+                    }
                 } else {
-                    const prompt = this.evaluate(this.replaceTags(generator.prompt), this.scope);
-                    console.log('Kicking off a text generator with prompt: ' + prompt);
-                    this.generatorPromises[generator.name] = new GeneratorPromise(generator.name, this.generator.textGen({
-                        prompt: prompt,
-                        min_tokens: generator.minTokens,
-                        max_tokens: generator.maxTokens,
-                        include_history: generator.includeHistory
-                    }));
+                    // No dependencies and criteria not met; skip this one.
+                    this.skippedRequests.push(generator.name);
                 }
-            } else {
-                this.skippedRequests.push(generator.name);
             }
         } catch (e) {
             console.error(e);
