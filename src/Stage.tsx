@@ -538,10 +538,12 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         const result = response ? ('result' in response ? response.result : response.url) : '';
         if (result != '') {
             console.log(`Received response for generator ${generator.name}: ${result}`);
+            const backupContent = this.content;
             this.setContent(result);
             for (let variable of Object.keys(generator.updates)) {
                 this.updateVariable(variable, generator.updates[variable]);
             }
+            this.setContent(backupContent);
             this.completedRequests.push(generator.name);
         } else {
             console.log(`Empty response for generator ${generator.name}:`);
