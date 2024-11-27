@@ -219,8 +219,8 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
                 }
             }
         }
-        this.resetRequestVariables();
-        this.kickOffRequests(GeneratorPhase.Initialization);
+        //this.resetRequestVariables();
+        //this.kickOffRequests(GeneratorPhase.Initialization);
 
         console.log('Validate content modifiers');
         Object.values(this.validateSchema(contentJson, contentSchema, 'content schema'))
@@ -253,7 +253,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
             console.log('No classifiers');
         }
 
-        await this.processRequests();
+        //await this.processRequests();
 
         console.log('Finished loading Statosphere.');
         return {
