@@ -66,7 +66,7 @@ Here are just some brief notes to keep in mind, to tide folks over 'til I can mo
 <li>Surround string values with quotation marks (or else MathJS will try to evaluate them).
 <li>You can reference your defined variables by name outside of strings.
 <li>You can also reference variables both inside and outside of strings by surrounding them with double braces ({); this substitution is performed by the stage before evaluation.
-<li>You can use double braces user, char, and content (which contains either the last input or response, depending upon when the evaluation is occurring).
+<li>You can use {{user}}, {{char}}, and {{content}} (which varies contextually).
 <li>Statosphere has MathJS set to handle matrices as arrays, but MathJS still uses one-based array indexing, which will differ from when you reference those arrays in your defined JavaScript functions.
 </ul>
 <li>The Functions section allows you to define JavaScript functions, which can then be leveraged in any of the other evaluated fields.
@@ -124,8 +124,8 @@ As excited as I am to present this, it is, unfortunately, a \"bot-maker beware\"
 <li>Active development: I am planning to expand the feature set, and this comes with the potential to break your application of the stage.
 <li>Chub exclusivity: remember that stages are a feature of Chub's front-end, and anyone playing your bot in another front-end will not benefit; you may wish to point this out in your creator notes, if you have used this stage to cultivate an intended experience.
 <li>Version history: the stage's configuration does appear in version history on Chub, but updates to configuration do not appear to create a new entry in the version history--it could be easy to accidentally blow away your configuration with little recourse.
-<li>Obfuscation: the stage can implement some interesting behaviors, but those behaviors may no longer be represented within the bot's definition; savvy users can disable or inspect the stage's configuration, but most users are unlikely to even recognize that a stage is in play--please consider mentioning it in the bot's creator notes.
-<li>Configuration is public: On the other hand, because users can still view your stage configuration, any cool thing you make with this stage will not remain proprietary--of course, the same goes for any bot on the site.
+<li>Obfuscation: this stage can implement some interesting behaviors, but those behaviors may no longer be represented within the bot's definition; savvy users can disable or inspect the stage's configuration, but most users are unlikely to even recognize that a stage is in play--please consider mentioning it in the bot's creator notes.
+<li>Configuration is public: on the other hand, because users can still view your stage configuration, any cool thing you make with this stage will not remain proprietary--of course, the same goes for any bot on the site.
 <li>Malicious intent: because the stage is nearly opaque and it does offer powerful options--including evaluation of custom JavaScript functions--, I have some nebulous concern about the potential for abuse.
 <li>Generators make additional LLM calls: consider warning users if your bot is leveraging this feature, as it will lead to slower responses and increased token utilization.
 <li>Inference backend: the zero-shot classification inference is being conducted on a Hugging Face-hosted backend. I manage this backend and I do not log requests, but it is still a third-party call that you may wish to avoid. If your configuration does not use classifications, the stage never even connects to this backend.
@@ -133,6 +133,7 @@ As excited as I am to present this, it is, unfortunately, a \"bot-maker beware\"
 </ul>
 <br>
 **Updates**<br>
+11/27/2024 - In progress: I'm restructuring generators and classifiers to allow for dependencies between them.
 11/22/2024 - Added support for image generation, implemented include_history flag for text generation, and adjusted classifiers to run in parallel. 
 Generators can now be set to have an \"Image\" type, and will result in content being set to a URL to the final image they generate; 
 the image can then be incorporated into variables or displayed in a system message or something.<br>

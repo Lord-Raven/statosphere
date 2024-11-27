@@ -46,6 +46,9 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
     classifiers: Classifier[];
     generators: {[key: string]: Generator};
     generatorPromises: {[key: string]: GeneratorPromise};
+    classifierPromises: {[key: string]: Promise<any>};
+    classifierLabelMapping: {[key: string]: {[key: string]: string}};
+
     characters: {[key: string]: Character};
     user: User;
     client: any;
@@ -59,6 +62,8 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
     customFunctionMap: any;
     scope: {[key: string]: any};
     replacements: any = {};
+    completedRequests: string[];
+    skippedRequests: string[];
 
     constructor(data: InitialData<InitStateType, ChatStateType, MessageStateType, ConfigType>) {
         super(data);
@@ -79,6 +84,10 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         this.classifiers = [];
         this.generators = {};
         this.generatorPromises = {};
+        this.classifierPromises = {};
+        this.classifierLabelMapping = {};
+        this.completedRequests = [];
+        this.skippedRequests = [];
         this.config = config;
         this.debugMode = false;
         this.fallbackMode = false;
@@ -210,7 +219,8 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
                 }
             }
         }
-        this.kickOffGenerators(GeneratorPhase.Initialization);
+        this.resetRequestVariables();
+        this.kickOffRequests(GeneratorPhase.Initialization);
 
         console.log('Validate content modifiers');
         Object.values(this.validateSchema(contentJson, contentSchema, 'content schema'))
@@ -243,7 +253,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
             console.log('No classifiers');
         }
 
-        await this.processGenerators();
+        await this.processRequests();
 
         console.log('Finished loading Statosphere.');
         return {
@@ -355,69 +365,135 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         }
     }
 
-    async processClassifiers(content: string, contentSource: string) {
+    resetRequestVariables() {
+        this.completedRequests = [];
+        this.skippedRequests = [];
+        this.classifierLabelMapping = {};
+        this.classifierPromises = {};
+        this.generatorPromises = {};
+    }
 
-        let resultMap: {[key: string]: Promise<any>} = {};
-        let labelMapping: {[key: string]: {[key: string]: string}} = {};
-
-        // Kick off classifiers
-        for (const classifier of this.classifiers) {
-
-            let sequenceTemplate = this.replaceTags((contentSource == 'input' ? classifier.inputTemplate : classifier.responseTemplate) ?? '');
-            sequenceTemplate = sequenceTemplate.trim() == '' ? content : sequenceTemplate.replace('{}', content);
-            let hypothesisTemplate = this.replaceTags((contentSource == 'input' ? classifier.inputHypothesis : classifier.responseHypothesis) ?? '');
-            // No hypothesis (this classifier doesn't apply to this contentSource) or condition set but not true):
-            if (hypothesisTemplate.trim() == '' || (classifier.condition != '' && !this.evaluate(this.replaceTags(classifier.condition ?? 'true'), this.scope))) {
-                continue;
-            }
-            let candidateLabels: string[] = [];
-            let thisLabelMapping: { [key: string]: string } = {};
-            for (const label of Object.keys(classifier.classifications)) {
-                // The label key here does not contain code alterations, which are essential for dynamic labels; use the label from the classification object for substitution
-                let subbedLabel = this.replaceTags(classifier.classifications[label].label);
-
-                if (classifier.classifications[label].dynamic) {
-                    try {
-                        console.log(`Substituted label: ${subbedLabel}`);
-                        let dynamicLabels = this.evaluate(subbedLabel, this.scope);
-                        if (typeof dynamicLabels === 'string') {
-                            dynamicLabels = [dynamicLabels];
-                        }
-                        if (Array.isArray(dynamicLabels)) {
-                            for (let dynamicLabel of dynamicLabels) {
-                                candidateLabels.push(dynamicLabel);
-                                thisLabelMapping[dynamicLabel] = label;
-                            }
-                        }
-                    } catch (error) {
-                        console.log(error);
-                        console.log('Encountered the above error while processing a dynamic label: ' + subbedLabel);
-                    }
-                } else {
-                    candidateLabels.push(subbedLabel);
-                    thisLabelMapping[subbedLabel] = label;
-                }
-            }
-
-            labelMapping[classifier.name] = thisLabelMapping;
-
-            resultMap[classifier.name] = this.query({
-                sequence: sequenceTemplate,
-                candidate_labels: candidateLabels,
-                hypothesis_template: hypothesisTemplate,
-                multi_label: true
-            });
+    kickOffRequests(phase: GeneratorPhase): boolean {
+        let finished = true;
+        for (const classifier of this.classifiers.filter(classifier => !this.completedRequests.includes(classifier.name) && !this.skippedRequests.includes(classifier.name))) {
+            finished = false;
+            this.kickOffClassifier(classifier, phase)
+        }
+        for (const generator of Object.values(this.generators).filter(generator => !this.completedRequests.includes(generator.name) && !this.skippedRequests.includes(generator.name))) {
+            finished = false;
+            this.kickOffGenerator(generator, phase);
         }
 
+        return finished;
+    }
+
+    kickOffClassifier(classifier: Classifier, phase: GeneratorPhase) {
+        try {
+            // If classifier has a skipped dependency, skip it, too:
+            if (classifier.dependencies.map(dependency => this.skippedRequests.includes(dependency)).length > 0) {
+                this.skippedRequests.push(classifier.name);
+            } else if (classifier.dependencies.map(dependency => this.skippedRequests.includes(dependency)).length == 0) {
+                let sequenceTemplate = this.replaceTags((phase == GeneratorPhase.OnInput ? classifier.inputTemplate : classifier.responseTemplate) ?? '');
+                sequenceTemplate = sequenceTemplate.trim() == '' ? this.content : sequenceTemplate.replace('{}', this.content);
+                let hypothesisTemplate = this.replaceTags((phase == GeneratorPhase.OnInput ? classifier.inputHypothesis : classifier.responseHypothesis) ?? '');
+                // No hypothesis (this classifier doesn't apply to this contentSource) or condition set but not true):
+                if (hypothesisTemplate.trim() == '' || (classifier.condition != '' && !this.evaluate(this.replaceTags(classifier.condition ?? 'true'), this.scope))) {
+                    this.skippedRequests.push(classifier.name);
+                } else {
+                    let candidateLabels: string[] = [];
+                    let thisLabelMapping: { [key: string]: string } = {};
+                    for (const label of Object.keys(classifier.classifications)) {
+                        // The label key here does not contain code alterations, which are essential for dynamic labels; use the label from the classification object for substitution
+                        let subbedLabel = this.replaceTags(classifier.classifications[label].label);
+
+                        if (classifier.classifications[label].dynamic) {
+                            try {
+                                console.log(`Substituted label: ${subbedLabel}`);
+                                let dynamicLabels = this.evaluate(subbedLabel, this.scope);
+                                if (typeof dynamicLabels === 'string') {
+                                    dynamicLabels = [dynamicLabels];
+                                }
+                                if (Array.isArray(dynamicLabels)) {
+                                    for (let dynamicLabel of dynamicLabels) {
+                                        candidateLabels.push(dynamicLabel);
+                                        thisLabelMapping[dynamicLabel] = label;
+                                    }
+                                }
+                            } catch (error) {
+                                console.log(error);
+                                console.log('Encountered the above error while processing a dynamic label: ' + subbedLabel);
+                            }
+                        } else {
+                            candidateLabels.push(subbedLabel);
+                            thisLabelMapping[subbedLabel] = label;
+                        }
+                    }
+
+                    this.classifierLabelMapping[classifier.name] = thisLabelMapping;
+
+                    this.classifierPromises[classifier.name] = this.query({
+                        sequence: sequenceTemplate,
+                        candidate_labels: candidateLabels,
+                        hypothesis_template: hypothesisTemplate,
+                        multi_label: true
+                    });
+                }
+            }
+        } catch (e) {
+            console.error(e);
+            console.log(`Encountered the above while processing classifier ${classifier.name}\nCondition: ${classifier.condition}`);
+            this.skippedRequests.push(classifier.name);
+        }
+    }
+
+    kickOffGenerator(generator: Generator, phase: GeneratorPhase) {
+        try {
+            // If classifier has a skipped dependency, skip it, too:
+            if (generator.dependencies.map(dependency => this.skippedRequests.includes(dependency)).length > 0) {
+                this.skippedRequests.push(generator.name);
+            }
+            if (generator.phase == phase && !(generator.name in this.generatorPromises) &&
+                (generator.condition == '' || this.evaluate(this.replaceTags(generator.condition ?? 'true'), this.buildScope())) &&
+                generator.dependencies.filter(dependency => !this.completedRequests.includes(dependency)).length == 0) {
+                if (generator.type == GeneratorType.Image) {
+                    const prompt = this.evaluate(this.replaceTags(generator.prompt), this.scope);
+                    const negativePrompt = this.evaluate(this.replaceTags(generator.negativePrompt), this.scope);
+                    console.log('Kicking off an image generator with prompt: ' + prompt);
+                    this.generatorPromises[generator.name] = new GeneratorPromise(generator.name, this.generator.makeImage({
+                        prompt: prompt,
+                        negative_prompt: negativePrompt,
+                        aspect_ratio: generator.aspectRatio,
+                        remove_background: generator.removeBackground
+                    }));
+                } else {
+                    const prompt = this.evaluate(this.replaceTags(generator.prompt), this.scope);
+                    console.log('Kicking off a text generator with prompt: ' + prompt);
+                    this.generatorPromises[generator.name] = new GeneratorPromise(generator.name, this.generator.textGen({
+                        prompt: prompt,
+                        min_tokens: generator.minTokens,
+                        max_tokens: generator.maxTokens,
+                        include_history: generator.includeHistory
+                    }));
+                }
+            }
+        } catch (e) {
+            console.error(e);
+            console.log(`Encountered the above while processing generator ${generator.name}\nCondition: ${generator.condition}\nPrompt: ${generator.prompt}`);
+            this.skippedRequests.push(generator.name);
+        }
+    }
+
+    async processRequests() {
         // Process results
         for (const classifier of this.classifiers) {
-            if (!resultMap[classifier.name]) continue;
-            const response = await resultMap[classifier.name];
+            if (!this.classifierPromises[classifier.name]) continue;
+            const response = await this.classifierPromises[classifier.name];
+            this.completedRequests.push(classifier.name);
             let specificLabels: {[key: string]: string} = {};
             let selectedClassifications: {[key: string]: Classification} = {};
             let categoryScores: {[key: string]: number} = {};
             for (let i = 0; i < response.labels.length; i++) {
-                const classification = classifier.classifications[labelMapping[classifier.name][response.labels[i]]];
+                const classification = classifier.classifications[this.classifierLabelMapping[classifier.name][response.labels[i]]];
                 if (response.scores[i] >= Math.max(classification.threshold ?? this.DEFAULT_THRESHOLD, categoryScores[classification.category ?? classification.label] ?? 0)) {
                     selectedClassifications[classification.category ?? classification.label] = classification;
                     specificLabels[classification.category ?? classification.label] = response.labels[i];
@@ -434,42 +510,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
                 }
             }
         }
-    }
 
-    kickOffGenerators(phase: GeneratorPhase) {
-        for (const generator of Object.values(this.generators)) {
-            try {
-                if (generator.phase == phase && !(generator.name in this.generatorPromises) &&
-                    (generator.condition == '' || this.evaluate(this.replaceTags(generator.condition ?? 'true'), this.buildScope()))) {
-                    if (generator.type == GeneratorType.Image) {
-                        const prompt = this.evaluate(this.replaceTags(generator.prompt), this.scope);
-                        const negativePrompt = this.evaluate(this.replaceTags(generator.negativePrompt), this.scope);
-                        console.log('Kicking off an image generator with prompt: ' + prompt);
-                        this.generatorPromises[generator.name] = new GeneratorPromise(generator.name, this.generator.makeImage({
-                            prompt: prompt,
-                            negative_prompt: negativePrompt,
-                            aspect_ratio: generator.aspectRatio,
-                            remove_background: generator.removeBackground
-                        }));
-                    } else {
-                        const prompt = this.evaluate(this.replaceTags(generator.prompt), this.scope);
-                        console.log('Kicking off a text generator with prompt: ' + prompt);
-                        this.generatorPromises[generator.name] = new GeneratorPromise(generator.name, this.generator.textGen({
-                            prompt: prompt,
-                            min_tokens: generator.minTokens,
-                            max_tokens: generator.maxTokens,
-                            include_history: generator.includeHistory
-                        }));
-                    }
-                }
-            } catch (e) {
-                console.error(e);
-                console.log(`Encountered the above while processing generator ${generator.name}\nCondition: ${generator.condition}\nPrompt: ${generator.prompt}`);
-            }
-        }
-    }
-
-    async processGenerators() {
         for (const generator of Object.values(this.generators)) {
             if (generator.name in this.generatorPromises) {
                 if (generator.lazy) {
@@ -491,8 +532,10 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
             for (let variable of Object.keys(generator.updates)) {
                 this.updateVariable(variable, generator.updates[variable]);
             }
+            this.completedRequests.push(generator.name);
         } else {
             console.log(`Empty response for generator ${generator.name}:`);
+            this.skippedRequests.push(generator.name);
         }
         delete this.generatorPromises[generator.name];
     }
@@ -538,6 +581,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
             promptForId
         } = userMessage;
         console.log('Start beforePrompt()');
+
         const previousBackground = this.scope.background ?? '';
 
         this.replacements = {'user': this.user.name, 'char': (this.characters[promptForId ?? ''] ? this.characters[promptForId ?? ''].name : '')};
@@ -545,12 +589,13 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         console.log('Process per-turn variables');
         await this.processVariablesPerTurn();
 
-        console.log('Kick off generators');
-        this.kickOffGenerators(GeneratorPhase.OnInput);
-
-        console.log('Process input classifiers');
+        console.log('Handle generators and classifiers');
+        this.resetRequestVariables()
         this.setContent(content);
-        await this.processClassifiers(content, 'input');
+        this.buildScope();
+        while (!this.kickOffRequests(GeneratorPhase.OnInput)) {
+            await this.processRequests();
+        }
 
         console.log('Process post-input variables')
         await this.processVariablesPostInput();
@@ -566,7 +611,6 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         Object.values(this.contentRules).forEach(contentRule => this.setContent(contentRule.evaluateAndApply(this, ContentCategory.PostInput)));
         const systemMessage = this.content;
 
-        await this.processGenerators();
 
         this.setContent('');
         Object.values(this.contentRules).forEach(contentRule => this.setContent(contentRule.evaluateAndApply(this, ContentCategory.StageDirection)));
@@ -597,13 +641,17 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         const previousBackground = this.scope.background ?? '';
 
         this.replacements = {'user': this.user.name, 'char': (this.characters[anonymizedId] ? this.characters[anonymizedId].name : '')};
-        this.kickOffGenerators(GeneratorPhase.OnResponse);
+        this.kickOffRequests(GeneratorPhase.OnResponse);
 
+        console.log('Handle generators and classifiers');
+        this.resetRequestVariables()
         this.setContent(content);
         this.buildScope(); // Make content available to dynamic label functions
-        await this.processClassifiers(content, 'response');
-        await this.processVariablesPostResponse();
+        while (!this.kickOffRequests(GeneratorPhase.OnInput)) {
+            await this.processRequests();
+        }
 
+        await this.processVariablesPostResponse();
         this.buildScope();
 
 
@@ -614,8 +662,6 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         this.buildScope();
         Object.values(this.contentRules).forEach(contentRule => this.setContent(contentRule.evaluateAndApply(this, ContentCategory.PostResponse)));
         const systemMessage = this.content;
-
-        await this.processGenerators();
 
         if (previousBackground != this.scope.background ?? '') {
             console.log(`Background changing from ${previousBackground} to ${this.scope.background}`);
