@@ -641,13 +641,12 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         const previousBackground = this.scope.background ?? '';
 
         this.replacements = {'user': this.user.name, 'char': (this.characters[anonymizedId] ? this.characters[anonymizedId].name : '')};
-        this.kickOffRequests(GeneratorPhase.OnResponse);
 
         console.log('Handle generators and classifiers');
         this.resetRequestVariables()
         this.setContent(content);
         this.buildScope(); // Make content available to dynamic label functions
-        while (!this.kickOffRequests(GeneratorPhase.OnInput)) {
+        while (!this.kickOffRequests(GeneratorPhase.OnResponse)) {
             await this.processRequests();
         }
 
