@@ -44,6 +44,11 @@
         "description": "This generator only runs if this condition is met. Generators are calls to the LLM, so minimizing utilization is strongly recommended.",
         "type": "string"
       },
+      "dependencies": {
+        "title": "Dependencies",
+        "description": "A comma-delimited list of classifier or generator names that must run before this generator can trigger.",
+        "type": "string"
+      },
       "prompt": {
         "title": "Prompt",
         "description": "The prompt to send to the LLM.",

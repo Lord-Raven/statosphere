@@ -30,6 +30,9 @@ export class Generator {
     dependencies: string[];
 
     constructor(data: any, stage: Stage) {
+
+        let someString: string;
+
         this.name = data.name;
         this.type = data.type;
         this.phase = data.phase;
@@ -43,7 +46,7 @@ export class Generator {
         this.maxTokens = data.maxSize;
         this.aspectRatio = data.aspectRatio ?? AspectRatio.PHOTO_HORIZONTAL;
         this.removeBackground = data.removeBackground ?? false;
-        this.dependencies = data.dependencies ?? [];
+        this.dependencies = data.dependencies?.split(',') ?? [];
         this.updates = {};
         const updates: any[] = data.updates;
         Object.values(updates).forEach(update => this.updates[update.variable] = stage.processCode(update.setTo));

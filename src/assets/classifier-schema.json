@@ -18,6 +18,11 @@
         "description": "This classifier is only applied when this condition resolves truthily. Classifiers are somewhat time-intensive, so avoiding an unnecessary classifier is a good idea.",
         "type": "string"
       },
+      "dependencies": {
+        "title": "Dependencies",
+        "description": "A comma-delimited list of classifier or generator names that must run before this classifier can trigger.",
+        "type": "string"
+      },
       "inputTemplate": {
         "title": "Input Template",
         "description": "An optional input template; if set, this classification task will be performed upon inputs.",

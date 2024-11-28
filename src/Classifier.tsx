@@ -17,7 +17,7 @@ export class Classifier {
         this.responseTemplate = stage.processCode(data.responseTemplate);
         this.inputHypothesis = stage.processCode(data.inputHypothesis);
         this.responseHypothesis = stage.processCode(data.responseHypothesis);
-        this.dependencies = data.dependencies ?? [];
+        this.dependencies = data.dependencies?.split(',') ?? [];
         this.classifications = {};
         for (let classification of data.classifications) {
             this.classifications[classification.label] = new Classification(classification, stage);
