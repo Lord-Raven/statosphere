@@ -50,6 +50,10 @@ export class Generator {
         this.updates = {};
         const updates: any[] = data.updates;
         Object.values(updates).forEach(update => this.updates[update.variable] = stage.processCode(update.setTo));
+
+        if (this.includeHistory && !this.prompt.includes("{{post_history_instructions}}")) {
+            this.prompt = `${this.prompt}\n{{post_history_instructions}}`;
+        }
     }
 }
 
