@@ -46,7 +46,7 @@ export class Generator {
         this.maxTokens = data.maxSize;
         this.aspectRatio = data.aspectRatio ?? AspectRatio.PHOTO_HORIZONTAL;
         this.removeBackground = data.removeBackground ?? false;
-        this.dependencies = data.dependencies?.split(',') ?? [];
+        this.dependencies = data.dependencies ? data.dependencies.toString().split(',').map((dependency: string) => dependency.trim()) : [];
         this.updates = {};
         const updates: any[] = data.updates;
         Object.values(updates).forEach(update => this.updates[update.variable] = stage.processCode(update.setTo));
