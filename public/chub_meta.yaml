@@ -65,7 +65,7 @@ Here are just some brief notes to keep in mind, to tide folks over 'til I can mo
 <li>Look at the [functions supported by MathJS](https://mathjs.org/docs/reference/functions.html), as it's quite robust out of the box.
 <li>Surround string values with quotation marks (or else MathJS will try to evaluate them).
 <li>You can reference your defined variables by name outside of strings.
-<li>You can also reference variables both inside and outside of strings by surrounding them with double braces ({); this substitution is performed by the stage before evaluation.
+<li>You can also reference variables both inside and outside of strings by surrounding them with double braces (e.g., \"{{someVariable}}\"); this substitution is performed by the stage before evaluation.
 <li>You can use {{user}}, {{char}}, and {{content}} (which varies contextually).
 <li>Statosphere has MathJS set to handle matrices as arrays, but MathJS still uses one-based array indexing, which will differ from when you reference those arrays in your defined JavaScript functions.
 </ul>
@@ -76,7 +76,7 @@ Here are just some brief notes to keep in mind, to tide folks over 'til I can mo
 </ul>
 </ul>
 <br>
-If you have other questions about this stage or stages in general, feel free to DM me on the Chub Discord: JakeH.
+If you have other questions about this stage or stages in general, feel free to DM me on the Chub Discord: Ravenok.
 <br>
 <br>
 **Order of Operations**<br>
