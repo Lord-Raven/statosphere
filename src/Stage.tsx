@@ -374,7 +374,6 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
     }
 
     kickOffRequests(phase: GeneratorPhase): boolean {
-        console.log('kickOffRequests()');
         let finished = true;
         for (const classifier of this.classifiers.filter(classifier => !this.completedRequests.includes(classifier.name) && !this.skippedRequests.includes(classifier.name))) {
             finished = finished && this.kickOffClassifier(classifier, phase);
@@ -382,7 +381,6 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         for (const generator of Object.values(this.generators).filter(generator => !this.completedRequests.includes(generator.name) && !this.skippedRequests.includes(generator.name))) {
             finished = finished && this.kickOffGenerator(generator, phase);
         }
-        console.log(`end kickOffRequests(); finished: ${finished}`);
         return finished;
     }
 
@@ -496,7 +494,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
     async processRequests() {
         // Process results
         for (const classifier of this.classifiers) {
-            if (!this.classifierPromises[classifier.name]) continue;
+            if (!this.classifierPromises[classifier.name] || classifier.name in this.completedRequests || classifier.name in this.skippedRequests) continue;
             const response = await this.classifierPromises[classifier.name];
             this.completedRequests.push(classifier.name);
             let specificLabels: {[key: string]: string} = {};
@@ -522,7 +520,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         }
 
         for (const generator of Object.values(this.generators)) {
-            if (generator.name in this.generatorPromises) {
+            if (generator.name in this.generatorPromises && !(generator.name in this.completedRequests || generator.name in this.skippedRequests)) {
                 if (generator.lazy) {
                     if (this.generatorPromises[generator.name].complete) {
                         this.processGeneratorResponse(generator, this.generatorPromises[generator.name].response);
