@@ -387,10 +387,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
     kickOffClassifier(classifier: Classifier, phase: GeneratorPhase): boolean {
         let complete = true;
         try {
-            // If classifier has a skipped dependency, skip it, too:
-            if (classifier.dependencies.filter(dependency => this.skippedRequests.includes(dependency)).length > 0) {
-                this.skippedRequests.push(classifier.name);
-            } else if (classifier.dependencies.filter(dependency => !this.completedRequests.includes(dependency)).length == 0) {
+            if (classifier.dependencies.filter(dependency => (!this.skippedRequests.includes(dependency) && !this.completedRequests.includes(dependency))).length == 0) {
                 let sequenceTemplate = this.replaceTags((phase == GeneratorPhase.OnInput ? classifier.inputTemplate : classifier.responseTemplate) ?? '');
                 sequenceTemplate = sequenceTemplate.trim() == '' ? this.content : sequenceTemplate.replace('{}', this.content);
                 let hypothesisTemplate = this.replaceTags((phase == GeneratorPhase.OnInput ? classifier.inputHypothesis : classifier.responseHypothesis) ?? '');
@@ -450,10 +447,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
     kickOffGenerator(generator: Generator, phase: GeneratorPhase): boolean {
         let complete = true;
         try {
-            // If generator has a skipped dependency, skip it, too:
-            if (generator.dependencies.filter(dependency => this.skippedRequests.includes(dependency)).length > 0) {
-                this.skippedRequests.push(generator.name);
-            } else if (generator.dependencies.filter(dependency => !this.completedRequests.includes(dependency)).length == 0) {
+            if (generator.dependencies.filter(dependency => (!this.skippedRequests.includes(dependency) && !this.completedRequests.includes(dependency))).length == 0) {
                 if (generator.phase == phase && !(generator.name in this.generatorPromises) &&
                     (generator.condition == '' || this.evaluate(this.replaceTags(generator.condition ?? 'true'), this.buildScope()))) {
                     complete = false;
