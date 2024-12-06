@@ -400,6 +400,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
                         this.updateVariable(variable, classification.updates[variable]);
                     }
                 }
+                classifier.processed = true;
             } else {
                 finished = false;
                 if (!classifier.isStarted()) {
@@ -411,6 +412,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         for (const generator of Object.values(this.generators).filter(generator => !generator.isDone())) {
             if (generator.isReady()) {
                 this.applyGeneratorResponse(generator, generator.result);
+                generator.processed = true;
             } else {
                 finished = false;
                 if (!generator.isStarted()) {
