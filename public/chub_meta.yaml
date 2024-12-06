@@ -131,6 +131,7 @@ As excited as I am to present this, it is, unfortunately, a \"bot-maker beware\"
 </ul>
 <br>
 **Updates**<br>
+12/06/2024 - Made some changes to the way generators and classifiers are kicked off and checked, to prevent dependent requests from being held up by requests that were kicked off alongside their dependencies.<br>
 11/27/2024 - Generators and classifiers now allow for dependencies upon other generators and/or classifiers, allowing them to leverage the results of dependencies.<br>
 11/22/2024 - Added support for image generation, implemented include_history flag for text generation, and adjusted classifiers to run in parallel. 
 Generators can now be set to have an \"Image\" type, and will result in content being set to a URL to the final image they generate; 
