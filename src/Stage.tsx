@@ -473,12 +473,14 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
 
                     this.classifierLabelMapping[classifier.name] = thisLabelMapping;
 
-                    classifier.promise = this.query({
+                    const promise = this.query({
                         sequence: sequenceTemplate,
                         candidate_labels: candidateLabels,
                         hypothesis_template: hypothesisTemplate,
                         multi_label: true
                     });
+                    promise.then(result => classifier.result = result).catch(reason => {console.log(reason); classifier.result = null;});
+                    classifier.promise = promise;
                 }
             }
         } catch (e) {
