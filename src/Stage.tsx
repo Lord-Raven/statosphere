@@ -402,15 +402,9 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
                 }
                 classifier.processed = true;
             } else {
-                console.log('debugging classifier processing');
                 finished = false;
                 if (!classifier.isStarted()) {
-                    console.log('try to kick this one off');
-                    console.log(classifier);
                     this.kickOffClassifier(classifier, phase);
-                } else {
-                    console.log(`don't kick this off`);
-                    console.log(classifier);
                 }
             }
         }
@@ -420,7 +414,6 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
                 this.applyGeneratorResponse(generator, generator.result);
                 generator.processed = true;
             } else {
-                console.log('debugging generator processing');
                 finished = false;
                 if (!generator.isStarted()) {
                     this.kickOffGenerator(generator, phase);
