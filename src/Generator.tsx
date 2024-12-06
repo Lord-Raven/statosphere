@@ -29,6 +29,11 @@ export class Generator {
     updates: {[key: string]: string}
     dependencies: string[];
 
+    skipped: boolean = false;
+    processed: boolean = false;
+    promise: any = null;
+    result: any = undefined;
+
     constructor(data: any, stage: Stage) {
 
         let someString: string;
@@ -58,25 +63,17 @@ export class Generator {
             this.prompt = `${beforeQuote}\n{{post_history_instructions}}${afterQuote}`;
         }
     }
-}
 
-export class GeneratorPromise {
-    complete = false;
-    generatorName: string;
-    promise: Promise<TextResponse | ImagineResponse | null>;
-    response: TextResponse | ImagineResponse | null;
-
-    constructor(generatorName: string, promise: Promise<TextResponse | ImagineResponse | null>) {
-        this.generatorName = generatorName;
-        this.promise = promise;
-        this.response = {result: ''};
-        this.promise.then(
-            (response) => {
-                this.response = response;
-                this.complete = true;
-            },
-            () => {
-                this.complete = true;
-            });
+    isReady(): boolean {
+        return this.result != undefined && !this.processed && !this.skipped;
     }
+
+    isDone(): boolean {
+        return this.skipped || this.processed;
+    }
+
+    isStarted(): boolean {
+        return this.skipped || this.promise;
+    }
+
 }

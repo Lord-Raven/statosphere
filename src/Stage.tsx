@@ -24,7 +24,7 @@ import functionSchema from "./assets/function-schema.json";
 import generatorSchema from "./assets/generator-schema.json";
 import variableSchema from "./assets/variable-schema.json";
 import {CustomFunction} from "./CustomFunction";
-import {Generator, GeneratorPhase, GeneratorPromise, GeneratorType} from "./Generator";
+import {Generator, GeneratorPhase, GeneratorType} from "./Generator";
 
 type MessageStateType = any;
 type ConfigType = any;
@@ -43,10 +43,8 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
     config: any;
     variableDefinitions: {[key: string]: VariableDefinition};
     contentRules: ContentRule[];
-    classifiers: Classifier[];
+    classifiers: {[key: string]: Classifier};
     generators: {[key: string]: Generator};
-    generatorPromises: {[key: string]: GeneratorPromise};
-    classifierPromises: {[key: string]: Promise<any>};
     classifierLabelMapping: {[key: string]: {[key: string]: string}};
 
     characters: {[key: string]: Character};
@@ -62,8 +60,6 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
     customFunctionMap: any;
     scope: {[key: string]: any};
     replacements: any = {};
-    completedRequests: string[];
-    skippedRequests: string[];
 
     constructor(data: InitialData<InitStateType, ChatStateType, MessageStateType, ConfigType>) {
         super(data);
@@ -81,13 +77,9 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         this.variableDefinitions = {};
         this.functions = {};
         this.contentRules = [];
-        this.classifiers = [];
+        this.classifiers = {};
         this.generators = {};
-        this.generatorPromises = {};
-        this.classifierPromises = {};
         this.classifierLabelMapping = {};
-        this.completedRequests = [];
-        this.skippedRequests = [];
         this.config = config;
         this.debugMode = false;
         this.fallbackMode = false;
@@ -228,9 +220,9 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
 
         console.log('Validate classifiers');
         Object.values(this.validateSchema(classifierJson, classifierSchema, 'classifier schema'))
-            .forEach(classifier => this.classifiers.push(new Classifier(classifier, this)));
+            .forEach(classifierData => {const classifier = new Classifier(classifierData, this);this.classifiers[classifier.name] = classifier;});
 
-        if (this.classifiers.length > 0) {
+        if (Object.values(this.classifiers).length > 0) {
             console.log('Load classifier pipeline');
             // Only bother loading pipeline if classifiers exist.
             this.fallbackPipelinePromise = this.getPipeline();
@@ -365,39 +357,84 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         }
     }
 
-    resetRequestVariables() {
-        this.completedRequests = [];
-        this.skippedRequests = [];
+    resetGeneratorsAndClassifiers() {
         this.classifierLabelMapping = {};
-        this.classifierPromises = {};
-        this.generatorPromises = {};
+        for (let generator of Object.values(this.generators)) {
+            generator.skipped = false;
+            generator.processed = false;
+            generator.promise = null;
+            generator.result = undefined;
+        }
+
+        for (let classifier of Object.values(this.classifiers)) {
+            classifier.skipped = false;
+            classifier.processed = false;
+            classifier.promise = null;
+            classifier.result = undefined;
+        }
     }
 
-    kickOffRequests(phase: GeneratorPhase): boolean {
-        let finished = true;
-        for (const classifier of this.classifiers.filter(classifier => !this.completedRequests.includes(classifier.name) && !this.skippedRequests.includes(classifier.name))) {
-            finished = finished && this.kickOffClassifier(classifier, phase);
+    processRequests(phase: GeneratorPhase) {
+        let finished: boolean = true;
+        for (const classifier of Object.values(this.classifiers).filter(classifier => !classifier.isDone())) {
+            // if this classifier is ready, process it.
+            if (classifier.isReady()) {
+                const response = classifier.result;
+                let specificLabels: { [key: string]: string } = {};
+                let selectedClassifications: { [key: string]: Classification } = {};
+                let categoryScores: { [key: string]: number } = {};
+                for (let i = 0; i < response.labels.length; i++) {
+                    const classification = classifier.classifications[this.classifierLabelMapping[classifier.name][response.labels[i]]];
+                    if (response.scores[i] >= Math.max(classification.threshold ?? this.DEFAULT_THRESHOLD, categoryScores[classification.category ?? classification.label] ?? 0)) {
+                        selectedClassifications[classification.category ?? classification.label] = classification;
+                        specificLabels[classification.category ?? classification.label] = response.labels[i];
+                        categoryScores[classification.category ?? classification.label] = response.scores[i];
+                    }
+                }
+
+                // Go through all operations and execute them.
+                for (let key of Object.keys(selectedClassifications)) {
+                    const classification = selectedClassifications[key];
+                    for (let variable of Object.keys(classification.updates)) {
+                        this.replacements['label'] = specificLabels[key];
+                        this.updateVariable(variable, classification.updates[variable]);
+                    }
+                }
+            } else {
+                finished = false;
+                if (!classifier.isStarted()) {
+                    this.kickOffClassifier(classifier, phase);
+                }
+            }
         }
-        for (const generator of Object.values(this.generators).filter(generator => !this.completedRequests.includes(generator.name) && !this.skippedRequests.includes(generator.name))) {
-            finished = finished && this.kickOffGenerator(generator, phase);
+
+        for (const generator of Object.values(this.generators).filter(generator => !generator.isDone())) {
+            if (generator.isReady()) {
+                this.applyGeneratorResponse(generator, generator.result);
+            } else {
+                finished = false;
+                if (!generator.isStarted()) {
+                    this.kickOffGenerator(generator, phase);
+                }
+            }
         }
+
         return finished;
     }
 
-    kickOffClassifier(classifier: Classifier, phase: GeneratorPhase): boolean {
-        let complete = true;
+    kickOffClassifier(classifier: Classifier, phase: GeneratorPhase) {
         try {
-            if (classifier.dependencies.filter(dependency => (!this.skippedRequests.includes(dependency) && !this.completedRequests.includes(dependency))).length == 0) {
+            // If there are no dependencies that haven't started, then this classifier can start.
+            if (classifier.dependencies.filter(dependency => (!(this.generators[dependency]?.isStarted() ?? true) || !(this.classifiers[dependency]?.isStarted() ?? true))).length == 0) {
                 let sequenceTemplate = this.replaceTags((phase == GeneratorPhase.OnInput ? classifier.inputTemplate : classifier.responseTemplate) ?? '');
                 sequenceTemplate = sequenceTemplate.trim() == '' ? this.content : sequenceTemplate.replace('{}', this.content);
                 let hypothesisTemplate = this.replaceTags((phase == GeneratorPhase.OnInput ? classifier.inputHypothesis : classifier.responseHypothesis) ?? '');
                 // No hypothesis (this classifier doesn't apply to this contentSource) or condition set but not true):
                 if (hypothesisTemplate.trim() == '' || (classifier.condition != '' && !this.evaluate(this.replaceTags(classifier.condition ?? 'true'), this.scope))) {
-                    this.skippedRequests.push(classifier.name);
+                    classifier.skipped = true;
                 } else {
                     let candidateLabels: string[] = [];
                     let thisLabelMapping: { [key: string]: string } = {};
-                    complete = false;
                     for (const label of Object.keys(classifier.classifications)) {
                         // The label key here does not contain code alterations, which are essential for dynamic labels; use the label from the classification object for substitution
                         let subbedLabel = this.replaceTags(classifier.classifications[label].label);
@@ -427,7 +464,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
 
                     this.classifierLabelMapping[classifier.name] = thisLabelMapping;
 
-                    this.classifierPromises[classifier.name] = this.query({
+                    classifier.promise = this.query({
                         sequence: sequenceTemplate,
                         candidate_labels: candidateLabels,
                         hypothesis_template: hypothesisTemplate,
@@ -438,110 +475,67 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         } catch (e) {
             console.error(e);
             console.log(`Encountered the above while processing classifier ${classifier.name}\nCondition: ${classifier.condition}`);
-            this.skippedRequests.push(classifier.name);
+            classifier.skipped = true;
         }
-
-        return complete;
     }
 
-    kickOffGenerator(generator: Generator, phase: GeneratorPhase): boolean {
-        let complete = true;
+    kickOffGenerator(generator: Generator, phase: GeneratorPhase) {
+
         try {
-            if (generator.dependencies.filter(dependency => (!this.skippedRequests.includes(dependency) && !this.completedRequests.includes(dependency))).length == 0) {
-                if (generator.phase == phase && !(generator.name in this.generatorPromises) &&
-                    (generator.condition == '' || this.evaluate(this.replaceTags(generator.condition ?? 'true'), this.buildScope()))) {
-                    complete = false;
+            // If there are no dependencies that haven't started, then this classifier can start.
+            if (generator.dependencies.filter(dependency => (!(this.generators[dependency]?.isStarted() ?? true) || !(this.classifiers[dependency]?.isStarted() ?? true))).length == 0) {
+                if (generator.phase == phase && (generator.condition == '' || this.evaluate(this.replaceTags(generator.condition ?? 'true'), this.buildScope()))) {
+                    let promise;
                     if (generator.type == GeneratorType.Image) {
                         const prompt = this.evaluate(this.replaceTags(generator.prompt), this.scope);
                         const negativePrompt = this.evaluate(this.replaceTags(generator.negativePrompt), this.scope);
-                        console.log('Kicking off an image generator with prompt: ' + prompt);
-                        this.generatorPromises[generator.name] = new GeneratorPromise(generator.name, this.generator.makeImage({
+                        console.log('Kicking off an image generator with prompt:\n' + prompt);
+                        promise = this.generator.makeImage({
                             prompt: prompt,
                             negative_prompt: negativePrompt,
                             aspect_ratio: generator.aspectRatio,
                             remove_background: generator.removeBackground
-                        }));
+                        });
+
                     } else {
                         const prompt = this.evaluate(this.replaceTags(generator.prompt), this.scope);
-                        console.log('Kicking off a text generator with prompt: ' + prompt);
-                        this.generatorPromises[generator.name] = new GeneratorPromise(generator.name, this.generator.textGen({
+                        console.log('Kicking off a text generator with prompt:\n' + prompt);
+                        promise = this.generator.textGen({
                             prompt: prompt,
                             min_tokens: generator.minTokens,
                             max_tokens: generator.maxTokens,
                             include_history: generator.includeHistory
-                        }));
+                        })
                     }
+                    promise.then(response => generator.result = response).catch(reason => {console.log(reason); generator.result = null;});
+                    generator.promise = promise;
                 } else {
                     // No dependencies and criteria not met; skip this one.
-                    this.skippedRequests.push(generator.name);
+                    generator.skipped = true;
                 }
             }
         } catch (e) {
             console.error(e);
             console.log(`Encountered the above while processing generator ${generator.name}\nCondition: ${generator.condition}\nPrompt: ${generator.prompt}`);
-            this.skippedRequests.push(generator.name);
-        }
-
-        return complete;
-    }
-
-    async processRequests() {
-        // Process results
-        for (const classifier of this.classifiers) {
-            if (!this.classifierPromises[classifier.name] || classifier.name in this.completedRequests || classifier.name in this.skippedRequests) continue;
-            const response = await this.classifierPromises[classifier.name];
-            this.completedRequests.push(classifier.name);
-            let specificLabels: {[key: string]: string} = {};
-            let selectedClassifications: {[key: string]: Classification} = {};
-            let categoryScores: {[key: string]: number} = {};
-            for (let i = 0; i < response.labels.length; i++) {
-                const classification = classifier.classifications[this.classifierLabelMapping[classifier.name][response.labels[i]]];
-                if (response.scores[i] >= Math.max(classification.threshold ?? this.DEFAULT_THRESHOLD, categoryScores[classification.category ?? classification.label] ?? 0)) {
-                    selectedClassifications[classification.category ?? classification.label] = classification;
-                    specificLabels[classification.category ?? classification.label] = response.labels[i];
-                    categoryScores[classification.category ?? classification.label] = response.scores[i];
-                }
-            }
-
-            // Go through all operations and execute them.
-            for (let key of Object.keys(selectedClassifications)) {
-                const classification = selectedClassifications[key];
-                for (let variable of Object.keys(classification.updates)) {
-                    this.replacements['label'] = specificLabels[key];
-                    this.updateVariable(variable, classification.updates[variable]);
-                }
-            }
-        }
-
-        for (const generator of Object.values(this.generators)) {
-            if (generator.name in this.generatorPromises && !(generator.name in this.completedRequests || generator.name in this.skippedRequests)) {
-                if (generator.lazy) {
-                    if (this.generatorPromises[generator.name].complete) {
-                        this.processGeneratorResponse(generator, this.generatorPromises[generator.name].response);
-                    }
-                } else {
-                    this.processGeneratorResponse(generator, await this.generatorPromises[generator.name].promise);
-                }
-            }
+            generator.skipped = true;
         }
     }
 
-    processGeneratorResponse(generator: Generator, response: TextResponse | ImagineResponse | null) {
+    applyGeneratorResponse(generator: Generator, response: TextResponse | ImagineResponse | null) {
         const result = response ? ('result' in response ? response.result : response.url) : '';
         if (result != '') {
-            console.log(`Received response for generator ${generator.name}: ${result}`);
+            console.log(`Received response for generator ${generator.name}:\n${result}`);
             const backupContent = this.content;
             this.setContent(result);
             for (let variable of Object.keys(generator.updates)) {
                 this.updateVariable(variable, generator.updates[variable]);
             }
             this.setContent(backupContent);
-            this.completedRequests.push(generator.name);
+            generator.processed = true;
         } else {
-            console.log(`Empty response for generator ${generator.name}:`);
-            this.skippedRequests.push(generator.name);
+            console.log(`Empty response for generator ${generator.name}`);
+            generator.skipped = true;
         }
-        delete this.generatorPromises[generator.name];
     }
 
     replaceTags(source: string) {
@@ -586,7 +580,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         } = userMessage;
         console.log('Start beforePrompt()');
 
-        const previousBackground = this.scope.background ?? '';
+        const previousBackground = this.scope.background ?? undefined;
 
         this.replacements = {'user': this.user.name, 'char': (this.characters[promptForId ?? ''] ? this.characters[promptForId ?? ''].name : '')};
 
@@ -594,11 +588,11 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         await this.processVariablesPerTurn();
 
         console.log('Handle generators and classifiers');
-        this.resetRequestVariables()
+        this.resetGeneratorsAndClassifiers()
         this.setContent(content);
         this.buildScope();
-        while (!this.kickOffRequests(GeneratorPhase.OnInput)) {
-            await this.processRequests();
+        while (!this.processRequests(GeneratorPhase.OnInput)) {
+            await new Promise(resolve => setTimeout(resolve, 100));
         }
 
         console.log('Process post-input variables')
@@ -642,16 +636,16 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
             anonymizedId
         } = botMessage;
         console.log('Start afterResponse()');
-        const previousBackground = this.scope.background ?? '';
+        const previousBackground = this.scope.background ?? undefined;
 
         this.replacements = {'user': this.user.name, 'char': (this.characters[anonymizedId] ? this.characters[anonymizedId].name : '')};
 
         console.log('Handle generators and classifiers');
-        this.resetRequestVariables()
+        this.resetGeneratorsAndClassifiers()
         this.setContent(content);
         this.buildScope(); // Make content available to dynamic label functions
-        while (!this.kickOffRequests(GeneratorPhase.OnResponse)) {
-            await this.processRequests();
+        while (!this.processRequests(GeneratorPhase.OnResponse)) {
+            await new Promise(resolve => setTimeout(resolve, 100));
         }
 
         await this.processVariablesPostResponse();

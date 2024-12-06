@@ -10,6 +10,12 @@ export class Classifier {
     dependencies: string[];
     classifications: {[key: string]: Classification};
 
+    skipped: boolean = false;
+    processed: boolean = false;
+    promise: any = null;
+    result: any = undefined;
+
+
     constructor(data: any, stage: Stage) {
         this.name = stage.processCode(data.name);
         this.condition = stage.processCode(data.condition);
@@ -22,6 +28,18 @@ export class Classifier {
         for (let classification of data.classifications) {
             this.classifications[classification.label] = new Classification(classification, stage);
         }
+    }
+
+    isReady(): boolean {
+        return this.result != undefined && !this.processed && !this.skipped;
+    }
+
+    isDone(): boolean {
+        return this.skipped || this.processed;
+    }
+
+    isStarted(): boolean {
+        return this.skipped || this.promise;
     }
 }
 
