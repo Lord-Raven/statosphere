@@ -402,6 +402,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
                 }
                 classifier.processed = true;
             } else {
+                console.log('debugging classifier processing');
                 finished = false;
                 if (!classifier.isStarted()) {
                     this.kickOffClassifier(classifier, phase);
@@ -414,6 +415,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
                 this.applyGeneratorResponse(generator, generator.result);
                 generator.processed = true;
             } else {
+                console.log('debugging generator processing');
                 finished = false;
                 if (!generator.isStarted()) {
                     this.kickOffGenerator(generator, phase);
@@ -594,7 +596,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         this.setContent(content);
         this.buildScope();
         while (!this.processRequests(GeneratorPhase.OnInput)) {
-            await new Promise(resolve => setTimeout(resolve, 100));
+            await new Promise(resolve => setTimeout(resolve, 1000));
         }
 
         console.log('Process post-input variables')
