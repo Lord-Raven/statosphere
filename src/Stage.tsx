@@ -294,9 +294,8 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
     }
 
     writeMessageState(): MessageStateType {
-        console.log('writeMessageState()');
         let savedVariables = Object.fromEntries(Object.entries(this.variables).filter(([key, value]) => this.variableDefinitions[key] && !this.variableDefinitions[key].constant));
-        console.log(savedVariables);
+        // console.log(savedVariables);
         return {
             variables: savedVariables
         }
@@ -428,7 +427,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
     kickOffClassifier(classifier: Classifier, phase: GeneratorPhase) {
         try {
             // If there are no dependencies that haven't started, then this classifier can start.
-            if (classifier.dependencies.filter(dependency => (!(this.generators[dependency]?.isStarted() ?? true) || !(this.classifiers[dependency]?.isStarted() ?? true))).length == 0) {
+            if (classifier.dependencies.filter(dependency => (!(this.generators[dependency]?.isStarted() ?? true) && !(this.classifiers[dependency]?.isStarted() ?? true))).length == 0) {
                 let sequenceTemplate = this.replaceTags((phase == GeneratorPhase.OnInput ? classifier.inputTemplate : classifier.responseTemplate) ?? '');
                 sequenceTemplate = sequenceTemplate.trim() == '' ? this.content : sequenceTemplate.replace('{}', this.content);
                 let hypothesisTemplate = this.replaceTags((phase == GeneratorPhase.OnInput ? classifier.inputHypothesis : classifier.responseHypothesis) ?? '');
@@ -488,7 +487,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
 
         try {
             // If there are no dependencies that haven't started, then this classifier can start.
-            if (generator.dependencies.filter(dependency => (!(this.generators[dependency]?.isStarted() ?? true) || !(this.classifiers[dependency]?.isStarted() ?? true))).length == 0) {
+            if (generator.dependencies.filter(dependency => (!(this.generators[dependency]?.isStarted() ?? true) && !(this.classifiers[dependency]?.isStarted() ?? true))).length == 0) {
                 if (generator.phase == phase && (generator.condition == '' || this.evaluate(this.replaceTags(generator.condition ?? 'true'), this.buildScope()))) {
                     let promise;
                     if (generator.type == GeneratorType.Image) {
