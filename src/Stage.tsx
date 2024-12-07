@@ -426,8 +426,8 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
 
     kickOffClassifier(classifier: Classifier, phase: GeneratorPhase) {
         try {
-            // If there are no dependencies that haven't started, then this classifier can start.
-            if (classifier.dependencies.filter(dependency => (!(this.generators[dependency]?.isStarted() ?? true) && !(this.classifiers[dependency]?.isStarted() ?? true))).length == 0) {
+            // If there are no dependencies that haven't completed, then this classifier can start.
+            if (classifier.dependencies.filter(dependency => (!(this.generators[dependency]?.isDone() ?? true) && !(this.classifiers[dependency]?.isDone() ?? true))).length == 0) {
                 let sequenceTemplate = this.replaceTags((phase == GeneratorPhase.OnInput ? classifier.inputTemplate : classifier.responseTemplate) ?? '');
                 sequenceTemplate = sequenceTemplate.trim() == '' ? this.content : sequenceTemplate.replace('{}', this.content);
                 let hypothesisTemplate = this.replaceTags((phase == GeneratorPhase.OnInput ? classifier.inputHypothesis : classifier.responseHypothesis) ?? '');
@@ -486,8 +486,8 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
     kickOffGenerator(generator: Generator, phase: GeneratorPhase) {
 
         try {
-            // If there are no dependencies that haven't started, then this classifier can start.
-            if (generator.dependencies.filter(dependency => (!(this.generators[dependency]?.isStarted() ?? true) && !(this.classifiers[dependency]?.isStarted() ?? true))).length == 0) {
+            // If there are no dependencies that haven't completed, then this classifier can start.
+            if (generator.dependencies.filter(dependency => (!(this.generators[dependency]?.isDone() ?? true) && !(this.classifiers[dependency]?.isDone() ?? true))).length == 0) {
                 if (generator.phase == phase && (generator.condition == '' || this.evaluate(this.replaceTags(generator.condition ?? 'true'), this.buildScope()))) {
                     let promise;
                     if (generator.type == GeneratorType.Image) {
