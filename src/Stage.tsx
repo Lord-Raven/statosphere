@@ -276,7 +276,13 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
     }
 
     async setState(state: MessageStateType): Promise<void> {
+
+        const previousBackground = this.scope.background ?? undefined;
         this.readMessageState(state);
+        if (previousBackground != this.scope.background ?? '') {
+            console.log(`Background changing in setState from ${previousBackground} to ${this.scope.background}`);
+            await this.messenger.updateEnvironment({background: this.scope.background ?? ''});
+        }
     }
 
     readMessageState(messageState: MessageStateType) {
@@ -583,8 +589,6 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         } = userMessage;
         console.log('Start beforePrompt()');
 
-        const previousBackground = this.scope.background ?? undefined;
-
         this.replacements = {'user': this.user.name, 'char': (this.characters[promptForId ?? ''] ? this.characters[promptForId ?? ''].name : '')};
 
         console.log('Process per-turn variables');
@@ -617,10 +621,6 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         Object.values(this.contentRules).forEach(contentRule => this.setContent(contentRule.evaluateAndApply(this, ContentCategory.StageDirection)));
         const stageDirections = this.content;
 
-        if (previousBackground != this.scope.background ?? '') {
-            console.log(`Background changing from ${previousBackground} to ${this.scope.background}`);
-            await this.messenger.updateEnvironment({background: this.scope.background ?? ''});
-        }
         console.log('End beforePrompt()');
         return {
             stageDirections: stageDirections.trim() != '' ? `[RESPONSE INSTRUCTION]${stageDirections}\n[/RESPONSE INSTRUCTION]` : null,
@@ -639,7 +639,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
             anonymizedId
         } = botMessage;
         console.log('Start afterResponse()');
-        const previousBackground = this.scope.background ?? undefined;
+        //const previousBackground = this.scope.background ?? undefined;
 
         // await this.messenger.updateEnvironment({input_enabled: false});
         this.replacements = {'user': this.user.name, 'char': (this.characters[anonymizedId] ? this.characters[anonymizedId].name : '')};
@@ -655,7 +655,6 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         await this.processVariablesPostResponse();
         this.buildScope();
 
-
         Object.values(this.contentRules).forEach(contentRule => this.setContent(contentRule.evaluateAndApply(this, ContentCategory.Response)));
         const modifiedMessage = this.content;
 
@@ -664,10 +663,10 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         Object.values(this.contentRules).forEach(contentRule => this.setContent(contentRule.evaluateAndApply(this, ContentCategory.PostResponse)));
         const systemMessage = this.content;
 
-        if (previousBackground != this.scope.background ?? '') {
+        /*if (previousBackground != this.scope.background ?? '') {
             console.log(`Background changing from ${previousBackground} to ${this.scope.background}`);
             await this.messenger.updateEnvironment({background: this.scope.background ?? ''});
-        }
+        }*/
         // await this.messenger.updateEnvironment({input_enabled: true});
         console.log(`End afterResponse()`);
         return {
