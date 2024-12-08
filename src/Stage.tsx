@@ -60,6 +60,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
     customFunctionMap: any;
     scope: {[key: string]: any};
     replacements: any = {};
+    background: any = undefined;
 
     constructor(data: InitialData<InitStateType, ChatStateType, MessageStateType, ConfigType>) {
         super(data);
@@ -277,11 +278,11 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
 
     async setState(state: MessageStateType): Promise<void> {
 
-        const previousBackground = this.scope.background ?? undefined;
         this.readMessageState(state);
-        if (previousBackground != this.scope.background ?? '') {
-            console.log(`Background changing in setState from ${previousBackground} to ${this.scope.background}`);
+        if (this.background != this.scope.background ?? '') {
+            console.log(`Background changing in setState from ${this.background} to ${this.scope.background}`);
             await this.messenger.updateEnvironment({background: this.scope.background ?? ''});
+            this.background = this.scope.background;
         }
     }
 
