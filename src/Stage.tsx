@@ -641,7 +641,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         console.log('Start afterResponse()');
         const previousBackground = this.scope.background ?? undefined;
 
-        await this.messenger.updateEnvironment({input_enabled: false});
+        // await this.messenger.updateEnvironment({input_enabled: false});
         this.replacements = {'user': this.user.name, 'char': (this.characters[anonymizedId] ? this.characters[anonymizedId].name : '')};
 
         console.log('Handle generators and classifiers');
@@ -668,7 +668,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
             console.log(`Background changing from ${previousBackground} to ${this.scope.background}`);
             await this.messenger.updateEnvironment({background: this.scope.background ?? ''});
         }
-        await this.messenger.updateEnvironment({input_enabled: true});
+        // await this.messenger.updateEnvironment({input_enabled: true});
         console.log(`End afterResponse()`);
         return {
             stageDirections: null,
