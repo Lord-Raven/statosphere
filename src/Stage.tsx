@@ -427,12 +427,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
     kickOffClassifier(classifier: Classifier, phase: GeneratorPhase) {
         try {
             // If there are no dependencies that haven't completed, then this classifier can start.
-            console.log(`Attempting to kick off classifier: ${classifier.name}`);
-            for (let dependency of classifier.dependencies) {
-                console.log(`Has dependency: ${dependency}. ${this.generators[dependency] ? `${this.generators[dependency].skipped};${this.generators[dependency].processed}` : ''}${this.classifiers[dependency] ? `${this.classifiers[dependency].skipped};${this.classifiers[dependency].processed}` : ''}`);
-            }
             if (classifier.dependencies.filter(dependency => !((this.generators[dependency] ? this.generators[dependency].isDone() : true) && (this.classifiers[dependency] ? this.classifiers[dependency].isDone() : true))).length == 0) {
-                console.log('All dependencies met');
                 let sequenceTemplate = this.replaceTags((phase == GeneratorPhase.OnInput ? classifier.inputTemplate : classifier.responseTemplate) ?? '');
                 sequenceTemplate = sequenceTemplate.trim() == '' ? this.content : sequenceTemplate.replace('{}', this.content);
                 let hypothesisTemplate = this.replaceTags((phase == GeneratorPhase.OnInput ? classifier.inputHypothesis : classifier.responseHypothesis) ?? '');
@@ -491,12 +486,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
     kickOffGenerator(generator: Generator, phase: GeneratorPhase) {
         try {
             // If there are no dependencies that haven't completed, then this classifier can start.
-            console.log(`Attempting to kick off generator: ${generator.name}`);
-            for (let dependency of generator.dependencies) {
-                console.log(`Has dependency: ${dependency}. ${this.generators[dependency] ? `${this.generators[dependency].skipped};${this.generators[dependency].processed}` : ''}${this.classifiers[dependency] ? `${this.classifiers[dependency].skipped};${this.classifiers[dependency].processed}` : ''}`);
-            }
             if (generator.dependencies.filter(dependency => !((this.generators[dependency] ? this.generators[dependency].isDone() : true) && (this.classifiers[dependency] ? this.classifiers[dependency].isDone() : true))).length == 0) {
-                console.log('All dependencies met');
                 if (generator.phase == phase && (generator.condition == '' || this.evaluate(this.replaceTags(generator.condition ?? 'true'), this.buildScope()))) {
                     let promise;
                     if (generator.type == GeneratorType.Image) {
