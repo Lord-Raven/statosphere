@@ -428,6 +428,9 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         try {
             // If there are no dependencies that haven't completed, then this classifier can start.
             console.log(`Attempting to kick off classifier: ${classifier.name}`);
+            for (let dependency in classifier.dependencies) {
+                console.log(`Has dependency: ${dependency}. ${this.generators[dependency] ? `${this.generators[dependency].skipped};${this.generators[dependency].processed}` : ''}${this.classifiers[dependency] ? `${this.classifiers[dependency].skipped};${this.classifiers[dependency].processed}` : ''}`);
+            }
             if (classifier.dependencies.filter(dependency => !((this.generators[dependency] ? this.generators[dependency].isDone() : true) && (this.classifiers[dependency] ? this.classifiers[dependency].isDone() : true))).length == 0) {
                 console.log('All dependencies met');
                 let sequenceTemplate = this.replaceTags((phase == GeneratorPhase.OnInput ? classifier.inputTemplate : classifier.responseTemplate) ?? '');
@@ -489,6 +492,9 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         try {
             // If there are no dependencies that haven't completed, then this classifier can start.
             console.log(`Attempting to kick off generator: ${generator.name}`);
+            for (let dependency in generator.dependencies) {
+                console.log(`Has dependency: ${dependency}. ${this.generators[dependency] ? `${this.generators[dependency].skipped};${this.generators[dependency].processed}` : ''}${this.classifiers[dependency] ? `${this.classifiers[dependency].skipped};${this.classifiers[dependency].processed}` : ''}`);
+            }
             if (generator.dependencies.filter(dependency => !((this.generators[dependency] ? this.generators[dependency].isDone() : true) && (this.classifiers[dependency] ? this.classifiers[dependency].isDone() : true))).length == 0) {
                 console.log('All dependencies met');
                 if (generator.phase == phase && (generator.condition == '' || this.evaluate(this.replaceTags(generator.condition ?? 'true'), this.buildScope()))) {
