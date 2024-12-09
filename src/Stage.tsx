@@ -247,6 +247,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         }
 
         //await this.processRequests();
+        await this.checkBackground();
 
         console.log('Finished loading Statosphere.');
         return {
@@ -276,14 +277,17 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         return {};
     }
 
-    async setState(state: MessageStateType): Promise<void> {
-
-        this.readMessageState(state);
+    async checkBackground() {
         if (this.background != this.scope.background ?? '') {
-            console.log(`Background changing in setState from ${this.background} to ${this.scope.background}`);
+            console.log(`Background changing from ${this.background} to ${this.scope.background}`);
             await this.messenger.updateEnvironment({background: this.scope.background ?? ''});
             this.background = this.scope.background;
         }
+    }
+    async setState(state: MessageStateType): Promise<void> {
+
+        this.readMessageState(state);
+        await this.checkBackground();
     }
 
     readMessageState(messageState: MessageStateType) {
@@ -640,7 +644,6 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
             anonymizedId
         } = botMessage;
         console.log('Start afterResponse()');
-        //const previousBackground = this.scope.background ?? undefined;
 
         // await this.messenger.updateEnvironment({input_enabled: false});
         this.replacements = {'user': this.user.name, 'char': (this.characters[anonymizedId] ? this.characters[anonymizedId].name : '')};
@@ -664,10 +667,6 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         Object.values(this.contentRules).forEach(contentRule => this.setContent(contentRule.evaluateAndApply(this, ContentCategory.PostResponse)));
         const systemMessage = this.content;
 
-        /*if (previousBackground != this.scope.background ?? '') {
-            console.log(`Background changing from ${previousBackground} to ${this.scope.background}`);
-            await this.messenger.updateEnvironment({background: this.scope.background ?? ''});
-        }*/
         // await this.messenger.updateEnvironment({input_enabled: true});
         console.log(`End afterResponse()`);
         return {
