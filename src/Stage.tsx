@@ -177,7 +177,11 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
             }
         });
 
-        math.import(this.customFunctionMap);
+        try {
+            math.import(this.customFunctionMap);
+        } catch (e) {
+            console.log(e);
+        }
 
         this.evaluate = math.evaluate;
         //this.evaluate = create(this.customFunctionMap, {matrix: 'Array'}).evaluate;
