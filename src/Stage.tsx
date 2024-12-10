@@ -162,7 +162,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
                             newDependencies = `${newDependencies},${potentialDependency}`;
                         }
                     });
-                    Object.keys(variableDefinitions).forEach(potentialDependency => {
+                    Object.values(variableDefinitions).map(definition => definition.name).forEach(potentialDependency => {
                         const regex = new RegExp(`\\b${potentialDependency}\\b`);
                         if (regex.test(otherFunc.body) && !thisFunction.dependencies.includes(potentialDependency)) {
                             console.log(`${thisFunction.name} has variable dependency: ${potentialDependency}`);
