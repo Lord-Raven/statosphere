@@ -164,12 +164,14 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
                     });
                     Object.keys(this.variableDefinitions).filter(thirdKey => new RegExp(`\\b${thirdKey}\\b`).test(otherFunc.body)).forEach(potentialDependency => {
                         if (!thisFunction.dependencies.includes(potentialDependency)) {
+                            console.log(`${thisFunction.name} has variable dependency: ${potentialDependency}`);
                             newDependencies = `${newDependencies},${potentialDependency}`;
                         }
                     })
                 });
             }
             thisFunction.dependencies = thisFunction.dependencies.replace(/,,/g, ',');
+            console.log(`${thisFunction.name} has dependencies: ${thisFunction.dependencies}`);
         });
         // All dependencies updated; now persist arguments to calls:
         Object.values(this.functions).forEach(thisFunction => {
