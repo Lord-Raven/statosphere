@@ -110,6 +110,11 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         const generatorJson = configJson.generators ?? [];
         const variableJson = configJson.variables ?? [];
 
+        // Need to load variable names first, to determine function dependencies
+        console.log('Validate variables');
+        const variableDefinitions: VariableDefinition[] =
+            this.validateSchema(variableJson, variableSchema, 'variable schema');
+
         console.log('Validate functions');
         // Build basic functions
         this.functions = {
@@ -121,10 +126,6 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
             }, this),
             capture: new CustomFunction({name: 'capture', parameters: 'input, regex, regexFlags', body: `\
                         const matches = [...input.matchAll(new RegExp(regex, regexFlags ? regexFlags : 'g'))];
-                        console.log(input);
-                        console.log(regex);
-                        console.log(matches);
-                        console.log(matches.length > 0 ? matches.map(match => match.slice(1)) : null);
                         return matches && matches.length > 0 ? matches.map(match => match.slice(1)) : [];`
             }, this),
             replace: new CustomFunction({name: 'replace', parameters: 'input, regex, newValue', body: `\
@@ -161,6 +162,11 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
                             newDependencies = `${newDependencies},${potentialDependency}`;
                         }
                     });
+                    Object.keys(this.variableDefinitions).filter(thirdKey => new RegExp(`\\b${thirdKey}\\b`).test(otherFunc.body)).forEach(potentialDependency => {
+                        if (!thisFunction.dependencies.includes(potentialDependency)) {
+                            newDependencies = `${newDependencies},${potentialDependency}`;
+                        }
+                    })
                 });
             }
             thisFunction.dependencies = thisFunction.dependencies.replace(/,,/g, ',');
@@ -186,9 +192,8 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         this.evaluate = math.evaluate;
         //this.evaluate = create(this.customFunctionMap, {matrix: 'Array'}).evaluate;
 
-        console.log('Validate variables');
-        const variableDefinitions: VariableDefinition[] =
-            this.validateSchema(variableJson, variableSchema, 'variable schema');
+        // Initialize variables; these were loaded/validated above but they could depend upon functions for initialization:
+        console.log('Initialize variables');
         for (const definition of variableDefinitions) {
             try {
                 this.variableDefinitions[definition.name] = new VariableDefinition(definition, this);
