@@ -666,7 +666,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         // await this.messenger.updateEnvironment({input_enabled: false});
         this.replacements = {'user': this.user.name, 'char': (this.characters[anonymizedId] ? this.characters[anonymizedId].name : '')};
 
-        console.log('Process pre-input variables');
+        console.log('Process pre-response variables');
         await this.processVariablesPreResponse();
 
         console.log('Handle generators and classifiers');
