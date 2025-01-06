@@ -354,7 +354,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         this.variables[name] = new Variable(name, this.variableDefinitions, this);
     }
 
-    async processVariablesPerTurn() {
+    async processVariablesPreInput() {
         for (const entry of Object.values(this.variableDefinitions)) {
             if (entry.perTurnUpdate) {
                 this.updateVariable(entry.name, entry.perTurnUpdate);
@@ -366,6 +366,14 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         for (const entry of Object.values(this.variableDefinitions)) {
             if (entry.postInputUpdate) {
                 this.updateVariable(entry.name, entry.postInputUpdate);
+            }
+        }
+    }
+
+    async processVariablesPreResponse() {
+        for (const entry of Object.values(this.variableDefinitions)) {
+            if (entry.preResponseUpdate) {
+                this.updateVariable(entry.name, entry.preResponseUpdate);
             }
         }
     }
@@ -606,8 +614,8 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
 
         this.replacements = {'user': this.user.name, 'char': (this.characters[promptForId ?? ''] ? this.characters[promptForId ?? ''].name : '')};
 
-        console.log('Process per-turn variables');
-        await this.processVariablesPerTurn();
+        console.log('Process pre-input variables');
+        await this.processVariablesPreInput();
 
         console.log('Handle generators and classifiers');
         this.resetGeneratorsAndClassifiers()
@@ -657,6 +665,9 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
 
         // await this.messenger.updateEnvironment({input_enabled: false});
         this.replacements = {'user': this.user.name, 'char': (this.characters[anonymizedId] ? this.characters[anonymizedId].name : '')};
+
+        console.log('Process pre-input variables');
+        await this.processVariablesPreResponse();
 
         console.log('Handle generators and classifiers');
         this.resetGeneratorsAndClassifiers()

@@ -5,6 +5,7 @@ export class VariableDefinition {
     initialValue: any;
     perTurnUpdate: any;
     postInputUpdate: any;
+    preResponseUpdate: any;
     postResponseUpdate: any;
     constant: boolean;
 
@@ -13,8 +14,9 @@ export class VariableDefinition {
         this.initialValue = stage.processCode(data.initialValue);
         this.perTurnUpdate = stage.processCode(data.perTurnUpdate);
         this.postInputUpdate = stage.processCode(data.postInputUpdate);
+        this.preResponseUpdate = stage.processCode(data.preResponseUpdate);
         this.postResponseUpdate = stage.processCode(data.postResponseUpdate);
-        this.constant = !this.perTurnUpdate && !this.postInputUpdate && !this.postResponseUpdate;
+        this.constant = !this.perTurnUpdate && !this.postInputUpdate && !this.preResponseUpdate && !this.postResponseUpdate;
     }
 }
 
