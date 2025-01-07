@@ -633,6 +633,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         console.log('Apply input content rules');
         Object.values(this.contentRules).forEach(contentRule => this.setContent(contentRule.evaluateAndApply(this, ContentCategory.Input)));
         const modifiedMessage = this.content;
+        console.log('Modified input value:' + modifiedMessage);
 
 
         this.setContent('');
