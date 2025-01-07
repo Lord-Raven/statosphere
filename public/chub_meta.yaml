@@ -132,7 +132,7 @@ As excited as I am to present this, it is, unfortunately, a \"bot-maker beware\"
 </ul>
 <br>
 **Updates**<br>
-01/06/2025 - Added a pre-response update field to variables; \"per turn\" is now \"pre-input\" and the new pre-response field works similarly but for responses--these run prior to response classifiers.<br>
+01/06/2025 - Added a pre-response update field to variables; \"per turn\" is now \"pre-input\" and the new pre-response field works similarly but for responses--these run prior to response classifiers. Also updated stages version.<br>
 12/10/2024 - Added variable parameter injection for custom functions, so these can now reference (but not update) your custom variables without explicitly passing those values around.<br>
 12/06/2024 - Made some changes to the way generators and classifiers are kicked off and checked, to prevent dependent requests from being held up by requests that were kicked off alongside their dependencies.<br>
 11/27/2024 - Generators and classifiers now allow for dependencies upon other generators and/or classifiers, allowing them to leverage the results of dependencies.<br>
