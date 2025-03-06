@@ -185,7 +185,16 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         });
 
         try {
-            math.import(this.customFunctionMap);
+            let filteredFunctionMap: {[key: string]: any} = {};
+            for (let key in this.customFunctionMap) {
+                console.log(`Considering function ${key}.`);
+                if (!math.isFunction(key)) {
+                    console.log(`Adding function ${key}.`);
+                    filteredFunctionMap[key] = this.customFunctionMap[key];
+                }
+            }
+            console.log(filteredFunctionMap);
+            math.import(filteredFunctionMap);
         } catch (e) {
             console.log(e);
         }
@@ -595,6 +604,8 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         if (!result) {
             console.log('Falling back to local zero-shot pipeline.');
             this.fallbackMode = true;
+            Client.connect("Ravenok/statosphere-backend", {hf_token: import.meta.env.VITE_HF_API_KEY}).then(client => {this.fallbackMode = false; this.client = client}).catch(err => console.log(err));
+
             if (this.fallbackPipeline == null) {
                 this.fallbackPipeline = this.fallbackPipelinePromise ? await this.fallbackPipelinePromise : await this.getPipeline();
             }
