@@ -185,16 +185,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         });
 
         try {
-            let filteredFunctionMap: {[key: string]: any} = {};
-            for (let key in this.customFunctionMap) {
-                console.log(`Considering function ${key}.`);
-                if (!math.isFunction(key)) {
-                    console.log(`Adding function ${key}.`);
-                    filteredFunctionMap[key] = this.customFunctionMap[key];
-                }
-            }
-            console.log(filteredFunctionMap);
-            math.import(filteredFunctionMap);
+            math.import(this.customFunctionMap, {override: true});
         } catch (e) {
             console.log(e);
         }
