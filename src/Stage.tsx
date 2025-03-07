@@ -25,6 +25,7 @@ import generatorSchema from "./assets/generator-schema.json";
 import variableSchema from "./assets/variable-schema.json";
 import {CustomFunction} from "./CustomFunction";
 import {Generator, GeneratorPhase, GeneratorType} from "./Generator";
+import {useSound} from "use-sound";
 
 type MessageStateType = any;
 type ConfigType = any;
@@ -61,6 +62,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
     scope: {[key: string]: any};
     replacements: any = {};
     background: any = undefined;
+    music: HTMLAudioElement;
 
     constructor(data: InitialData<InitStateType, ChatStateType, MessageStateType, ConfigType>) {
         super(data);
@@ -86,6 +88,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         this.fallbackMode = false;
         this.fallbackPipeline = null;
         this.scope = {};
+        this.music = new Audio();
         env.allowRemoteModels = false;
 
         this.customFunctionMap = {};
@@ -256,8 +259,9 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
             console.log('No classifiers');
         }
 
-        //await this.processRequests();
+        await this.playSound();
         await this.checkBackground();
+        await this.checkMusic();
 
         console.log('Finished loading Statosphere.');
         return {
@@ -287,6 +291,28 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         return {};
     }
 
+    async checkMusic() {
+        if (this.music.src != this.scope.music ?? '') {
+            this.music.src = this.scope.music;
+            if (this.scope.music ?? '' == '') {
+                console.log('Stopping music.');
+                this.music.pause();
+            } else {
+                console.log(`Playing music: ${this.music.src}`);
+                this.music.loop = true;
+                await this.music.play();
+            }
+        }
+    }
+
+    async playSound() {
+        if (this.scope.sound) {
+            console.log(`Playing sound: ${this.scope.sound}`);
+            useSound(this.scope.sound);
+            this.scope.sound = '';
+        }
+    }
+
     async checkBackground() {
         if (this.background != this.scope.background ?? '') {
             console.log(`Background changing from ${this.background} to ${this.scope.background}`);
@@ -294,9 +320,12 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
             this.background = this.scope.background;
         }
     }
+
     async setState(state: MessageStateType): Promise<void> {
 
         this.readMessageState(state);
+        await this.playSound();
+        await this.checkMusic();
         await this.checkBackground();
     }
 

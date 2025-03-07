@@ -26,7 +26,8 @@
     "@types/js-yaml": "^4.0.9",
     "mathjs": "^13.0.3",
     "@gradio/client": "^1.5.0",
-    "ajv": "^8.17.1"
+    "ajv": "^8.17.1",
+    "use-sound": "^4.0.1"
   },
   "engines": {
     "node": "21.7.1"
