@@ -259,9 +259,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
             console.log('No classifiers');
         }
 
-        await this.playSound();
         await this.checkBackground();
-        await this.checkMusic();
 
         console.log('Finished loading Statosphere.');
         return {
