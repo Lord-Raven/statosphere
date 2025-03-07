@@ -26,6 +26,7 @@ import variableSchema from "./assets/variable-schema.json";
 import {CustomFunction} from "./CustomFunction";
 import {Generator, GeneratorPhase, GeneratorType} from "./Generator";
 import {useSound} from "use-sound";
+import {ExposedData, PlayFunction} from "use-sound/dist/types";
 
 type MessageStateType = any;
 type ConfigType = any;
@@ -62,7 +63,9 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
     scope: {[key: string]: any};
     replacements: any = {};
     background: any = undefined;
-    music: HTMLAudioElement;
+    //playMusic: PlayFunction;
+    //musicData: ExposedData;
+
 
     constructor(data: InitialData<InitStateType, ChatStateType, MessageStateType, ConfigType>) {
         super(data);
@@ -88,7 +91,6 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         this.fallbackMode = false;
         this.fallbackPipeline = null;
         this.scope = {};
-        this.music = new Audio();
         env.allowRemoteModels = false;
 
         this.customFunctionMap = {};
@@ -96,6 +98,8 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
 
         this.readMessageState(messageState);
         console.log('Constructor complete');
+
+        //[this.playMusic, this.musicData] = useSound('', {loop: true});
     }
 
     async load(): Promise<Partial<LoadResponse<InitStateType, ChatStateType, MessageStateType>>> {
@@ -290,8 +294,8 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
     }
 
     async checkMusic() {
-        if (this.music.src != this.scope.music ?? '') {
-            this.music.src = this.scope.music ?? '';
+        /*if (this.music.currentSrc != this.scope.music ?? '') {
+            this.music.set = this.scope.music ?? '';
             if ((this.scope.music ?? '') == '' && !this.music.paused) {
                 console.log('Stopping music.');
                 this.music.pause();
@@ -300,7 +304,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
                 this.music.loop = true;
                 await this.music.play();
             }
-        }
+        }*/
     }
 
     async playSound() {
