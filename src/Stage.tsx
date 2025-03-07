@@ -293,8 +293,8 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
 
     async checkMusic() {
         if (this.music.src != this.scope.music ?? '') {
-            this.music.src = this.scope.music;
-            if (this.scope.music ?? '' == '') {
+            this.music.src = this.scope.music ?? '';
+            if ((this.scope.music ?? '') == '' && !this.music.paused) {
                 console.log('Stopping music.');
                 this.music.pause();
             } else {
@@ -306,7 +306,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
     }
 
     async playSound() {
-        if (this.scope.sound) {
+        if (this.scope.sound != null && this.scope.sound != '') {
             console.log(`Playing sound: ${this.scope.sound}`);
             useSound(this.scope.sound);
             this.scope.sound = '';
