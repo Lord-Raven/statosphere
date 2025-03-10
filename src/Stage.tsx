@@ -25,8 +25,7 @@ import generatorSchema from "./assets/generator-schema.json";
 import variableSchema from "./assets/variable-schema.json";
 import {CustomFunction} from "./CustomFunction";
 import {Generator, GeneratorPhase, GeneratorType} from "./Generator";
-import {useSound} from "use-sound";
-import {ExposedData, PlayFunction} from "use-sound/dist/types";
+import {Howl} from "howler";
 
 type MessageStateType = any;
 type ConfigType = any;
@@ -63,8 +62,8 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
     scope: {[key: string]: any};
     replacements: any = {};
     background: any = undefined;
-    musicData: any|null = null;
     musicUrl: string = '';
+    music: Howl|null = null;
 
 
     constructor(data: InitialData<InitStateType, ChatStateType, MessageStateType, ConfigType>) {
@@ -299,15 +298,14 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         if (this.debugMode && this.musicUrl != (this.scope.music ?? '')) {
             console.log(`Music check: ${this.musicUrl} vs. ${this.scope.music}`)
             this.musicUrl = this.scope.music ?? '';
-            if (this.musicData) {
-                this.musicData.fade(1, 0, 1000);
+            if (this.music) {
+                this.music.fade(1, 0, 1000);
             }
 
             if (this.musicUrl != '') {
                 console.log(`Playing music: ${this.musicUrl}`);
-                const [play, {sound}] = useSound(this.musicUrl, {loop: true});
-                this.musicData = sound;
-                play();
+                this.music = new Howl({src: [this.musicUrl], loop: true});
+                this.music.play();
             }
         }
     }
@@ -315,7 +313,8 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
     async playSound() {
         if (this.debugMode && this.scope.sound != null && this.scope.sound != '') {
             console.log(`Playing sound: ${this.scope.sound}`);
-            useSound(this.scope.sound);
+            const sfx = new Howl(this.scope.sound);
+            sfx.play();
             this.scope.sound = '';
         }
     }

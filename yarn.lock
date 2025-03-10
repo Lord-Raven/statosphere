@@ -864,6 +864,11 @@
   resolved "https://registry.yarnpkg.com/@types/eventsource/-/eventsource-1.1.15.tgz#949383d3482e20557cbecbf3b038368d94b6be27"
   integrity sha512-XQmGcbnxUNa06HR3VBVkc9+A2Vpi9ZyLJcdS5dwaQQ/4ZMWFO+5c90FnMUpbtMZwB/FChoYHwuVg8TvkECacTA==
 
+"@types/howler@^2.2.12":
+  version "2.2.12"
+  resolved "https://registry.yarnpkg.com/@types/howler/-/howler-2.2.12.tgz#078d20787911f6e3e871a0e93a23832e13abaa59"
+  integrity sha512-hy769UICzOSdK0Kn1FBk4gN+lswcj1EKRkmiDtMkUGvFfYJzgaDXmVXkSShS2m89ERAatGIPnTUlp2HhfkVo5g==
+
 "@types/js-yaml@^4.0.9":
   version "4.0.9"
   resolved "https://registry.yarnpkg.com/@types/js-yaml/-/js-yaml-4.0.9.tgz#cd82382c4f902fed9691a2ed79ec68c5898af4c2"
@@ -3037,13 +3042,6 @@ url-parse@^1.5.3:
   dependencies:
     querystringify "^2.1.1"
     requires-port "^1.0.0"
-
-use-sound@^4.0.1:
-  version "4.0.4"
-  resolved "https://registry.yarnpkg.com/use-sound/-/use-sound-4.0.4.tgz#2b6c0ff87aea2398e867471dc894c18d4cf54d2a"
-  integrity sha512-SW81yRUu3K0rJHW0WVANCAK581A2qgD97+QrLxPhlAhvdIAIgw2J9d1VThdbHmPHjzCbwKE/is82V88sgFdjCg==
-  dependencies:
-    howler "^2.2.4"
 
 util-deprecate@^1.0.1:
   version "1.0.2"

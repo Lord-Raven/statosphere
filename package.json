@@ -24,10 +24,11 @@
     "vite-plugin-dts": "^3.9.1",
     "@xenova/transformers": "2.17.2",
     "@types/js-yaml": "^4.0.9",
+    "@types/howler": "^2.2.12",
     "mathjs": "^13.0.3",
     "@gradio/client": "^1.5.0",
     "ajv": "^8.17.1",
-    "use-sound": "^4.0.1"
+    "howler": "^2.2.4"
   },
   "engines": {
     "node": "21.7.1"
