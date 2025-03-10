@@ -86,10 +86,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         this.generators = {};
         this.classifierLabelMapping = {};
         this.config = config;
-        this.debugMode = this.config.debugMode == 'true';
-        if (this.debugMode) {
-            console.log('Debug mode enabled.');
-        }
+        this.debugMode = false
         this.fallbackMode = false;
         this.fallbackPipeline = null;
         this.scope = {};
@@ -264,6 +261,9 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
             console.log('No classifiers');
         }
 
+        if (this.variables['debugMode']) {
+            console.log('Debug mode enabled.');
+        }
         await this.checkBackground();
 
         console.log('Finished loading Statosphere.');
@@ -328,7 +328,6 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
     }
 
     async setState(state: MessageStateType): Promise<void> {
-
         this.readMessageState(state);
         await this.playSound();
         await this.checkMusic();
