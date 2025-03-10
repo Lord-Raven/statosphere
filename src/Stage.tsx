@@ -63,8 +63,8 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
     scope: {[key: string]: any};
     replacements: any = {};
     background: any = undefined;
-    //playMusic: PlayFunction;
-    //musicData: ExposedData;
+    musicData: any|null = null;
+    musicUrl: string = '';
 
 
     constructor(data: InitialData<InitStateType, ChatStateType, MessageStateType, ConfigType>) {
@@ -87,7 +87,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         this.generators = {};
         this.classifierLabelMapping = {};
         this.config = config;
-        this.debugMode = false;
+        this.debugMode = this.config.debugMode == 'true';
         this.fallbackMode = false;
         this.fallbackPipeline = null;
         this.scope = {};
@@ -99,7 +99,6 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         this.readMessageState(messageState);
         console.log('Constructor complete');
 
-        //[this.playMusic, this.musicData] = useSound('', {loop: true});
     }
 
     async load(): Promise<Partial<LoadResponse<InitStateType, ChatStateType, MessageStateType>>> {
@@ -294,21 +293,23 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
     }
 
     async checkMusic() {
-        /*if (this.music.currentSrc != this.scope.music ?? '') {
-            this.music.set = this.scope.music ?? '';
-            if ((this.scope.music ?? '') == '' && !this.music.paused) {
-                console.log('Stopping music.');
-                this.music.pause();
-            } else {
-                console.log(`Playing music: ${this.music.src}`);
-                this.music.loop = true;
-                await this.music.play();
+        if (this.debugMode && this.musicUrl != (this.scope.music ?? '')) {
+            this.musicUrl = this.scope.music ?? '';
+            if (this.musicData) {
+                this.musicData.fade(1, 0, 1000);
             }
-        }*/
+
+            if (this.musicUrl != '') {
+                console.log(`Playing music: ${this.musicUrl}`);
+                const [play, {sound}] = useSound(this.musicUrl, {loop: true});
+                this.musicData = sound;
+                play();
+            }
+        }
     }
 
     async playSound() {
-        if (this.scope.sound != null && this.scope.sound != '') {
+        if (this.debugMode && this.scope.sound != null && this.scope.sound != '') {
             console.log(`Playing sound: ${this.scope.sound}`);
             useSound(this.scope.sound);
             this.scope.sound = '';

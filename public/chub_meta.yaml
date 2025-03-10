@@ -198,8 +198,8 @@ config_schema:
         {}
     debugMode:
       title: Debug Mode
-      description: Leave disabled unless you don't care about stability.
-      type: boolean
+      description: Type "true" here if you want to opt-in to potentially breaking changes with little benefit.
+      type: string
       value: false
 
 # The schema of the state that you store.
