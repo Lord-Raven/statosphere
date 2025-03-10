@@ -88,6 +88,9 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         this.classifierLabelMapping = {};
         this.config = config;
         this.debugMode = this.config.debugMode == 'true';
+        if (this.debugMode) {
+            console.log('Debug mode enabled.');
+        }
         this.fallbackMode = false;
         this.fallbackPipeline = null;
         this.scope = {};
@@ -294,6 +297,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
 
     async checkMusic() {
         if (this.debugMode && this.musicUrl != (this.scope.music ?? '')) {
+            console.log(`Music check: ${this.musicUrl} vs. ${this.scope.music}`)
             this.musicUrl = this.scope.music ?? '';
             if (this.musicData) {
                 this.musicData.fade(1, 0, 1000);
