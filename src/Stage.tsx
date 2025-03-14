@@ -655,8 +655,8 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         } = userMessage;
         console.log('Start beforePrompt()');
 
-        if (Howler.ctx && Howler.ctx.state === 'suspended') {
-            console.log('Try to resume');
+        if (this.debugMode && Howler.ctx && Howler.ctx.state === 'suspended') {
+            console.log('Try to resume 1');
             Howler.ctx.resume().then(() => {if (this.music && !this.music.playing()) {this.music.play()}});
         }
 
@@ -711,8 +711,8 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         } = botMessage;
         console.log('Start afterResponse()');
 
-        if (Howler.ctx && Howler.ctx.state === 'suspended') {
-            console.log('Try to resume');
+        if (this.debugMode && Howler.ctx && Howler.ctx.state === 'suspended') {
+            console.log('Try to resume 2');
             Howler.ctx.resume().then(() => {if (this.music && !this.music.playing()) {this.music.play()}});
         }
 
@@ -817,8 +817,8 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
 
     render(): ReactElement {
 
-        if (Howler.ctx && Howler.ctx.state === 'suspended') {
-            console.log('Try to resume');
+        if (this.debugMode && Howler.ctx && Howler.ctx.state === 'suspended') {
+            console.log('Try to resume 3');
             Howler.ctx.resume().then(() => {if (this.music && !this.music.playing()) {this.music.play()}});
         }
 
