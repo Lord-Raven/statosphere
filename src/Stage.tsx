@@ -273,6 +273,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
             this.debugMode = true;
         }
         await this.checkBackground();
+        await this.checkMusic();
 
         console.log('Finished loading Statosphere.');
         return {
@@ -303,7 +304,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
     }
 
     async checkMusic() {
-        if (this.debugMode && this.musicUrl != (this.scope.music ?? '')) {
+        if (this.debugMode) { // && this.musicUrl != (this.scope.music ?? '')
             console.log(`Music check: ${this.musicUrl} vs. ${this.scope.music}`)
             this.musicUrl = this.scope.music ?? '';
             if (this.music) {
@@ -317,7 +318,8 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
                     src: [this.musicUrl],
                     loop: true,
                     preload: true,
-                    autoplay: true
+                    autoplay: true,
+                    html5: true
                 });
                 this.music.play();
             }
