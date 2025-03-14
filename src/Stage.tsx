@@ -97,14 +97,6 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
 
         this.readMessageState(messageState);
         console.log('Constructor complete');
-
-        document.addEventListener('click', () => {
-            console.log(`Click(): ${Howler.ctx}`);
-            if (Howler.ctx && Howler.ctx.state === 'suspended') {
-                Howler.ctx.resume().then(() => {if (this.music && !this.music.playing()) {this.music.play()}});
-            }
-        })
-
     }
 
     async load(): Promise<Partial<LoadResponse<InitStateType, ChatStateType, MessageStateType>>> {
@@ -319,7 +311,6 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
                     loop: true,
                     preload: true,
                     autoplay: true,
-                    html5: true
                 });
                 this.music.play();
             }
@@ -664,6 +655,11 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         } = userMessage;
         console.log('Start beforePrompt()');
 
+        if (Howler.ctx && Howler.ctx.state === 'suspended') {
+            console.log('Try to resume');
+            Howler.ctx.resume().then(() => {if (this.music && !this.music.playing()) {this.music.play()}});
+        }
+
         this.replacements = {'user': this.user.name, 'char': (this.characters[promptForId ?? ''] ? this.characters[promptForId ?? ''].name : '')};
 
         console.log('Process pre-input variables');
@@ -714,6 +710,11 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
             anonymizedId
         } = botMessage;
         console.log('Start afterResponse()');
+
+        if (Howler.ctx && Howler.ctx.state === 'suspended') {
+            console.log('Try to resume');
+            Howler.ctx.resume().then(() => {if (this.music && !this.music.playing()) {this.music.play()}});
+        }
 
         // await this.messenger.updateEnvironment({input_enabled: false});
         this.replacements = {'user': this.user.name, 'char': (this.characters[anonymizedId] ? this.characters[anonymizedId].name : '')};
@@ -815,6 +816,11 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
 
 
     render(): ReactElement {
+
+        if (Howler.ctx && Howler.ctx.state === 'suspended') {
+            console.log('Try to resume');
+            Howler.ctx.resume().then(() => {if (this.music && !this.music.playing()) {this.music.play()}});
+        }
 
         return <div style={{
             width: '100vw',
