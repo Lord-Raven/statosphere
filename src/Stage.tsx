@@ -305,7 +305,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
 
             if (this.musicUrl != '') {
                 console.log(`Playing music: ${this.musicUrl}`);
-                this.music = new Howl({src: [this.musicUrl], loop: true});
+                this.music = new Howl({src: [this.musicUrl], loop: true, preload: true});
                 this.music.play();
             }
         }
