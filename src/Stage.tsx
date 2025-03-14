@@ -305,16 +305,18 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
 
             if (this.musicUrl != '') {
                 console.log(`Playing music: ${this.musicUrl}`);
-                if (Howler.ctx.state == 'suspended') {
-                    console.log('AudioContext was suspended');
-                    Howler.ctx.resume().then(() => {if (this.music && !this.music.playing()) {this.music.play()}});
-                }
+
                 this.music = new Howl({
                     src: [this.musicUrl],
                     loop: true,
                     preload: true,
+                    autoplay: true
                 });
                 this.music.play();
+                if (Howler.ctx.state == 'suspended') {
+                    console.log('AudioContext was suspended');
+                    Howler.ctx.resume().then(() => {if (this.music && !this.music.playing()) {this.music.play()}});
+                }
             }
         }
     }
