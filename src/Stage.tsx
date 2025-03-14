@@ -98,6 +98,13 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         this.readMessageState(messageState);
         console.log('Constructor complete');
 
+        document.addEventListener('click', () => {
+            console.log(`Click(): ${Howler.ctx}`);
+            if (Howler.ctx && Howler.ctx.state === 'suspended') {
+                Howler.ctx.resume().then(() => {if (this.music && !this.music.playing()) {this.music.play()}});
+            }
+        })
+
     }
 
     async load(): Promise<Partial<LoadResponse<InitStateType, ChatStateType, MessageStateType>>> {
@@ -313,10 +320,6 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
                     autoplay: true
                 });
                 this.music.play();
-                if (Howler.ctx.state == 'suspended') {
-                    console.log('AudioContext was suspended');
-                    Howler.ctx.resume().then(() => {if (this.music && !this.music.playing()) {this.music.play()}});
-                }
             }
         }
     }
