@@ -9,7 +9,10 @@ tagline: "Give your bots variables and launch them into...the Stat-O-Sphere! (ph
 creator_notes: "
 This is a stage for creating custom variables and rules for stat-tracking, behavior reinforcement, or complex scenario implementation. 
 _Up front, this is pretty experimental; it may become unstable and it may not be for the faint of heart,_ 
-but if you've been thinking about playing with a stage of your own, this may be a less daunting entrypoint.
+but if you've been thinking about playing with a stage of your own, this may be a less daunting entrypoint. 
+<br>
+<br>
+(There are a lot of notes and a Chub bug here; if you don't see a \"Show More\" button, try refreshing the page 'til appears, so you can view all of the notes.)
 <br>
 <br>
 This stage is comprised of five core elements:<br>
