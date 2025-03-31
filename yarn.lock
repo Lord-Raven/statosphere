@@ -412,10 +412,10 @@
   resolved "https://registry.yarnpkg.com/@ffmpeg/types/-/types-0.12.2.tgz#bc7eef321ae50225c247091f1f23fd3087c6aa1d"
   integrity sha512-NJtxwPoLb60/z1Klv0ueshguWQ/7mNm106qdHkB4HL49LXszjhjCCiL+ldHJGQ9ai2Igx0s4F24ghigy//ERdA==
 
-"@gradio/client@^1.5.0":
-  version "1.5.0"
-  resolved "https://registry.yarnpkg.com/@gradio/client/-/client-1.5.0.tgz#176504d3eff14b723d610131b8c0e0254bc5f046"
-  integrity sha512-ZQ1coiujVZjVfas0zyyFgVQOocUL+pnYJagRNfLTzCsJ0m/DXGngELhGTM/QjIVkJGVDuhUyY5VCM7vD1n4LDQ==
+"@gradio/client@^1.14.0":
+  version "1.14.0"
+  resolved "https://registry.yarnpkg.com/@gradio/client/-/client-1.14.0.tgz#7eed032294be79085150c9743e949eb8017909ea"
+  integrity sha512-BqM4D6RNCjInJG0OcGrAbik+DX4kRht2XrB7Mkd6bT5rtP3pUStZFRqb+mOuw+wvZvDfm4K0SngB/9X2i+RtTg==
   dependencies:
     "@types/eventsource" "^1.1.15"
     bufferutil "^4.0.7"

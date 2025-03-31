@@ -135,6 +135,7 @@ As excited as I am to present this, it is, unfortunately, a \"bot-maker beware\"
 </ul>
 <br>
 **Updates**<br>
+03/30/2025 - Updated the HF backend this stage leverages and had to update the Gradio client here. I broke inference for several hours but it's back up and should perform better than before. I might toy with other models, but I'm pretty happy with the performance boost for now.<br>
 03/05/2025 - The stage will now attempt to re-establish a connection to the back-end if it fails to respond, rather than enter fallback mode until refresh. I addressed a duplicate function error that would appear in the log. Also made improvements to the configuration tool's classifier testing.<br>
 01/06/2025 - Added a pre-response update field to variables; \"per turn\" is now \"pre-input\" and the new pre-response field works similarly but for responses--these run prior to response classifiers. Also updated stages version.<br>
 12/10/2024 - Added variable parameter injection for custom functions, so these can now reference (but not update) your custom variables without explicitly passing those values around.<br>
