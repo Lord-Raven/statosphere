@@ -264,6 +264,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
             console.log('Debug mode enabled.');
             this.debugMode = true;
         }
+        this.buildScope();
         await this.checkBackground();
         await this.checkMusic();
 
