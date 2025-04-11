@@ -70,16 +70,17 @@ Here are just some brief notes to keep in mind, to tide folks over 'til I can mo
 <li>You can reference your defined variables by name outside of strings.
 <li>You can also reference variables both inside and outside of strings by surrounding them with double braces (e.g., \"{{someVariable}}\"); this substitution is performed by the stage before evaluation.
 <li>You can use {{user}}, {{char}}, and {{content}} (which varies contextually).
-<li>Statosphere has MathJS set to handle matrices as arrays, but MathJS still uses one-based array indexing, which will differ from when you reference those arrays in your defined JavaScript functions.
+<li>Statosphere has MathJS set to handle matrices as arrays, but MathJS uses one-based array indexing, which will differ from when you reference those arrays in your defined JavaScript functions.
 </ul>
 <li>The Functions section allows you to define JavaScript functions, which can then be leveraged in any of the other evaluated fields.
 <ul>
-<li>These functions do not have access to any of the variables you define unless you pass those variables to them.
-<li>They _do_ have access to other functions you define, though; the stage identifies functional dependencies and injects those for you.
+<li>These functions can reference any of your defined functions or variables; the stage attempts to identify dependencies and inject these values as parameters.
+<li>As a result, be thoughtful with parameter, variable, and function names.
+<li>These functions cannot update stage variable values; these are effectively injected by value.
 </ul>
 </ul>
 <br>
-If you have other questions about this stage or stages in general, feel free to DM me on the Chub Discord: Ravenok.
+If you have other questions about this stage or stages in general, feel free to DM me on the Chub Discord: ravenok31.
 <br>
 <br>
 **Order of Operations**<br>
@@ -107,63 +108,45 @@ For reference, the rules on this stage are applied in this order:<br>
 </ul>
 <br>
 **Inference Details**<br>
-This stage makes API calls to a Hugging Face backend that I have set up to leverage a zero-shot classification model. 
-If this backend is unavailable or some other error occurs in calling it, the stage will swap to applying a very small, local, zero-shot model.
+This stage makes API calls to a [Hugging Face Space](https://huggingface.co/spaces/Ravenok/statosphere-backend) that I have set up to leverage a zero-shot classification model. 
+If this backend is unavailable or some other error occurs in calling it, the stage will swap to applying a very small, local, zero-shot model, and the results will be decidedly inferior.
 <br>
 <br>
-The backend does not log requests, but the source code is not public at this time. 
-I simply haven't messed with how to expose the source code without opening up the backend to other apps--I need to restrict usage to these stages and block unknown third parties. 
-In the future, I will try to swap the permissions so others can view the source and verify there's nothing nefarious for themselves (or learn to set up a similar service, if they like).
+It is currently running on HF's Zero GPU and can burn through my daily quota; if it does, request times will go up a bit as it falls back to CPU. 
+The backend drops REST calls from origins other than my own stages in a simple attempt to thwart abuse, because I am paying to support it. 
+It is open source now, so you can see how it has been set up (there really isn't much to it) and verify for yourself that I'm not logging request details or anything nefarious.
 <br>
 <br>
-Neither the local model nor the backend model are going to get you great results without carefully tuned prompts/labels/hypotheses/thresholds; 
-it can be a struggle to get consistently decent evaluations, so this remains the weakpoint in the stage.
+You aren't going to get you great results without carefully tuned prompts/labels/hypotheses/thresholds; 
+it can be a struggle to get consistently decent evaluations, so this can become a weakpoint in the stage.
 <br>
 <br>
 **Pitfalls**<br>
 As excited as I am to present this, it is, unfortunately, a \"bot-maker beware\" sort of stage. There are a number of items that could warrant concern, which you may wish to consider before working with this stage:<br>
 <ul>
-<li>Active development: I am planning to expand the feature set, and this comes with the potential to break your application of the stage.
 <li>Chub exclusivity: remember that stages are a feature of Chub's front-end, and anyone playing your bot in another front-end will not benefit; you may wish to point this out in your creator notes, if you have used this stage to cultivate an intended experience.
 <li>Version history: the stage's configuration does appear in version history on Chub, but updates to configuration do not appear to create a new entry in the version history--it could be easy to accidentally blow away your configuration with little recourse.
 <li>Obfuscation: this stage can implement some interesting behaviors, but those behaviors may no longer be represented within the bot's definition; savvy users can disable or inspect the stage's configuration, but most users are unlikely to even recognize that a stage is in play--please consider mentioning it in the bot's creator notes.
 <li>Configuration is public: on the other hand, because users can still view your stage configuration, any cool thing you make with this stage will not remain proprietary--of course, the same goes for any bot on the site.
 <li>Malicious intent: because the stage is nearly opaque and it does offer powerful options--including evaluation of custom JavaScript functions--, I have some nebulous concern about the potential for abuse.
 <li>Generators make additional LLM calls: consider warning users if your bot is leveraging this feature, as it will lead to slower responses and increased token utilization.
-<li>Inference backend: the zero-shot classification inference is being conducted on a Hugging Face-hosted backend. I manage this backend and I do not log requests, but it is still a third-party call that you may wish to avoid. If your configuration does not use classifications, the stage never even connects to this backend.
 <li>Stages are a beta feature: I imagine this stage could be broken by future Chub updates; bear in mind that your bot's experience could be negatively impacted in that event.
 </ul>
 <br>
 **Updates**<br>
-04/05/2025 - Minor changes to properly set scope for background definition purposes. Also changed how stage directions are designated.
+04/11/2025 - I made the Hugging Face backend public today, to improve transparency for this aspect of the stage. I made some updates to these notes to reflect that and clean up some dated information.<br>
+04/05/2025 - Minor changes to properly set scope for background definition purposes. Also changed how stage directions are designated.<br>
 03/30/2025 - Updated the HF backend this stage leverages and had to update the Gradio client here. I broke inference for several hours but it's back up and should perform better than before. I might toy with other models, but I'm pretty happy with the performance boost for now.<br>
 03/05/2025 - The stage will now attempt to re-establish a connection to the back-end if it fails to respond, rather than enter fallback mode until refresh. I addressed a duplicate function error that would appear in the log. Also made improvements to the configuration tool's classifier testing.<br>
-01/06/2025 - Added a pre-response update field to variables; \"per turn\" is now \"pre-input\" and the new pre-response field works similarly but for responses--these run prior to response classifiers. Also updated stages version.<br>
-12/10/2024 - Added variable parameter injection for custom functions, so these can now reference (but not update) your custom variables without explicitly passing those values around.<br>
-12/06/2024 - Made some changes to the way generators and classifiers are kicked off and checked, to prevent dependent requests from being held up by requests that were kicked off alongside their dependencies.<br>
-11/27/2024 - Generators and classifiers now allow for dependencies upon other generators and/or classifiers, allowing them to leverage the results of dependencies.<br>
-11/22/2024 - Added support for image generation, implemented include_history flag for text generation, and adjusted classifiers to run in parallel. 
-Generators can now be set to have an \"Image\" type, and will result in content being set to a URL to the final image they generate; 
-the image can then be incorporated into variables or displayed in a system message or something.<br>
-11/03/2024 - The generator prompt field is now evaluated. If you have an existing generator, this will be a breaking change, resolved by surrounding your prompt with quotation marks. The benefit of this is that you can build dynamic prompts more easily than before.<br>
-10/30/2024 - Added a 'lazy' flag to generators. Lazy generators are fired (if conditions are met and the generator is not already running) during their target phase but don't hold the phase up--
-they will be checked at every point where generators can be kicked off and processed when they complete. 
-Use them for content generation that isn't time-sensitive. Also, added content to MathJS's scope; this should make it easier to leverage content in different places (such as basing dynamic classifier labels on the user's input).<br>
-10/19/2024 - Briefly broke classification labels, then walked that back. Instead, I've added a dynamic flag to labels; if ticked, the label will be evaluated, and if that results in an array of strings, each string will be used as a label. 
-{{label}} is now a special variable that is subbed for the label that is being processed; this allows you to have variable updates that utilize the dynamic label's value.<br>
-09/30/2024 - Added a new element to the stage: generators. These are additional LLM calls that can trigger variable updates; I'm still experimenting with this, so there's no documentation, and I don't recommend trying them out just yet.<br>
-09/24/2024 - Improved variable validation debugging output. I also made some documentation updates due to some recent formatting changes on the site; I cannot actually use double braces in these notes or things get funky.<br>
-09/18/2024 - Simplified user and char substitution, specifically to enable support in variable initialization.<br>
-09/17/2024 - I have updated the configuration builder to incorporate a simple classifier tester so you can view zero-shot classification results for any sample input/response--
-this makes it far easier to test and tweak classifiers.
+01/06/2025 - Added a pre-response update field to variables; \"per turn\" is now \"pre-input\" and the new pre-response field works similarly but for responses--these run prior to response classifiers. Also updated stages version.
 <br>
 <br>
 **What's Next?**<br>
 This stage represents nearly all the essential features I feel I can achieve without further improvements to Chub's stage system. There is certainly room for further improvement within this (or with the configuration editor), 
 but my primary outstanding goals are dependent upon presumed features that will hopefully become a reality some day.<br>
 <br>
-Perhaps future Stage improvements will permit stages to easily swap between positions and I can add functionality for displaying content in other places? 
-Maybe it will be easier to capture lorebooks or other bot details within the stage, and I could enable creators to leverage that data in who knows what kind of interesting ways? 
+Perhaps future Stage improvements will permit stages to easily swap between positions, and I can add functionality for displaying content in other places? 
+Maybe it will be easier to capture lorebook or other bot details within the stage, and I could enable creators to leverage that data in who knows what kind of interesting ways? 
 Could be the chat tree will become accessible, and you could do...something, I'm sure? Whatever comes, I will try to keep this stage on top of it, 
 because I think this kind of stage holds value for people who want to play with these concepts but who don't want to build out their own stage to do so.
 "
