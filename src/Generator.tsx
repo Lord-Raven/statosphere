@@ -48,8 +48,8 @@ export class Generator {
         this.negativePrompt = stage.processCode(data.negativePrompt);
         this.template = stage.processCode(data.template);
         this.includeHistory = data.includeHistory ?? false;
-        this.minTokens = data.minSize;
-        this.maxTokens = data.maxSize;
+        this.minTokens = data.minTokens;
+        this.maxTokens = data.maxTokens;
         this.aspectRatio = data.aspectRatio ?? AspectRatio.PHOTO_HORIZONTAL;
         this.removeBackground = data.removeBackground ?? false;
         this.dependencies = data.dependencies ? data.dependencies.toString().split(',').map((dependency: string) => dependency.trim()) : [];
