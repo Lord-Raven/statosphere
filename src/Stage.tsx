@@ -616,10 +616,10 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
     updateReplacements(charId: string|null) {
         this.replacements = {
             'user': this.user.name,
-            'userDescription': this.user.chatProfile,
+            'persona': this.user.chatProfile,
             'char': (this.characters[charId ?? ''] ? this.characters[charId ?? ''].name : ''),
-            'charDescription': (this.characters[charId ?? ''] ? this.characters[charId ?? ''].description : ''),
-            'charScenario': (this.characters[charId ?? ''] ? this.characters[charId ?? ''].scenario : '')
+            'description': (this.characters[charId ?? ''] ? this.characters[charId ?? ''].description : ''),
+            'scenario': (this.characters[charId ?? ''] ? this.characters[charId ?? ''].scenario : '')
         };
     }
 
