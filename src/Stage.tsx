@@ -77,7 +77,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         console.log('Constructing Statosphere');
         this.characters = characters;
         this.user = users[Object.keys(users)[0]];
-        this.replacements = {'user': this.user.name, 'char': Object.values(this.characters)[0].name};
+        this.updateReplacements(Object.keys(this.characters)[0]);
         this.variables = {};
         this.variableDefinitions = {};
         this.functions = {};
@@ -613,6 +613,16 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         }
     }
 
+    updateReplacements(charId: string|null) {
+        this.replacements = {
+            'user': this.user.name,
+            'userDescription': this.user.chatProfile,
+            'char': (this.characters[charId ?? ''] ? this.characters[charId ?? ''].name : ''),
+            'charDescription': (this.characters[charId ?? ''] ? this.characters[charId ?? ''].description : ''),
+            'charScenario': (this.characters[charId ?? ''] ? this.characters[charId ?? ''].scenario : '')
+        };
+    }
+
     replaceTags(source: string) {
         if (!source) return '';
         let replacements = this.replacements;
@@ -663,7 +673,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
             Howler.ctx.resume().then(() => {if (this.music && !this.music.playing()) {this.music.play()}});
         }
 
-        this.replacements = {'user': this.user.name, 'char': (this.characters[promptForId ?? ''] ? this.characters[promptForId ?? ''].name : '')};
+        this.updateReplacements(promptForId);
 
         console.log('Process pre-input variables');
         await this.processVariablesPreInput();
@@ -720,7 +730,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         }
 
         // await this.messenger.updateEnvironment({input_enabled: false});
-        this.replacements = {'user': this.user.name, 'char': (this.characters[anonymizedId] ? this.characters[anonymizedId].name : '')};
+        this.updateReplacements(anonymizedId);
 
         console.log('Process pre-response variables');
         await this.processVariablesPreResponse();
