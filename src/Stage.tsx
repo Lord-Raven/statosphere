@@ -619,7 +619,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
             'user': this.user.name,
             'persona': this.user.chatProfile,
             'char': (this.characters[charId ?? ''] ? this.characters[charId ?? ''].name : ''),
-            'description': (this.characters[charId ?? ''] ? this.characters[charId ?? ''].description : ''),
+            'personality': (this.characters[charId ?? ''] ? this.characters[charId ?? ''].personality : ''),
             'scenario': (this.characters[charId ?? ''] ? this.characters[charId ?? ''].scenario : '')
         };
     }
