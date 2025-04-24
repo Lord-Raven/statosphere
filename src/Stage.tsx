@@ -573,11 +573,12 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
                         });
 
                     } else {
+                        let min: any = '51';
                         const prompt = this.evaluate(this.replaceTags(generator.prompt), this.scope);
                         console.log('Kicking off a text generator with prompt:\n' + prompt);
                         promise = this.generator.textGen({
                             prompt: prompt,
-                            min_tokens: 51,
+                            min_tokens: min,
                             max_tokens: generator.maxTokens,
                             include_history: generator.includeHistory
                         })
