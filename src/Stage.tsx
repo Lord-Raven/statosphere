@@ -577,7 +577,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
                         console.log('Kicking off a text generator with prompt:\n' + prompt);
                         promise = this.generator.textGen({
                             prompt: prompt,
-                            min_tokens: generator.minTokens,
+                            min_tokens: 51,
                             max_tokens: generator.maxTokens,
                             include_history: generator.includeHistory
                         })
