@@ -16,7 +16,7 @@ export class ContentRule {
     constructor(data: any, stage: Stage) {
         this.category = data.category;
         this.condition = stage.processCode(data.condition);
-        if (this.condition.trim().length == 0) this.condition = 'true';
+        if (!this.condition || this.condition.trim().length == 0) this.condition = 'true';
         this.modification = stage.processCode(data.modification ?? '{{content}}');
     }
 

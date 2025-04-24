@@ -19,7 +19,7 @@ export class Classifier {
     constructor(data: any, stage: Stage) {
         this.name = stage.processCode(data.name);
         this.condition = stage.processCode(data.condition);
-        if (this.condition.trim().length == 0) this.condition = 'true';
+        if (!this.condition || this.condition.trim().length == 0) this.condition = 'true';
         this.inputTemplate = stage.processCode(data.inputTemplate);
         this.responseTemplate = stage.processCode(data.responseTemplate);
         this.inputHypothesis = stage.processCode(data.inputHypothesis);
