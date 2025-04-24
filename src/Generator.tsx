@@ -43,6 +43,7 @@ export class Generator {
         this.phase = data.phase;
         this.lazy = data.lazy ?? false;
         this.condition = stage.processCode(data.condition);
+        if (this.condition.trim().length == 0) this.condition = 'true';
         this.prompt = stage.processCode(data.prompt);
         this.negativePrompt = stage.processCode(data.negativePrompt);
         this.template = stage.processCode(data.template);
