@@ -49,7 +49,8 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
     classifierLabelMapping: {[key: string]: {[key: string]: string}};
 
     characters: {[key: string]: Character};
-    user: User;
+    users: {[key: string]: User};
+    lastUserId: string = '';
     client: any;
     fallbackPipelinePromise: Promise<any> | null = null;
     fallbackPipeline: any;
@@ -77,8 +78,8 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         console.log('Constructing Statosphere');
         this.characters = characters;
         console.log(this.characters);
-        this.user = users[Object.keys(users)[0]];
-        this.updateReplacements(Object.keys(this.characters)[0]);
+        this.users = users;
+        this.updateReplacements(Object.keys(this.users)[0], Object.keys(this.characters)[0]);
         this.variables = {};
         this.variableDefinitions = {};
         this.functions = {};
@@ -97,7 +98,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         this.evaluate = math.evaluate;
 
         this.readMessageState(messageState);
-        console.log('Constructor complete');
+        console.log('Statosphere constructed');
     }
 
     async load(): Promise<Partial<LoadResponse<InitStateType, ChatStateType, MessageStateType>>> {
@@ -614,13 +615,16 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         }
     }
 
-    updateReplacements(charId: string|null) {
+    updateReplacements(userId: string|null, charId: string|null) {
+        if (userId) {
+            this.lastUserId = userId;
+        }
         this.replacements = {
-            'user': this.user.name,
-            'persona': this.user.chatProfile,
-            'char': (this.characters[charId ?? ''] ? this.characters[charId ?? ''].name : ''),
-            'personality': (this.characters[charId ?? ''] ? this.characters[charId ?? ''].personality : ''),
-            'scenario': (this.characters[charId ?? ''] ? this.characters[charId ?? ''].scenario : '')
+            'user': this.users[this.lastUserId ?? '']?.name ?? '',
+            'persona': this.users[this.lastUserId ?? '']?.chatProfile ?? '',
+            'char': this.characters[charId ?? '']?.name ?? '',
+            'personality': this.characters[charId ?? '']?.personality ?? '',
+            'scenario': this.characters[charId ?? '']?.scenario ?? ''
         };
     }
 
@@ -664,6 +668,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
     async beforePrompt(userMessage: Message): Promise<Partial<StageResponse<ChatStateType, MessageStateType>>> {
 
         const {
+            anonymizedId,
             content,
             promptForId
         } = userMessage;
@@ -674,7 +679,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
             Howler.ctx.resume().then(() => {if (this.music && !this.music.playing()) {this.music.play()}});
         }
 
-        this.updateReplacements(promptForId);
+        this.updateReplacements(anonymizedId, promptForId);
 
         console.log('Process pre-input variables');
         await this.processVariablesPreInput();
@@ -731,7 +736,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         }
 
         // await this.messenger.updateEnvironment({input_enabled: false});
-        this.updateReplacements(anonymizedId);
+        this.updateReplacements(null, anonymizedId);
 
         console.log('Process pre-response variables');
         await this.processVariablesPreResponse();
