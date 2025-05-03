@@ -15,9 +15,9 @@ but if you've been thinking about playing with a stage of your own, this may be 
 (There are a lot of notes and a Chub bug here; if you don't see a \"Show More\" button, try refreshing the page 'til it appears, so you can view all of the notes.)
 <br>
 <br>
-This stage is comprised of five core elements:<br>
+This stage comprises five core elements:<br>
 <ul>
-<li>Variable definitions with per-turn, post-input, and post-response update options
+<li>Variable definitions with various update phases
 <li>JavaScript function definitions for creating complex, re-usable logic
 <li>Zero-shot classification rules to draw inferences from inputs or responses and apply updates to variables as a result
 <li>Generators which make LLM calls to request additional content
@@ -57,55 +57,8 @@ There is a lot of debugging output in the console, especially when something doe
 but I think there's usually enough information to indicate approximately where any problems lie.
 <br>
 <br>
-I want to include more of a tutorial or guide here, but I have not had time to write that up. For the moment, please see my example bots and the configuration of the stage on those bots; 
-you can view that by starting a chat with one and looking at the active stages in the chat settings. You can copy and paste the JSON from the stage's configuration into the tool above to see how the stage has been set up for that bot.
-<br>
-<br>
-Here are just some brief notes to keep in mind, to tide folks over 'til I can more properly document things:
-<ul>
-<li>With the exception of the Functions section, most value/condition/update fields in this configuration are evaluated mathematical statements which use [MathJS](https://mathjs.org/index.html).
-<ul>
-<li>Look at the [functions supported by MathJS](https://mathjs.org/docs/reference/functions.html), as it's quite robust out of the box.
-<li>Surround string values with quotation marks (or else MathJS will try to evaluate them).
-<li>You can reference your defined variables by name outside of strings.
-<li>You can also reference variables both inside and outside of strings by surrounding them with double braces (e.g., \"{{someVariable}}\"); this substitution is performed by the stage before evaluation.
-<li>You can use {{user}}, {{char}}, and {{content}} (which varies contextually).
-<li>Statosphere has MathJS set to handle matrices as arrays, but MathJS uses one-based array indexing, which will differ from when you reference those arrays in your defined JavaScript functions.
-</ul>
-<li>The Functions section allows you to define JavaScript functions, which can then be leveraged in any of the other evaluated fields.
-<ul>
-<li>These functions can reference any of your defined functions or variables; the stage attempts to identify dependencies and inject these values as parameters.
-<li>As a result, be thoughtful with parameter, variable, and function names.
-<li>These functions cannot update stage variable values; these are effectively injected by value.
-</ul>
-</ul>
-<br>
 If you have other questions about this stage or stages in general, feel free to DM me on the Chub Discord: ravenok31.
 <br>
-<br>
-**Order of Operations**<br>
-For reference, the rules on this stage are applied in this order:<br>
-<ul>
-<li>User submits input
-<ul>
-<li>Pre-input variable operations are performed, in the order that variables are defined
-<li>Classifiers with an input hypothesis and Input-phase generators are kicked off, in the order that they are defined (generators first), unless they have dependencies
-<li>Post-input variable operations are performed, in the order that variables are defined
-<li>Input content modifications are executed, in the order that these modifications are defined
-<li>Post-input message content modifications are executed, in the order that these modifications are defined
-<li>Input-phase generator results are processed
-<li>Stage direction modifications are executed, in the order that these modifications are defined
-</ul>
-<li>Bot returns response
-<ul>
-<li>Pre-response variable operations are performed, in the order that variables are defined
-<li>Classifiers with a response hypothesis and Response-phase generators are kicked off, in the order that they are defined (generators first), unless they have dependencies
-<li>Post-response variable operations are performed, in the order that variables are defined
-<li>Response content modifications are executed, in the order that these modifications are defined
-<li>Post-response message modifications are executed, in the order that these modifications are defined
-<li>Response-phase generator results are processed
-</ul>
-</ul>
 <br>
 **Inference Details**<br>
 This stage makes API calls to a [Hugging Face Space](https://huggingface.co/spaces/Ravenok/statosphere-backend) that I have set up to leverage a zero-shot classification model. 
@@ -115,10 +68,6 @@ If this backend is unavailable or some other error occurs in calling it, the sta
 It is currently running on HF's Zero GPU and can burn through my daily quota; if it does, request times will go up a bit as it falls back to CPU. 
 The backend drops REST calls from origins other than my own stages in a simple attempt to thwart abuse, because I am paying to support it. 
 It is open source now, so you can see how it has been set up (there really isn't much to it) and verify for yourself that I'm not logging request details or anything nefarious.
-<br>
-<br>
-You aren't going to get you great results without carefully tuned prompts/labels/hypotheses/thresholds; 
-it can be a struggle to get consistently decent evaluations, so this can become a weakpoint in the stage.
 <br>
 <br>
 **Pitfalls**<br>
@@ -134,6 +83,8 @@ As excited as I am to present this, it is, unfortunately, a \"bot-maker beware\"
 </ul>
 <br>
 **Updates**<br>
+05/03/2025 - Moved some documentation over to the configuration tool. It's still very light, but I've decided that's where I'll house it. Renamed some variable properties to be more intuitive. 
+Removed some work-in-progress sound/music handling that I don't think I'll continue implementing here--too many issues associated with it. <br>
 04/29/2025 - Updates to accommodate multiplayer. Behavior could seem volatile; when a user prompts the AI, that user becomes the current user for all of the stage's {{user}} references until another user provides input.<br>
 04/11/2025 - I made the Hugging Face backend public today, to improve transparency for this aspect of the stage. I made some updates to these notes to reflect that and clean up some dated information.<br>
 04/05/2025 - Minor changes to properly set scope for background definition purposes. Also changed how stage directions are designated.<br>

@@ -25,7 +25,6 @@ import generatorSchema from "./assets/generator-schema.json";
 import variableSchema from "./assets/variable-schema.json";
 import {CustomFunction} from "./CustomFunction";
 import {Generator, GeneratorPhase, GeneratorType} from "./Generator";
-import {Howl} from "howler";
 
 type MessageStateType = any;
 type ConfigType = any;
@@ -63,8 +62,6 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
     scope: {[key: string]: any};
     replacements: any = {};
     background: any = undefined;
-    musicUrl: string = '';
-    music: Howl|null = null;
 
 
     constructor(data: InitialData<InitStateType, ChatStateType, MessageStateType, ConfigType>) {
@@ -200,7 +197,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         //this.evaluate = create(this.customFunctionMap, {matrix: 'Array'}).evaluate;
 
         // Initialize variables; these were loaded/validated above but they could depend upon functions for initialization:
-        console.log('Initialize variables');
+        console.log('Initialize variables.');
         for (const definition of variableDefinitions) {
             try {
                 this.variableDefinitions[definition.name] = new VariableDefinition(definition, this);
@@ -209,12 +206,12 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
                 }
             } catch(error) {
                 console.log(error);
-                console.log('Encountered the above error while creating variable');
+                console.log('Encountered the above error while creating variable:');
                 console.log(definition);
             }
         }
 
-        console.log('Validate generators');
+        console.log('Validate generators.');
         Object.values(this.validateSchema(generatorJson, generatorSchema, 'generator schema'))
             .forEach(generatorData => {
                 const generator = new Generator(generatorData, this);
@@ -231,16 +228,16 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         //this.resetRequestVariables();
         //this.kickOffRequests(GeneratorPhase.Initialization);
 
-        console.log('Validate content modifiers');
+        console.log('Validate content modifiers.');
         Object.values(this.validateSchema(contentJson, contentSchema, 'content schema'))
             .forEach(contentRule => this.contentRules.push(new ContentRule(contentRule, this)));
 
-        console.log('Validate classifiers');
+        console.log('Validate classifiers.');
         Object.values(this.validateSchema(classifierJson, classifierSchema, 'classifier schema'))
             .forEach(classifierData => {const classifier = new Classifier(classifierData, this);this.classifiers[classifier.name] = classifier;});
 
         if (Object.values(this.classifiers).length > 0) {
-            console.log('Load classifier pipeline');
+            console.log('Load classifier pipeline.');
             // Only bother loading pipeline if classifiers exist.
             this.fallbackPipelinePromise = this.getPipeline();
 
@@ -255,9 +252,9 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
                 }
             }
 
-            console.log('Load backend client');
+            console.log('Load backend client.');
             this.client = await Client.connect("Ravenok/statosphere-backend", {hf_token: import.meta.env.VITE_HF_API_KEY});
-            console.log('Loaded client');
+            console.log('Loaded client.');
         } else {
             console.log('No classifiers');
         }
@@ -268,7 +265,6 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         }
         this.buildScope();
         await this.checkBackground();
-        await this.checkMusic();
 
         console.log('Finished loading Statosphere.');
         return {
@@ -298,37 +294,6 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         return {};
     }
 
-    async checkMusic() {
-        if (this.debugMode) { // && this.musicUrl != (this.scope.music ?? '')
-            console.log(`Music check: ${this.musicUrl} vs. ${this.scope.music}`)
-            this.musicUrl = this.scope.music ?? '';
-            if (this.music) {
-                this.music.fade(1, 0, 1000);
-            }
-
-            if (this.musicUrl != '') {
-                console.log(`Playing music: ${this.musicUrl}`);
-
-                this.music = new Howl({
-                    src: [this.musicUrl],
-                    loop: true,
-                    preload: true,
-                    autoplay: true,
-                });
-                this.music.play();
-            }
-        }
-    }
-
-    async playSound() {
-        if (this.debugMode && this.scope.sound != null && this.scope.sound != '') {
-            console.log(`Playing sound: ${this.scope.sound}`);
-            const sfx = new Howl(this.scope.sound);
-            sfx.play();
-            this.scope.sound = '';
-        }
-    }
-
     async checkBackground() {
         if (this.background != this.scope.background ?? '') {
             console.log(`Background changing from ${this.background} to ${this.scope.background}`);
@@ -340,8 +305,6 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
     async setState(state: MessageStateType): Promise<void> {
         this.readMessageState(state);
         this.buildScope();
-        await this.playSound();
-        await this.checkMusic();
         await this.checkBackground();
     }
 
@@ -672,19 +635,15 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
             content,
             promptForId
         } = userMessage;
-        console.log('Start beforePrompt()');
+        console.log('Start beforePrompt().');
 
-        if (this.debugMode && Howler.ctx && Howler.ctx.state === 'suspended') {
-            console.log('Try to resume 1');
-            Howler.ctx.resume().then(() => {if (this.music && !this.music.playing()) {this.music.play()}});
-        }
 
         this.updateReplacements(anonymizedId, promptForId);
 
-        console.log('Process pre-input variables');
+        console.log('Process initial input variable changes.');
         await this.processVariablesPreInput();
 
-        console.log('Handle generators and classifiers');
+        console.log('Handle input generators and classifiers.');
         this.resetGeneratorsAndClassifiers()
         this.setContent(content);
         this.buildScope();
@@ -692,12 +651,12 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
             await new Promise(resolve => setTimeout(resolve, 100));
         }
 
-        console.log('Process post-input variables')
+        console.log('Process final input variable changes.')
         await this.processVariablesPostInput();
 
         this.buildScope();
 
-        console.log('Apply input content rules');
+        console.log('Apply input content rules.');
         Object.values(this.contentRules).forEach(contentRule => this.setContent(contentRule.evaluateAndApply(this, ContentCategory.Input)));
         const modifiedMessage = this.content.trim() == '' ? '\n' : this.content;
 
@@ -711,7 +670,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         Object.values(this.contentRules).forEach(contentRule => this.setContent(contentRule.evaluateAndApply(this, ContentCategory.StageDirection)));
         const stageDirections = this.content;
 
-        console.log('End beforePrompt()');
+        console.log('End beforePrompt().');
         return {
             stageDirections: stageDirections.trim() != '' ? `### Response Instruction: ${stageDirections}` : null,
             messageState: this.writeMessageState(),
@@ -728,20 +687,15 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
             content,
             anonymizedId
         } = botMessage;
-        console.log('Start afterResponse()');
-
-        if (this.debugMode && Howler.ctx && Howler.ctx.state === 'suspended') {
-            console.log('Try to resume 2');
-            Howler.ctx.resume().then(() => {if (this.music && !this.music.playing()) {this.music.play()}});
-        }
+        console.log('Start afterResponse().');
 
         // await this.messenger.updateEnvironment({input_enabled: false});
         this.updateReplacements(null, anonymizedId);
 
-        console.log('Process pre-response variables');
+        console.log('Process initial response variable changes.');
         await this.processVariablesPreResponse();
 
-        console.log('Handle generators and classifiers');
+        console.log('Handle response generators and classifiers.');
         this.resetGeneratorsAndClassifiers()
         this.setContent(content);
         this.buildScope(); // Make content available to dynamic label functions
@@ -749,9 +703,11 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
             await new Promise(resolve => setTimeout(resolve, 100));
         }
 
+        console.log('Process final response variable changes.');
         await this.processVariablesPostResponse();
         this.buildScope();
 
+        console.log('Apply response content rules.');
         Object.values(this.contentRules).forEach(contentRule => this.setContent(contentRule.evaluateAndApply(this, ContentCategory.Response)));
         const modifiedMessage = this.content;
 
@@ -835,19 +791,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
 
 
     render(): ReactElement {
-
-        if (this.debugMode && Howler.ctx && Howler.ctx.state === 'suspended') {
-            console.log('Try to resume 3');
-            Howler.ctx.resume().then(() => {if (this.music && !this.music.playing()) {this.music.play()}});
-        }
-
-        return <div style={{
-            width: '100vw',
-            height: '100vh',
-            display: 'grid',
-            alignItems: 'stretch'
-        }}>
-        </div>;
+        return <></>
     }
 
 }

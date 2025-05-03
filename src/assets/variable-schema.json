@@ -16,23 +16,23 @@
         "type": "string"
       },
       "perTurnUpdate": {
-        "title": "Pre Input Update",
-        "description": "The value this variable will be set to at the start of the user's next input.",
+        "title": "Initial Input Update",
+        "description": "The value this variable will be set to immediately following a user's input.",
         "type": "string"
       },
       "postInputUpdate": {
-        "title": "Post Input Update",
-        "description": "The value this variable will be set to after the user's input is processed (after classifiers have run).",
+        "title": "Final Input Update",
+        "description": "The value this variable will be set to after a user's input has been processed (after classifiers have run).",
         "type": "string"
       },
       "preResponseUpdate": {
-        "title": "Pre Response Update",
-        "description": "The value this variable will be set to at the start of the bot's next response.",
+        "title": "Initial Response Update",
+        "description": "The value this variable will be set to immediately following a bot's response.",
         "type": "string"
       },
       "postResponseUpdate": {
-        "title": "Post Response Update",
-        "description": "The value this variable will be set to after the bot's response is processed (after classifiers have run).",
+        "title": "Final Response Update",
+        "description": "The value this variable will be set to after a bot's response has been processed (after classifiers have run).",
         "type": "string"
       }
     }
