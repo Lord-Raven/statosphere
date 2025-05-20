@@ -132,7 +132,10 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
                         return matches && matches.length > 0 ? matches.map(match => match.slice(1)) : [];`
             }, this),
             replace: new CustomFunction({name: 'replace', parameters: 'input, regex, newValue', body: `\
-                        return input.replace(new RegExp(regex, 'g'), newValue);`
+                        const flagMatch = regexString.match(/\\/([a-z]*)$/i);
+                        const flags = flagMatch ? flagMatch[1] : 'g';
+                        const cleanRegex = regexString.replace(/\\/[a-z]*$/i, '');
+                        return input.replace(new RegExp(cleanRegex, flags), newValue);`
             }, this),
             join: new CustomFunction({name: 'join', parameters: 'arrayToJoin, separator', body: `\
                         if (arrayToJoin) {
