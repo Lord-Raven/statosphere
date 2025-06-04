@@ -429,6 +429,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
                         selectedClassifications[classification.category ?? classification.label] = classification;
                         specificLabels[classification.category ?? classification.label] = response.labels[i];
                         categoryScores[classification.category ?? classification.label] = response.scores[i];
+                        console.log(`Classification met threshold: ${response.labels[i]}`);
                     }
                 }
 
@@ -436,6 +437,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
                 for (let key of Object.keys(selectedClassifications)) {
                     const classification = selectedClassifications[key];
                     for (let variable of Object.keys(classification.updates)) {
+                        console.log(`Classification ${classification.label} is updating ${variable}`);
                         this.replacements['label'] = specificLabels[key];
                         this.updateVariable(variable, classification.updates[variable]);
                     }
@@ -472,12 +474,15 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
                 sequenceTemplate = sequenceTemplate.trim() == '' ? this.content : sequenceTemplate.replace('{}', this.content);
                 let hypothesisTemplate = this.replaceTags((phase == GeneratorPhase.OnInput ? classifier.inputHypothesis : classifier.responseHypothesis) ?? '');
                 // No hypothesis (this classifier doesn't apply to this contentSource) or condition set but not true):
-                if (hypothesisTemplate.trim() == '' || (classifier.condition != '' && !this.evaluate(this.replaceTags(classifier.condition ?? 'true'), this.scope))) {
+                if (hypothesisTemplate.trim() == '' || !this.evaluate(this.replaceTags(classifier.condition), this.scope)) {
                     classifier.skipped = true;
                 } else {
                     let candidateLabels: string[] = [];
                     let thisLabelMapping: { [key: string]: string } = {};
                     for (const label of Object.keys(classifier.classifications)) {
+                        if (!this.evaluate(this.replaceTags(classifier.classifications[label].condition), this.scope)) {
+                            continue;
+                        }
                         // The label key here does not contain code alterations, which are essential for dynamic labels; use the label from the classification object for substitution
                         let subbedLabel = this.replaceTags(classifier.classifications[label].label);
 

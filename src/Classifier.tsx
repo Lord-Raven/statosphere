@@ -46,6 +46,7 @@ export class Classifier {
 
 export class Classification {
     label: string;
+    condition: string;
     category: string;
     threshold: number;
     dynamic: boolean;
@@ -53,6 +54,8 @@ export class Classification {
 
     constructor(data: any, stage: Stage) {
         this.label = stage.processCode(data.label);
+        this.condition = stage.processCode(data.condition);
+        if (!this.condition || this.condition.trim().length == 0) this.condition = 'true';
         this.category = stage.processCode(data.category);
         this.threshold = data.threshold;
         this.dynamic = data.dynamic ?? false;
