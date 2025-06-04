@@ -429,7 +429,6 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
                         selectedClassifications[classification.category ?? classification.label] = classification;
                         specificLabels[classification.category ?? classification.label] = response.labels[i];
                         categoryScores[classification.category ?? classification.label] = response.scores[i];
-                        console.log(`Classification met threshold: ${response.labels[i]}`);
                     }
                 }
 
@@ -437,7 +436,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
                 for (let key of Object.keys(selectedClassifications)) {
                     const classification = selectedClassifications[key];
                     for (let variable of Object.keys(classification.updates)) {
-                        console.log(`Classification ${classification.label} is updating ${variable}`);
+                        //console.log(`Classification ${classification.label} is updating ${variable}`);
                         this.replacements['label'] = specificLabels[key];
                         this.updateVariable(variable, classification.updates[variable]);
                     }
