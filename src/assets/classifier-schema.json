@@ -15,7 +15,7 @@
       },
       "condition": {
         "title": "Condition",
-        "description": "This classifier is only applied when this condition resolves truthily. Classifiers are somewhat time-intensive, so avoiding an unnecessary classifier is a good idea.",
+        "description": "This classifier is only applied when this condition resolves truthily (blank is true). Classifiers are somewhat time-intensive, so avoiding an unnecessary classifier is a good idea.",
         "type": "string"
       },
       "dependencies": {
@@ -56,6 +56,11 @@
             "label": {
               "title": "Label",
               "description": "The label substituted into the hypothesis.",
+              "type": "string"
+            },
+            "condition": {
+              "title": "Condition",
+              "description": "This classification is only included in the task when this condition resolves truthily (blank is true). This allows the label count to be reduced for faster task times.",
               "type": "string"
             },
             "category": {

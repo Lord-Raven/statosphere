@@ -83,6 +83,7 @@ As excited as I am to present this, it is, unfortunately, a \"bot-maker beware\"
 </ul>
 <br>
 **Updates**<br>
+06/04/2025 - Added conditions to individual classifications on classifier tasks, so that unnecessary labels can be removed from consideration. <br>
 05/03/2025 - Moved some documentation over to the configuration tool. It's still very light, but I've decided that's where I'll house it. Renamed some variable properties to be more intuitive. 
 Removed some work-in-progress sound/music handling that I don't think I'll continue implementing here--too many issues associated with it. <br>
 04/29/2025 - Updates to accommodate multiplayer. Behavior could seem volatile; when a user prompts the AI, that user becomes the current user for all of the stage's {{user}} references until another user provides input.<br>
