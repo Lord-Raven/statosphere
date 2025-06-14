@@ -23,6 +23,7 @@ export class ContentRule {
     evaluateAndApply(stage: Stage, targetCategory: ContentCategory): string {
         try {
             if (this.category == targetCategory && stage.evaluate(stage.replaceTags(this.condition), stage.scope)) {
+                console.log(`Applying content rule: ${stage.replaceTags(this.modification)}`);
                 return stage.evaluate(stage.replaceTags(this.modification), stage.scope);
             }
         } catch (error) {
