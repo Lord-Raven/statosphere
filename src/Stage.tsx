@@ -160,7 +160,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
             });
         // Update based on dependencies:
         Object.values(this.functions).forEach(thisFunction => {
-            if (!(thisFunction.name in Object.keys(builtInFunctions))) {
+            if (!builtInFunctions.hasOwnProperty(thisFunction.name)) {
                 let newDependencies = thisFunction.name;
 
                 while (newDependencies.length > 0) {
@@ -188,7 +188,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         });
         // All dependencies updated; now persist arguments to calls:
         Object.values(this.functions).forEach(thisFunction => {
-            if (!(thisFunction.name in Object.keys(builtInFunctions))) {
+            if (!builtInFunctions.hasOwnProperty(thisFunction.name)) {
                 thisFunction.body = this.updateFunctionArguments(thisFunction.body);
             }
             try {
