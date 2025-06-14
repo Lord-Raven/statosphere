@@ -120,9 +120,9 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
 
         console.log('Validate functions');
         // Build basic functions
-        this.functions = {
+        const builtInFunctions = {
             split: new CustomFunction({name: 'split', parameters: 'haystack, needle', body: `\
-                        console.log('split()');
+                        console.log('.split()');
                         console.log(haystack.split(needle));
                         return haystack.split(needle);`
             }, this),
@@ -150,6 +150,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
                         }`
             }, this)
         };
+        this.functions = {...builtInFunctions}
 
         // Load additional functions
         Object.values(this.validateSchema(functionJson, functionSchema, 'function schema'))
@@ -159,33 +160,37 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
             });
         // Update based on dependencies:
         Object.values(this.functions).forEach(thisFunction => {
-            let newDependencies = thisFunction.name;
+            if (!(thisFunction.name in Object.keys(builtInFunctions))) {
+                let newDependencies = thisFunction.name;
 
-            while (newDependencies.length > 0) {
-                thisFunction.dependencies = `${thisFunction.dependencies},${newDependencies}`;
+                while (newDependencies.length > 0) {
+                    thisFunction.dependencies = `${thisFunction.dependencies},${newDependencies}`;
 
-                const splitDependencies = newDependencies.split(',');
-                newDependencies = '';
-                splitDependencies.map(otherName => this.functions[otherName]).filter(otherFunc => otherFunc).forEach(otherFunc => {
-                    // Looking at each function in new dependencies to check for their dependencies.
-                    Object.keys(this.functions).filter(thirdKey => otherFunc.body.includes(`${thirdKey}(`)).forEach(potentialDependency => {
-                        if (!thisFunction.dependencies.includes(potentialDependency)) {
-                            newDependencies = `${newDependencies},${potentialDependency}`;
-                        }
+                    const splitDependencies = newDependencies.split(',');
+                    newDependencies = '';
+                    splitDependencies.map(otherName => this.functions[otherName]).filter(otherFunc => otherFunc).forEach(otherFunc => {
+                        // Looking at each function in new dependencies to check for their dependencies.
+                        Object.keys(this.functions).filter(thirdKey => otherFunc.body.includes(`${thirdKey}(`)).forEach(potentialDependency => {
+                            if (!thisFunction.dependencies.includes(potentialDependency)) {
+                                newDependencies = `${newDependencies},${potentialDependency}`;
+                            }
+                        });
+                        Object.values(variableDefinitions).map(definition => definition.name).forEach(potentialDependency => {
+                            const regex = new RegExp(`\\b${potentialDependency}\\b`);
+                            if (regex.test(otherFunc.body) && !thisFunction.dependencies.includes(potentialDependency)) {
+                                newDependencies = `${newDependencies},${potentialDependency}`;
+                            }
+                        })
                     });
-                    Object.values(variableDefinitions).map(definition => definition.name).forEach(potentialDependency => {
-                        const regex = new RegExp(`\\b${potentialDependency}\\b`);
-                        if (regex.test(otherFunc.body) && !thisFunction.dependencies.includes(potentialDependency)) {
-                            newDependencies = `${newDependencies},${potentialDependency}`;
-                        }
-                    })
-                });
+                }
+                thisFunction.dependencies = thisFunction.dependencies.replace(/,,/g, ',');
             }
-            thisFunction.dependencies = thisFunction.dependencies.replace(/,,/g, ',');
         });
         // All dependencies updated; now persist arguments to calls:
         Object.values(this.functions).forEach(thisFunction => {
-            thisFunction.body = this.updateFunctionArguments(thisFunction.body);
+            if (!(thisFunction.name in Object.keys(builtInFunctions))) {
+                thisFunction.body = this.updateFunctionArguments(thisFunction.body);
+            }
             try {
                 //console.log(`Built function ${thisFunction.name}(${thisFunction.parameters}${thisFunction.dependencies}) {\n${thisFunction.body}\n}`);
                 this.customFunctionMap[`${thisFunction.name}`] = thisFunction.createFunction();
