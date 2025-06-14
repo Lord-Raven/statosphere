@@ -122,6 +122,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         // Build basic functions
         this.functions = {
             split: new CustomFunction({name: 'split', parameters: 'haystack, needle', body: `\
+                        console.log(haystack.split(needle));
                         return haystack.split(needle);`
             }, this),
             contains: new CustomFunction({name: 'contains', parameters: 'haystack, needle', body: `\
