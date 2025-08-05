@@ -152,8 +152,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
                         if (input) {
                           return input.substring(start, end);
                         }
-                        return null;
-                        }`
+                        return null;`
             }, this)
         };
         this.functions = {...builtInFunctions}
