@@ -45,7 +45,7 @@ export class Generator {
         this.condition = stage.processCode(data.condition);
         if (!this.condition || this.condition.trim().length == 0) this.condition = 'true';
         this.retryCondition = stage.processCode(data.retryCondition);
-        if (!this.retryCondition || this.retryCondition.trim().length == 0) this.condition = 'false';
+        if (!this.retryCondition || this.retryCondition.trim().length == 0) this.retryCondition = 'false';
         this.prompt = stage.processCode(data.prompt);
         this.negativePrompt = stage.processCode(data.negativePrompt);
         this.template = stage.processCode(data.template);
