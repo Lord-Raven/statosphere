@@ -596,6 +596,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
             // Retry the request:
             if (++generator.retries < 3) {
                 console.log(`Retrying generator ${generator.name}.`);
+                generator.result = undefined;
                 this.kickOffGenerator(generator, generatorPhase);
             } else {
                 console.log(`Generator ${generator.name} exhausted retries; skipping.`);
