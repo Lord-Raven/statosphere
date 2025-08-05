@@ -680,7 +680,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         this.setContent(content);
         this.buildScope();
         while (!this.processRequests(GeneratorPhase.OnInput)) {
-            await new Promise(resolve => setTimeout(resolve, 100));
+            await new Promise(resolve => setTimeout(resolve, 500));
         }
 
         console.log('Process final input variable changes.')
@@ -689,6 +689,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         this.buildScope();
 
         console.log('Apply input content rules.');
+        this.setContent(content);
         Object.values(this.contentRules).forEach(contentRule => this.setContent(contentRule.evaluateAndApply(this, ContentCategory.Input)));
         const modifiedMessage = this.content.trim() == '' ? '\n' : this.content;
 
@@ -732,7 +733,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         this.setContent(content);
         this.buildScope(); // Make content available to dynamic label functions
         while (!this.processRequests(GeneratorPhase.OnResponse)) {
-            await new Promise(resolve => setTimeout(resolve, 100));
+            await new Promise(resolve => setTimeout(resolve, 500));
         }
 
         console.log('Process final response variable changes.');
