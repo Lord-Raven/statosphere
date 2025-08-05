@@ -592,9 +592,6 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         const backupContent = this.content;
         this.setContent(result);
 
-        console.log(`${generator.retryCondition}`);
-        console.log(this.replaceTags(generator.retryCondition ?? 'false'), this.buildScope());
-        console.log(this.evaluate(this.replaceTags(generator.retryCondition ?? 'false'), this.buildScope()));
         if (result == '' || this.evaluate(this.replaceTags(generator.retryCondition ?? 'false'), this.buildScope())) {
             // Retry the request:
             if (++generator.retries < 3) {
