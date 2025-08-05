@@ -83,6 +83,7 @@ As excited as I am to present this, it is, unfortunately, a \"bot-maker beware\"
 </ul>
 <br>
 **Updates**<br>
+08/04/2025 - Very minor; I added a new built-in function for something I'm working on: substring.
 06/04/2025 - Added conditions to individual classifications on classifier tasks, so that unnecessary labels can be removed from consideration. <br>
 05/03/2025 - Moved some documentation over to the configuration tool. It's still very light, but I've decided that's where I'll house it. Renamed some variable properties to be more intuitive. 
 Removed some work-in-progress sound/music handling that I don't think I'll continue implementing here--too many issues associated with it. <br>

@@ -146,6 +146,14 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
                         } else {
                             return '';
                         }`
+            }, this),
+            substring: new CustomFunction({
+                name: 'substring', parameters: 'input, start, end', body: `\
+                        if (input) {
+                          return input.substring(start, end);
+                        }
+                        return null;
+                        }`
             }, this)
         };
         this.functions = {...builtInFunctions}
@@ -280,7 +288,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         console.log('Finished loading Statosphere.');
         return {
             success: true,
-            error: null,
+            error: `Caution: This bot is using <a href="https://chub.ai/extensions/Ravenok/statosphere-3704059fdd7e">Statosphere</a>, a stage that can implement a variety of effects that extend beyond the bot's definition.`,
             initState: null,
             chatState: null,
         };
