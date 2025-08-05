@@ -1,5 +1,5 @@
 import {Stage} from "./Stage";
-import {AspectRatio, ImagineResponse, TextResponse} from "@chub-ai/stages-ts";
+import {AspectRatio} from "@chub-ai/stages-ts";
 
 export enum GeneratorPhase {
     Initialization = 'Initialization',
@@ -18,6 +18,7 @@ export class Generator {
     phase: GeneratorPhase;
     lazy: boolean;
     condition: any;
+    retryCondition: any;
     prompt: any;
     negativePrompt: any;
     template: any;
@@ -29,6 +30,7 @@ export class Generator {
     updates: {[key: string]: string}
     dependencies: string[];
 
+    retries: number = 0;
     skipped: boolean = false;
     processed: boolean = false;
     promise: any = null;
@@ -36,14 +38,14 @@ export class Generator {
 
     constructor(data: any, stage: Stage) {
 
-        let someString: string;
-
         this.name = data.name;
         this.type = data.type;
         this.phase = data.phase;
         this.lazy = data.lazy ?? false;
         this.condition = stage.processCode(data.condition);
         if (!this.condition || this.condition.trim().length == 0) this.condition = 'true';
+        this.retryCondition = stage.processCode(data.retryCondition);
+        if (!this.retryCondition || this.retryCondition.trim().length == 0) this.condition = 'false';
         this.prompt = stage.processCode(data.prompt);
         this.negativePrompt = stage.processCode(data.negativePrompt);
         this.template = stage.processCode(data.template);

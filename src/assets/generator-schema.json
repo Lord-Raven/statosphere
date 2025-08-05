@@ -28,7 +28,6 @@
         "description": "The phase when this generator runs. \"Initialization\" is *every time* the stage starts up--please include a condition to avoid needless LLM calls.",
         "type": "string",
         "enum": [
-          "Initialization",
           "On Input",
           "On Response"
         ]
@@ -102,6 +101,12 @@
           "title": "Maximum Response Tokens",
           "description": "Maximum token size requested for this response.",
           "default": 250,
+          "type": "string"
+        },
+        "retryCondition": {
+          "title": "Retry Condition",
+          "description": "If this resolves to true after the generator runs, the generator will be retried. Generally, this should involve {{content}} in some way.",
+          "default": "",
           "type": "string"
         }
       }

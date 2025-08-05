@@ -416,6 +416,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         this.classifierLabelMapping = {};
         for (let generator of Object.values(this.generators)) {
             generator.skipped = false;
+            generator.retries = 0;
             generator.processed = false;
             generator.promise = null;
             generator.result = undefined;
@@ -467,8 +468,10 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
 
         for (const generator of Object.values(this.generators).filter(generator => !generator.isDone())) {
             if (generator.isReady()) {
-                this.applyGeneratorResponse(generator, generator.result);
-                generator.processed = true;
+                this.applyGeneratorResponse(generator, phase, generator.result);
+                if (!generator.processed) {
+                    finished = false;
+                }
             } else {
                 finished = false;
                 if (!generator.isStarted()) {
@@ -583,20 +586,27 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         }
     }
 
-    applyGeneratorResponse(generator: Generator, response: TextResponse | ImagineResponse | null) {
+    applyGeneratorResponse(generator: Generator, generatorPhase: GeneratorPhase, response: TextResponse | ImagineResponse | null) {
         const result = response ? ('result' in response ? response.result : response.url) : '';
-        if (result != '') {
-            console.log(`Received response for generator ${generator.name}:\n${result}`);
-            const backupContent = this.content;
-            this.setContent(result);
+        console.log(`Received response for generator ${generator.name}:\n${result}`);
+        const backupContent = this.content;
+        this.setContent(result);
+
+        if (result == '' || this.evaluate(this.replaceTags(generator.retryCondition ?? 'false'), this.buildScope())) {
+            // Retry the request:
+            if (++generator.retries < 3) {
+                console.log(`Retrying generator ${generator.name}.`);
+                this.kickOffGenerator(generator, generatorPhase);
+            } else {
+                console.log(`Generator ${generator.name} exhausted retries; skipping.`);
+                generator.skipped = true;
+            }
+        } else {
             for (let variable of Object.keys(generator.updates)) {
                 this.updateVariable(variable, generator.updates[variable]);
             }
             this.setContent(backupContent);
             generator.processed = true;
-        } else {
-            console.log(`Empty response for generator ${generator.name}`);
-            generator.skipped = true;
         }
     }
 
