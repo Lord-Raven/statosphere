@@ -271,7 +271,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
             }
 
             console.log('Load backend client.');
-            this.client = await Client.connect("Ravenok/statosphere-backend", {hf_token: import.meta.env.VITE_HF_API_KEY});
+            this.client = await Client.connect("Ravenok/statosphere-backend");
             console.log('Loaded client.');
         } else {
             console.log('No classifiers');
@@ -650,7 +650,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         if (!result) {
             console.log('Falling back to local zero-shot pipeline.');
             this.fallbackMode = true;
-            Client.connect("Ravenok/statosphere-backend", {hf_token: import.meta.env.VITE_HF_API_KEY}).then(client => {this.fallbackMode = false; this.client = client}).catch(err => console.log(err));
+            Client.connect("Ravenok/statosphere-backend").then(client => {this.fallbackMode = false; this.client = client}).catch(err => console.log(err));
 
             if (this.fallbackPipeline == null) {
                 this.fallbackPipeline = this.fallbackPipelinePromise ? await this.fallbackPipelinePromise : await this.getPipeline();
