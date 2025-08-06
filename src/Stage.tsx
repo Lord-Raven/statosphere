@@ -153,6 +153,10 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
                           return input.substring(start, end);
                         }
                         return null;`
+            }, this),
+            isNull: new CustomFunction({
+                name: 'isNull', parameters: 'input', body: `\
+                        return input === null || input === undefined;`
             }, this)
         };
         this.functions = {...builtInFunctions}
