@@ -160,8 +160,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
             }, this),
             isNotNull: new CustomFunction({
                 name: 'isNotNull', parameters: 'input', body: `\
-                        console.log(input);
-                        return input != null || input != undefined;`
+                        return input !== null && input !== undefined;`
             }, this)
         };
         this.functions = {...builtInFunctions}
