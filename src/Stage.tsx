@@ -632,6 +632,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         };
     }
 
+    /*
     replaceTags(source: string) {
         if (!source) return '';
         let replacements = this.replacements;
@@ -641,7 +642,21 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         replacements['content'] = this.content;
         return source.replace(/{{([A-z]*)}}/g, (match) => {
             const variableName = match.substring(2, match.length - 2).toLowerCase()
-            return (variableName in replacements ? (typeof replacements[variableName] === 'string' ? `${replacements[variableName]}`.replace(/"/g, '\\"').replace(/'/g, '\\\'').replace(/\n/g, '\\\n') : replacements[variableName]) : match);
+            return (variableName in replacements ? (typeof replacements[variableName] === 'string' ? `${replacements[variableName]}`.replace(/"/g, '\\"').replace(/'/g, '\\\'') : replacements[variableName]) : match);
+        });
+    }
+     */
+
+    replaceTags(source: string) {
+        if (!source) return '';
+        let replacements = this.replacements;
+        for (const key of Object.keys(this.variables)) {
+            replacements[key.toLowerCase()] = (typeof this.getVariable(key) in ['object','string'] ? JSON.stringify(this.getVariable(key)) : this.getVariable(key));
+        }
+        replacements['content'] = this.content ? this.content.replace(/"/g, '\\"') : this.content;
+        return source.replace(/{{([A-z]*)}}/g, (match) => {
+            const variableName = match.substring(2, match.length - 2).toLowerCase()
+            return (variableName in replacements ? replacements[variableName] : match);
         });
     }
 
