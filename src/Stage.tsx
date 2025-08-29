@@ -641,7 +641,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         replacements['content'] = this.content;
         return source.replace(/{{([A-z]*)}}/g, (match) => {
             const variableName = match.substring(2, match.length - 2).toLowerCase()
-            return (variableName in replacements ? replacements[variableName].replace(/"/g, '\\"') : match);
+            return (variableName in replacements ? (typeof this.getVariable(replacements[variableName]) === 'string' ? replacements[variableName].replace(/"/g, '\\"') : replacements[variableName]) : match);
         });
     }
 
