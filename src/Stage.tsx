@@ -624,11 +624,11 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
             this.lastUserId = userId;
         }
         this.replacements = {
-            'user': this.users[this.lastUserId ?? '']?.name ?? '',
-            'persona': this.users[this.lastUserId ?? '']?.chatProfile ?? '',
-            'char': this.characters[charId ?? '']?.name ?? '',
-            'personality': this.characters[charId ?? '']?.personality ?? '',
-            'scenario': this.characters[charId ?? '']?.scenario ?? ''
+            'user': (this.users[this.lastUserId ?? '']?.name ?? '').replace(/"/g, '\\"'),
+            'persona': (this.users[this.lastUserId ?? '']?.chatProfile ?? '').replace(/"/g, '\\"'),
+            'char': (this.characters[charId ?? '']?.name ?? '').replace(/"/g, '\\"'),
+            'personality': (this.characters[charId ?? '']?.personality ?? '').replace(/"/g, '\\"'),
+            'scenario': (this.characters[charId ?? '']?.scenario ?? '').replace(/"/g, '\\"'),
         };
     }
 
