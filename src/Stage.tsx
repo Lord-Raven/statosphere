@@ -638,10 +638,10 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         for (const key of Object.keys(this.variables)) {
             replacements[key.toLowerCase()] = (typeof this.getVariable(key) in ['object','string'] ? JSON.stringify(this.getVariable(key)) : this.getVariable(key));
         }
-        replacements['content'] = this.content ? this.content.replace(/"/g, '\\"') : this.content;
+        replacements['content'] = this.content;
         return source.replace(/{{([A-z]*)}}/g, (match) => {
             const variableName = match.substring(2, match.length - 2).toLowerCase()
-            return (variableName in replacements ? replacements[variableName] : match);
+            return (variableName in replacements ? replacements[variableName].replace(/"/g, '\\"') : match);
         });
     }
 
