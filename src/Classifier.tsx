@@ -9,6 +9,8 @@ export class Classifier {
     responseHypothesis: any;
     dependencies: string[];
     classifications: {[key: string]: Classification};
+    useLlm: boolean;
+    useHistory: boolean;
 
     skipped: boolean = false;
     processed: boolean = false;
@@ -26,6 +28,8 @@ export class Classifier {
         this.responseHypothesis = stage.processCode(data.responseHypothesis);
         this.dependencies = data.dependencies ? data.dependencies.toString().split(',').map((dependency: string) => dependency.trim()) : [];
         this.classifications = {};
+        this.useLlm = data.useLlm ?? false;
+        this.useHistory = data.useHistory ?? false;
         for (let classification of data.classifications) {
             this.classifications[classification.label] = new Classification(classification, stage);
         }

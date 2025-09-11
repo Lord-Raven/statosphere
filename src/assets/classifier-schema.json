@@ -43,6 +43,18 @@
         "description": "This is the hypothesis template applied to classifications performed on responses.",
         "type": "string"
       },
+      "useLlm" : {
+        "title": "Use LLM",
+        "description": "If true, the user's LLM will be used for classification. This can yield more accurate results for complex classification tasks, but also tends to take longer.",
+        "type": "boolean",
+        "default": false
+      },
+      "useHistory" : {
+        "title": "Use Chat History",
+        "description": "If using the LLM, this will determine whether the chat history is also sent to the model to provide additional context to the classification task. This will increase the request's token count and runtime.",
+        "type": "boolean",
+        "default": false
+      },
       "classifications": {
         "title": "Classifications",
         "description": "An array of classifications to test for.",

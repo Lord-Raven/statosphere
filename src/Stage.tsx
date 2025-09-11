@@ -536,12 +536,13 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
 
                     this.classifierLabelMapping[classifier.name] = thisLabelMapping;
 
-                    const promise = this.query({
-                        sequence: sequenceTemplate,
+                    const input = {
+                        sequenceTemplate: sequenceTemplate,
                         candidate_labels: candidateLabels,
                         hypothesis_template: hypothesisTemplate,
                         multi_label: true
-                    });
+                    };
+                    const promise = classifier.useLlm ? this.queryLlm(input, classifier.useHistory) : this.queryHf(input);
                     promise.then(result => classifier.result = result).catch(reason => {console.log(reason); classifier.result = null;});
                     classifier.promise = promise;
                 }
@@ -660,7 +661,57 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         });
     }
 
-    async query(data: any) {
+    async queryLlm(data: any, useHistory: boolean = false) {
+        // This version builds a prompt and sends it to the text generation endpoint, then parses the response to determine label scoring.
+        let result: any = null;
+        // Use generator.textGen to query the LLM. Don't care about the client here.
+        try {
+            let prompt = `{{system_prompt}}\n\n` +
+                `Details about {{char}}:\n{{description}}\n{{personality}}\n\n` +
+                `Details about {{user}}:\n{{profile}}\n\n` +
+                (useHistory ? `Conversation history:\n{{history}}\n\n` : '') +
+                `Past Instruction: {{post_history_instructions}}\n\n` +
+                `Passage for Analysis: ${data.sequenceTemplate}\n\n` +
+                `Hypothesis Statements: \n${[...data.candidate_labels].map(candidate => data.hypothesis_template.replace('{}', candidate)).join('\n')}.\n\n` +
+                `Current Task: Within the context of this narrative, analyze the above passage, then rank and score the entailment of each hypothesis statement with regards to the passage on a scale of 0.0000 to 1.0000. ` +
+                `Output each hypothesis and its entailment score in this sample format: \n` +
+                `1. Inarguably supported hypothesis statement: 1.0\n` +
+                `2. Likely supported hypothesis statement: 0.7\n` +
+                `3. Vaguely supported hypothesis statement: 0.3\n` +
+                `4. Unsupported hypothesis statement: 0.0\n`;
+            console.log('LLM classification prompt:\n' + prompt);
+            const response = await this.generator.textGen({
+                prompt: prompt,
+                min_tokens: 1,
+                max_tokens: 150,
+                include_history: useHistory
+            });
+            const textResponse = response as TextResponse;
+            console.log('LLM classification response:\n' + textResponse.result);
+            // Parse the response to determine which labels were mentioned.
+            let foundLabels: string[] = [];
+            let foundScores: number[] = [];
+            const lines = textResponse.result.split('\n');
+            for (let line of lines) {
+                const match = line.match(/^\s*\d+\.\s*(.*?):\s*([0-9]*\.?[0-9]+)\s*$/);
+                if (match) {
+                    const label = match[1].trim();
+                    const score = parseFloat(match[2]);
+                    if (data.candidate_labels.includes(label) && !foundLabels.includes(label)) {
+                        foundLabels.push(label);
+                        foundScores.push(score);
+                    }
+                }
+            }
+
+            result = {labels: foundLabels, scores: foundScores};
+        } catch(e) {
+            console.log(e);
+        }
+        return result;
+    }
+
+    async queryHf(data: any) {
         let result: any = null;
         if (this.client && !this.fallbackMode) {
             try {
