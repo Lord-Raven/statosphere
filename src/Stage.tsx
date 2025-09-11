@@ -706,12 +706,11 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
                     for (let candidate of data.candidate_labels) {
                         // Jaccard similarity between label and candidate:
                         const finalCandidate = data.hypothesis_template.replace('{}', candidate);
-                        const labelSet = new Set(label.toLowerCase().split(' '));
-                        const candidateSet = new Set(finalCandidate.toLowerCase().split(' '));
+                        const labelSet = new Set(label.toLowerCase().trim().split(' '));
+                        const candidateSet = new Set(finalCandidate.toLowerCase().trim().split(' '));
                         const intersection = new Set([...labelSet].filter(x => candidateSet.has(x)));
                         const union = new Set([...labelSet, ...candidateSet]);
                         const matchScore = intersection.size / union.size;
-                        console.log(`Compared (${label}) to (${finalCandidate}) with match score ${matchScore}`);
                         // Also consider direct substring matches:
                         if (matchScore > bestScore) {
                             bestScore = matchScore;
@@ -721,12 +720,9 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
                     if (bestScore >= 0.5 && !foundLabels.includes(bestMatch)) {
                         foundLabels.push(bestMatch);
                         foundScores.push(score);
-                        console.log(`Accepted best match ${bestMatch} with score ${bestScore}`);
                     } else {
                         console.log(`No close matches for label ${label}`);
                     }
-                } else {
-                    console.log(`No match for line: ${line}`);
                 }
             }
 
