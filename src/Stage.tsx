@@ -711,7 +711,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
                         const intersection = new Set([...labelSet].filter(x => candidateSet.has(x)));
                         const union = new Set([...labelSet, ...candidateSet]);
                         const matchScore = intersection.size / union.size;
-                        console.log(`Compared to candidate ${candidate} with match score ${matchScore}`);
+                        console.log(`Compared (${label}) to (${finalCandidate}) with match score ${matchScore}`);
                         // Also consider direct substring matches:
                         if (matchScore > bestScore) {
                             bestScore = matchScore;
