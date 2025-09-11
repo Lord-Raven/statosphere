@@ -438,7 +438,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         }
     }
 
-    processRequests(phase: GeneratorPhase) {
+    processRequests(phase: GeneratorPhase, char: Character, user: User): boolean {
         let finished: boolean = true;
         for (const classifier of Object.values(this.classifiers).filter(classifier => !classifier.isDone())) {
             // if this classifier is ready, process it.
@@ -459,7 +459,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
                 // Go through all operations and execute them.
                 for (let key of Object.keys(selectedClassifications)) {
                     const classification = selectedClassifications[key];
-                    console.log(`Classification ${classification.label} selected with score ${categoryScores[key]}`);
+                    //console.log(`Classification ${classification.label} selected with score ${categoryScores[key]}`);
                     for (let variable of Object.keys(classification.updates)) {
                         //console.log(`Classification ${classification.label} is updating ${variable}`);
                         this.replacements['label'] = specificLabels[key];
@@ -470,7 +470,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
             } else {
                 finished = false;
                 if (!classifier.isStarted()) {
-                    this.kickOffClassifier(classifier, phase);
+                    this.kickOffClassifier(classifier, phase, char, user);
                 }
             }
         }
@@ -492,7 +492,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         return finished;
     }
 
-    kickOffClassifier(classifier: Classifier, phase: GeneratorPhase) {
+    kickOffClassifier(classifier: Classifier, phase: GeneratorPhase, char: Character, user: User) {
         try {
             // If there are no dependencies that haven't completed, then this classifier can start.
             if (classifier.dependencies.filter(dependency => !((this.generators[dependency] ? this.generators[dependency].isDone() : true) && (this.classifiers[dependency] ? this.classifiers[dependency].isDone() : true))).length == 0) {
@@ -543,7 +543,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
                         hypothesis_template: hypothesisTemplate,
                         multi_label: true
                     };
-                    const promise = classifier.useLlm ? this.queryLlm(input, classifier.useHistory) : this.queryHf(input);
+                    const promise = classifier.useLlm ? this.queryLlm(input, char, user, classifier.useHistory) : this.queryHf(input);
                     promise.then(result => classifier.result = result).catch(reason => {console.log(reason); classifier.result = null;});
                     classifier.promise = promise;
                 }
@@ -662,17 +662,15 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         });
     }
 
-    async queryLlm(data: any, useHistory: boolean = false) {
+    async queryLlm(data: any, char: Character, user: User, useHistory: boolean = false) {
         // This version builds a prompt and sends it to the text generation endpoint, then parses the response to determine label scoring.
         let result: any = null;
         // Use generator.textGen to query the LLM. Don't care about the client here.
         try {
             let prompt = `{{system_prompt}}\n\n` +
-                `Testing\n` +
-                `About {{char}}:\n{{description}}\n{{personality}}\n{{definition}}\n\n` +
-                `About {{user}}:\n{{persona}}\n{{profile}}\n{{chat_persona}}\n\n` +
+                `About {{char}}:\n${char.description} ${char.personality}\n\n` +
+                `About {{user}}:\n${user.chatProfile}\n\n` +
                 (useHistory ? `Conversation history:\n{{history}}\n\n` : '') +
-                `Past Instruction: {{post_history_instructions}}\n\n` +
                 `Passage for Analysis: ${data.sequenceTemplate}\n\n` +
                 `Hypothesis Statements: \n${[...data.candidate_labels].map(candidate => data.hypothesis_template.replace('{}', candidate)).join('\n')}.\n\n` +
                 `Current Task: Within the context of this narrative, analyze the above passage, then rank and score the entailment of each hypothesis statement with regards to the passage on a scale of 0.0000 to 1.0000. ` +
@@ -681,7 +679,8 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
                 `2. Likely supported hypothesis statement: 0.7\n` +
                 `3. Vaguely supported hypothesis statement: 0.3\n` +
                 `4. Unsupported hypothesis statement: 0.0\n` +
-                `###`;
+                `###` +
+                `General Instruction: \n`;
             console.log('LLM classification prompt:\n' + prompt);
             const response = await this.generator.textGen({
                 prompt: prompt,
@@ -701,7 +700,6 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
                 if (match) {
                     const label = match[1].trim();
                     const score = parseFloat(match[2]);
-                    console.log(`Parsed label ${label} with score ${score}`);
                     let bestMatch = null;
                     let bestScore = 0;
                     for (let candidate of data.candidate_labels) {
@@ -721,8 +719,6 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
                     if (bestScore >= 0.5 && !foundLabels.includes(bestMatch)) {
                         foundLabels.push(bestMatch);
                         foundScores.push(score);
-                    } else {
-                        console.log(`No close matches for label ${label}`);
                     }
                 }
             }
@@ -778,7 +774,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         this.resetGeneratorsAndClassifiers()
         this.setContent(content);
         this.buildScope();
-        while (!this.processRequests(GeneratorPhase.OnInput)) {
+        while (!this.processRequests(GeneratorPhase.OnInput, this.characters[promptForId ?? ''] ?? null, this.users[anonymizedId ?? ''] ?? null)) {
             await new Promise(resolve => setTimeout(resolve, 500));
         }
 
@@ -831,7 +827,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         this.resetGeneratorsAndClassifiers()
         this.setContent(content);
         this.buildScope(); // Make content available to dynamic label functions
-        while (!this.processRequests(GeneratorPhase.OnResponse)) {
+        while (!this.processRequests(GeneratorPhase.OnResponse, this.characters[anonymizedId ?? ''] ?? null, this.users[this.lastUserId ?? ''] ?? null)) {
             await new Promise(resolve => setTimeout(resolve, 500));
         }
 
