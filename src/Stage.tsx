@@ -711,8 +711,11 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
                                 matchScore++;
                             }
                         }
+                        console.log(`Non-normalized score for ${label} vs ${candidate}: ${matchScore}`);
                         matchScore = matchScore / ((label.length + candidate.length) / 2);
+                        console.log(`Normalized score for ${label} vs ${candidate}: ${matchScore}`);
                         if (matchScore > bestScore) {
+                            console.log(`Setting a new best score for ${label}: ${matchScore} (${candidate})`);
                             bestScore = matchScore;
                             bestMatch = candidate;
                         }
