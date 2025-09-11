@@ -687,7 +687,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
                 min_tokens: 1,
                 max_tokens: 1000,
                 include_history: useHistory,
-                stop: ['###']
+                stop: ['###', '\n\n']
             });
             const textResponse = response as TextResponse;
             console.log('LLM classification response:\n' + textResponse.result);
@@ -705,9 +705,9 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
                     let bestScore = 0;
                     for (let candidate of data.candidate_labels) {
                         // Jaccard similarity between label and candidate:
-                        const finalLabel = data.hypothesis_template.replace('{}', candidate);
-                        const labelSet = new Set(finalLabel.toLowerCase().split(' '));
-                        const candidateSet = new Set(candidate.toLowerCase().split(' '));
+                        const finalCandidate = data.hypothesis_template.replace('{}', candidate);
+                        const labelSet = new Set(label.toLowerCase().split(' '));
+                        const candidateSet = new Set(finalCandidate.toLowerCase().split(' '));
                         const intersection = new Set([...labelSet].filter(x => candidateSet.has(x)));
                         const union = new Set([...labelSet, ...candidateSet]);
                         const matchScore = intersection.size / union.size;
