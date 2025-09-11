@@ -459,6 +459,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
                 // Go through all operations and execute them.
                 for (let key of Object.keys(selectedClassifications)) {
                     const classification = selectedClassifications[key];
+                    console.log(`Classification ${classification.label} selected with score ${categoryScores[key]}`);
                     for (let variable of Object.keys(classification.updates)) {
                         //console.log(`Classification ${classification.label} is updating ${variable}`);
                         this.replacements['label'] = specificLabels[key];
@@ -707,6 +708,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
             }
 
             result = {labels: foundLabels, scores: foundScores};
+            console.log(result);
         } catch(e) {
             console.log(e);
         }
