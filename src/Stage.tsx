@@ -538,7 +538,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
                     this.classifierLabelMapping[classifier.name] = thisLabelMapping;
 
                     const input = {
-                        sequenceTemplate: sequenceTemplate,
+                        sequence: sequenceTemplate,
                         candidate_labels: candidateLabels,
                         hypothesis_template: hypothesisTemplate,
                         multi_label: true
@@ -671,7 +671,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
                 `About {{char}}:\n${char.description} ${char.personality}\n\n` +
                 `About {{user}}:\n${user.chatProfile}\n\n` +
                 (useHistory ? `Conversation history:\n{{history}}\n\n` : '') +
-                `Passage for Analysis: ${data.sequenceTemplate}\n\n` +
+                `Passage for Analysis: ${data.sequence}\n\n` +
                 `Hypothesis Statements: \n${[...data.candidate_labels].map(candidate => data.hypothesis_template.replace('{}', candidate)).join('\n')}.\n\n` +
                 `Current Task: Within the context of this narrative, analyze the above passage, then rank and score the entailment of each hypothesis statement with regards to the passage on a scale of 0.0000 to 1.0000. ` +
                 `Output each hypothesis and its entailment score in this sample format: \n` +
