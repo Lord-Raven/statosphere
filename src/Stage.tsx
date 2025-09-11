@@ -668,8 +668,9 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         // Use generator.textGen to query the LLM. Don't care about the client here.
         try {
             let prompt = `{{system_prompt}}\n\n` +
-                `Details about {{char}}:\n{{description}}\n{{personality}}\n\n` +
-                `Details about {{user}}:\n{{persona}}\n\n` +
+                `Testing\n` +
+                `About {{char}}:\n{{description}}\n{{personality}}\n{{definition}}\n\n` +
+                `About {{user}}:\n{{persona}}\n{{profile}}\n{{chat_persona}}\n\n` +
                 (useHistory ? `Conversation history:\n{{history}}\n\n` : '') +
                 `Past Instruction: {{post_history_instructions}}\n\n` +
                 `Passage for Analysis: ${data.sequenceTemplate}\n\n` +
