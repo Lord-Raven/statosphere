@@ -704,16 +704,14 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
                     let bestMatch = null;
                     let bestScore = 0;
                     for (let candidate of data.candidate_labels) {
-                        // Simple similarity: number of matching characters / average length
-                        let matchScore = 0;
-                        for (let i = 0; i < Math.min(label.length, candidate.length); i++) {
-                            if (label[i].toLowerCase() == candidate[i].toLowerCase()) {
-                                matchScore++;
-                            }
-                        }
-                        console.log(`Non-normalized score for ${label} vs ${candidate}: ${matchScore}`);
-                        matchScore = matchScore / ((label.length + candidate.length) / 2);
-                        console.log(`Normalized score for ${label} vs ${candidate}: ${matchScore}`);
+                        // Jaccard similarity between label and candidate:
+                        const labelSet = new Set(label.toLowerCase().split(' '));
+                        const candidateSet = new Set(candidate.toLowerCase().split(' '));
+                        const intersection = new Set([...labelSet].filter(x => candidateSet.has(x)));
+                        const union = new Set([...labelSet, ...candidateSet]);
+                        const matchScore = intersection.size / union.size;
+                        console.log(`Compared to candidate ${candidate} with match score ${matchScore}`);
+                        // Also consider direct substring matches:
                         if (matchScore > bestScore) {
                             console.log(`Setting a new best score for ${label}: ${matchScore} (${candidate})`);
                             bestScore = matchScore;
