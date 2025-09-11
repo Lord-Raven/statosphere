@@ -668,7 +668,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         try {
             let prompt = `{{system_prompt}}\n\n` +
                 `Details about {{char}}:\n{{description}}\n{{personality}}\n\n` +
-                `Details about {{user}}:\n{{profile}}\n\n` +
+                `Details about {{user}}:\n{{persona}}\n\n` +
                 (useHistory ? `Conversation history:\n{{history}}\n\n` : '') +
                 `Past Instruction: {{post_history_instructions}}\n\n` +
                 `Passage for Analysis: ${data.sequenceTemplate}\n\n` +
@@ -678,13 +678,15 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
                 `1. Inarguably supported hypothesis statement: 1.0\n` +
                 `2. Likely supported hypothesis statement: 0.7\n` +
                 `3. Vaguely supported hypothesis statement: 0.3\n` +
-                `4. Unsupported hypothesis statement: 0.0\n`;
+                `4. Unsupported hypothesis statement: 0.0\n` +
+                `###`;
             console.log('LLM classification prompt:\n' + prompt);
             const response = await this.generator.textGen({
                 prompt: prompt,
                 min_tokens: 1,
-                max_tokens: 150,
-                include_history: useHistory
+                max_tokens: 1000,
+                include_history: useHistory,
+                stop: ['###']
             });
             const textResponse = response as TextResponse;
             console.log('LLM classification response:\n' + textResponse.result);
