@@ -700,10 +700,37 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
                 if (match) {
                     const label = match[1].trim();
                     const score = parseFloat(match[2]);
-                    if (data.candidate_labels.includes(label) && !foundLabels.includes(label)) {
+                    console.log(`Parsed label ${label} with score ${score}`);
+                    let bestMatch = null;
+                    let bestScore = 0;
+                    for (let candidate of data.candidate_labels) {
+                        // Simple similarity: number of matching characters / average length
+                        let matchScore = 0;
+                        for (let i = 0; i < Math.min(label.length, candidate.length); i++) {
+                            if (label[i].toLowerCase() == candidate[i].toLowerCase()) {
+                                matchScore++;
+                            }
+                        }
+                        matchScore = matchScore / ((label.length + candidate.length) / 2);
+                        if (matchScore > bestScore) {
+                            bestScore = matchScore;
+                            bestMatch = candidate;
+                        }
+                    }
+                    if (bestScore >= 0.5 && !foundLabels.includes(bestMatch)) {
+                        foundLabels.push(bestMatch);
+                        foundScores.push(score);
+                        console.log(`Accepted best match ${bestMatch} with score ${bestScore}`);
+                    } else {
+                        console.log(`No close matches for label ${label}`);
+                    }
+                    // Old code:
+                    /*if (data.candidate_labels.includes(label) && !foundLabels.includes(label)) {
                         foundLabels.push(label);
                         foundScores.push(score);
-                    }
+                    }*/
+                } else {
+                    console.log(`No match for line: ${line}`);
                 }
             }
 
