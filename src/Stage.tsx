@@ -696,7 +696,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
             let foundScores: number[] = [];
             const lines = textResponse.result.split('\n');
             for (let line of lines) {
-                const match = line.match(/^\s*\d+\.\s*(.*?):\s*([0-9]*\.?[0-9]+)\s*$/);
+                const match = line.match(/^\s*\d+\.\s*(.*?):\s*([0-9]*\.?[0-9]+)/);
                 if (match) {
                     const label = match[1].trim();
                     const score = parseFloat(match[2]);
