@@ -19,7 +19,7 @@ This stage comprises five core elements:<br>
 <ul>
 <li>Variable definitions with various update phases
 <li>JavaScript function definitions for creating complex, re-usable logic
-<li>Zero-shot classification rules to draw inferences from inputs or responses and apply updates to variables as a result
+<li>Zero-shot or LLM-based classification rules to draw inferences from inputs or responses and apply updates to variables as a result
 <li>Generators which make LLM calls to request additional content
 <li>Content modification rules which alter input, response, post-input/response (which are \"system messages\" that display in-chat but do not persist to the LLM), and stage directions (additional LLM instruction), all based on specified conditions
 </ul>
@@ -83,17 +83,18 @@ As excited as I am to present this, it is, unfortunately, a \"bot-maker beware\"
 </ul>
 <br>
 **Updates**<br>
-09/10/2025 - Adding a new LLM toggle to classifiers. I don't recommend using this for the moment; I am testing feasibility, but it could allow for more complex classification tasks than the naive zero-shot model can handle. <br>
-08/05/2025 - Added a retry condition to generators, so bad content can be automatically re-rolled. Added built-in functions: substring(), isNull(), isNotNull(). <br>
-06/04/2025 - Added conditions to individual classifications on classifier tasks, so that unnecessary labels can be removed from consideration. <br>
-05/03/2025 - Moved some documentation over to the configuration tool. It's still very light, but I've decided that's where I'll house it. Renamed some variable properties to be more intuitive. 
+2025/10/13 - Making some tweaks to LLM classifiers. <br>
+2025/09/10 - Adding a new LLM toggle to classifiers. I don't recommend using this for the moment; I am testing feasibility, but it could allow for more complex classification tasks than the naive zero-shot model can handle. <br>
+2025/08/05 - Added a retry condition to generators, so bad content can be automatically re-rolled. Added built-in functions: substring(), isNull(), isNotNull(). <br>
+2025/06/04 - Added conditions to individual classifications on classifier tasks, so that unnecessary labels can be removed from consideration. <br>
+2025/05/03 - Moved some documentation over to the configuration tool. It's still very light, but I've decided that's where I'll house it. Renamed some variable properties to be more intuitive. 
 Removed some work-in-progress sound/music handling that I don't think I'll continue implementing here--too many issues associated with it. <br>
-04/29/2025 - Updates to accommodate multiplayer. Behavior could seem volatile; when a user prompts the AI, that user becomes the current user for all of the stage's {{user}} references until another user provides input.<br>
-04/11/2025 - I made the Hugging Face backend public today, to improve transparency for this aspect of the stage. I made some updates to these notes to reflect that and clean up some dated information.<br>
-04/05/2025 - Minor changes to properly set scope for background definition purposes. Also changed how stage directions are designated.<br>
-03/30/2025 - Updated the HF backend this stage leverages and had to update the Gradio client here. I broke inference for several hours but it's back up and should perform better than before. I might toy with other models, but I'm pretty happy with the performance boost for now.<br>
-03/05/2025 - The stage will now attempt to re-establish a connection to the back-end if it fails to respond, rather than enter fallback mode until refresh. I addressed a duplicate function error that would appear in the log. Also made improvements to the configuration tool's classifier testing.<br>
-01/06/2025 - Added a pre-response update field to variables; \"per turn\" is now \"pre-input\" and the new pre-response field works similarly but for responses--these run prior to response classifiers. Also updated stages version.
+2025/04/29 - Updates to accommodate multiplayer. Behavior could seem volatile; when a user prompts the AI, that user becomes the current user for all of the stage's {{user}} references until another user provides input.<br>
+2025/04/11 - I made the Hugging Face backend public today, to improve transparency for this aspect of the stage. I made some updates to these notes to reflect that and clean up some dated information.<br>
+2025/04/05 - Minor changes to properly set scope for background definition purposes. Also changed how stage directions are designated.<br>
+2025/03/30 - Updated the HF backend this stage leverages and had to update the Gradio client here. I broke inference for several hours but it's back up and should perform better than before. I might toy with other models, but I'm pretty happy with the performance boost for now.<br>
+2025/03/05 - The stage will now attempt to re-establish a connection to the back-end if it fails to respond, rather than enter fallback mode until refresh. I addressed a duplicate function error that would appear in the log. Also made improvements to the configuration tool's classifier testing.<br>
+2025/01/06 - Added a pre-response update field to variables; \"per turn\" is now \"pre-input\" and the new pre-response field works similarly but for responses--these run prior to response classifiers. Also updated stages version.
 <br>
 <br>
 **What's Next?**<br>

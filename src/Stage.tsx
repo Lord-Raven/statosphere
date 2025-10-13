@@ -665,68 +665,71 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
     async queryLlm(data: any, char: Character, user: User, useHistory: boolean = false) {
         // This version builds a prompt and sends it to the text generation endpoint, then parses the response to determine label scoring.
         let result: any = null;
+        let tries = 3;
         // Use generator.textGen to query the LLM. Don't care about the client here.
-        try {
-            let prompt = `{{system_prompt}}\n\n` +
-                `About {{char}}:\n${char.description} ${char.personality}\n\n` +
-                `About {{user}}:\n${user.chatProfile}\n\n` +
-                (useHistory ? `Conversation history:\n{{history}}\n\n` : '') +
-                `Passage for Analysis: ${data.sequence}\n\n` +
-                `Hypothesis Statements: \n${[...data.candidate_labels].map(candidate => data.hypothesis_template.replace('{}', candidate)).join('\n')}.\n\n` +
-                `Current Task: Within the context of this narrative, analyze the above passage, then rank and score the entailment of each hypothesis statement with regards to the passage on a scale of 0.0000 to 1.0000. ` +
-                `Output each hypothesis and its entailment score in this sample format: \n` +
-                `1. Inarguably supported hypothesis statement: 1.0\n` +
-                `2. Likely supported hypothesis statement: 0.7\n` +
-                `3. Vaguely supported hypothesis statement: 0.3\n` +
-                `4. Unsupported hypothesis statement: 0.0\n` +
-                `###` +
-                `General Instruction: \n`;
-            console.log('LLM classification prompt:\n' + prompt);
-            const response = await this.generator.textGen({
-                prompt: prompt,
-                min_tokens: 1,
-                max_tokens: 1000,
-                include_history: useHistory,
-                stop: ['###', '\n\n']
-            });
-            const textResponse = response as TextResponse;
-            console.log('LLM classification response:\n' + textResponse.result);
-            // Parse the response to determine which labels were mentioned.
-            let foundLabels: string[] = [];
-            let foundScores: number[] = [];
-            const lines = textResponse.result.split('\n');
-            for (let line of lines) {
-                const match = line.match(/^\s*\d+\.\s*(.*?):\s*([0-9]*\.?[0-9]+)/);
-                if (match) {
-                    const label = match[1].trim();
-                    const score = parseFloat(match[2]);
-                    let bestMatch = null;
-                    let bestScore = 0;
-                    for (let candidate of data.candidate_labels) {
-                        // Jaccard similarity between label and candidate:
-                        const finalCandidate = data.hypothesis_template.replace('{}', candidate);
-                        const labelSet = new Set(label.toLowerCase().trim().split(' '));
-                        const candidateSet = new Set(finalCandidate.toLowerCase().trim().split(' '));
-                        const intersection = new Set([...labelSet].filter(x => candidateSet.has(x)));
-                        const union = new Set([...labelSet, ...candidateSet]);
-                        const matchScore = intersection.size / union.size;
-                        // Also consider direct substring matches:
-                        if (matchScore > bestScore) {
-                            bestScore = matchScore;
-                            bestMatch = candidate;
+        while (tries > 0 && (!result || result.labels.length == 0)) {
+            try {
+                let prompt = `{{system_prompt}}\n\n` +
+                    `About {{char}}:\n${char.description} ${char.personality}\n\n` +
+                    `About {{user}}:\n${user.chatProfile}\n\n` +
+                    (useHistory ? `Conversation history:\n{{history}}\n\n` : '') +
+                    `Passage for Analysis: ${data.sequence}\n\n` +
+                    `Hypothesis Statements: \n${[...data.candidate_labels].map(candidate => data.hypothesis_template.replace('{}', candidate)).join('\n')}.\n\n` +
+                    `Current Task: Within the context of this narrative, analyze the above passage, then rank and score the entailment of each hypothesis statement with regards to the passage on a scale of 0.0000 to 1.0000. ` +
+                    `Output each hypothesis verbatim, followed by its entailment score in this sample format: \n` +
+                    `1. Inarguably supported hypothesis statement: 1.0\n` +
+                    `2. Likely supported hypothesis statement: 0.7\n` +
+                    `3. Vaguely supported hypothesis statement: 0.3\n` +
+                    `4. Unsupported hypothesis statement: 0.0\n` +
+                    `###\n` +
+                    `General Instruction: \n`;
+                console.log('LLM classification prompt:\n' + prompt);
+                const response = await this.generator.textGen({
+                    prompt: prompt,
+                    min_tokens: 1,
+                    max_tokens: 1000,
+                    include_history: useHistory,
+                    stop: ['###', '\n\n']
+                });
+                const textResponse = response as TextResponse;
+                console.log('LLM classification response:\n' + textResponse.result);
+                // Parse the response to determine which labels were mentioned.
+                let foundLabels: string[] = [];
+                let foundScores: number[] = [];
+                const lines = textResponse.result.split('\n');
+                for (let line of lines) {
+                    const match = line.match(/^\s*\d+\.\s*(.*?):\s*([0-9]*\.?[0-9]+)/);
+                    if (match) {
+                        const label = match[1].trim();
+                        const score = parseFloat(match[2]);
+                        let bestMatch = null;
+                        let bestScore = 0;
+                        for (let candidate of data.candidate_labels) {
+                            // Jaccard similarity between label and candidate:
+                            const finalCandidate = data.hypothesis_template.replace('{}', candidate);
+                            const labelSet = new Set(label.toLowerCase().trim().split(' '));
+                            const candidateSet = new Set(finalCandidate.toLowerCase().trim().split(' '));
+                            const intersection = new Set([...labelSet].filter(x => candidateSet.has(x)));
+                            const union = new Set([...labelSet, ...candidateSet]);
+                            const matchScore = intersection.size / union.size;
+                            // Also consider direct substring matches:
+                            if (matchScore > bestScore) {
+                                bestScore = matchScore;
+                                bestMatch = candidate;
+                            }
+                        }
+                        if (bestScore >= 0.5 && !foundLabels.includes(bestMatch)) {
+                            foundLabels.push(bestMatch);
+                            foundScores.push(score);
                         }
                     }
-                    if (bestScore >= 0.5 && !foundLabels.includes(bestMatch)) {
-                        foundLabels.push(bestMatch);
-                        foundScores.push(score);
-                    }
                 }
-            }
 
-            result = {labels: foundLabels, scores: foundScores};
-            console.log(result);
-        } catch(e) {
-            console.log(e);
+                result = {labels: foundLabels, scores: foundScores};
+                console.log(result);
+            } catch (e) {
+                console.log(e);
+            }
         }
         return result;
     }
