@@ -566,7 +566,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
                         const negativePrompt = this.evaluate(this.replaceTags(generator.negativePrompt), this.scope);
                         console.log('Kicking off an image-to-image generator with prompt:\n' + prompt);
                         promise = this.generator.imageToImage({
-                            image: this.evaluate(this.replaceTags(generator.inputImageUrl), this.scope),
+                            image: this.evaluate(this.replaceTags(generator.sourceImageUrl), this.scope),
                             prompt: prompt,
                             negative_prompt: negativePrompt,
                             transfer_type: generator.imageToImageType,

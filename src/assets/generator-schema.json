@@ -112,86 +112,138 @@
       }
     },
     "else": {
-      "properties": {
-        "negativePrompt": {
-          "title": "Negative Prompt",
-          "description": "Content that is undesired in the final image.",
-          "type": "string"
-        },
-        "removeBackground": {
-          "title": "Remove Background",
-          "description": "When true, an attempt will be made to remove the background from the generated image.",
-          "type": "boolean"
-        },
-        "aspectRatio": {
-          "title": "Aspect Ratio",
-          "description": "The desired aspect ratio for the generated image.",
-          "type": "string",
-          "anyOf": [
-            {
-              "type": "string",
-              "title": "Cinematic Horizontal (21:9)",
-              "enum": [
-                "21:9"
-              ]
-            },
-            {
-              "type": "string",
-              "title": "Widescreen Horizontal (16:9)",
-              "enum": [
-                "16:9"
-              ]
-            },
-            {
-              "type": "string",
-              "title": "Photo Horizontal (3:2)",
-              "enum": [
-                "3:2"
-              ]
-            },
-            {
-              "type": "string",
-              "title": "Post Horizontal (5:4)",
-              "enum": [
-                "5:4"
-              ]
-            },
-            {
-              "type": "string",
-              "title": "Square (1:1)",
-              "enum": [
-                "1:1"
-              ]
-            },
-            {
-              "type": "string",
-              "title": "Post Vertical (4:5)",
-              "enum": [
-                "4:5"
-              ]
-            },
-            {
-              "type": "string",
-              "title": "Photo Vertical (2:3)",
-              "enum": [
-                "2:3"
-              ]
-            },
-            {
-              "type": "string",
-              "title": "Widescreen Vertical (9:16)",
-              "enum": [
-                "9:16"
-              ]
-            },
-            {
-              "type": "string",
-              "title": "Cinematic Vertical (9:21)",
-              "enum": [
-                "9:21"
-              ]
-            }
-          ]
+      "if": {
+        "properties": {
+          "type": {
+            "const": "Image"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "negativePrompt": {
+            "title": "Negative Prompt",
+            "description": "Content that is undesired in the final image.",
+            "type": "string"
+          },
+          "removeBackground": {
+            "title": "Remove Background",
+            "description": "When true, an attempt will be made to remove the background from the generated image.",
+            "type": "boolean"
+          },
+          "aspectRatio": {
+            "title": "Aspect Ratio",
+            "description": "The desired aspect ratio for the generated image.",
+            "type": "string",
+            "anyOf": [
+              {
+                "type": "string",
+                "title": "Cinematic Horizontal (21:9)",
+                "enum": [
+                  "21:9"
+                ]
+              },
+              {
+                "type": "string",
+                "title": "Widescreen Horizontal (16:9)",
+                "enum": [
+                  "16:9"
+                ]
+              },
+              {
+                "type": "string",
+                "title": "Photo Horizontal (3:2)",
+                "enum": [
+                  "3:2"
+                ]
+              },
+              {
+                "type": "string",
+                "title": "Post Horizontal (5:4)",
+                "enum": [
+                  "5:4"
+                ]
+              },
+              {
+                "type": "string",
+                "title": "Square (1:1)",
+                "enum": [
+                  "1:1"
+                ]
+              },
+              {
+                "type": "string",
+                "title": "Post Vertical (4:5)",
+                "enum": [
+                  "4:5"
+                ]
+              },
+              {
+                "type": "string",
+                "title": "Photo Vertical (2:3)",
+                "enum": [
+                  "2:3"
+                ]
+              },
+              {
+                "type": "string",
+                "title": "Widescreen Vertical (9:16)",
+                "enum": [
+                  "9:16"
+                ]
+              },
+              {
+                "type": "string",
+                "title": "Cinematic Vertical (9:21)",
+                "enum": [
+                  "9:21"
+                ]
+              }
+            ]
+          }
+        }
+      },
+      "else": {
+        "properties": {
+          "removeBackground": {
+            "title": "Remove Background",
+            "description": "When true, an attempt will be made to remove the background from the generated image.",
+            "type": "boolean"
+          },
+          "sourceImageUrl": {
+            "title": "Source Image URL",
+            "description": "For image-to-image, this field should resolve to an image URL.",
+            "type": "string"
+          },
+          "imageToImageType": {
+            "title": "Image-to-Image Transfer Type",
+            "description": "The type of image-to-image transfer to perform; \"edit\" is recommended for most purposes.",
+            "type": "string",
+            "default": "edit",
+            "anyOf": [
+              {
+                "type": "string",
+                "title": "Edit (Qwen)",
+                "enum": [
+                  "edit"
+                ]
+              },
+              {
+                "type": "string",
+                "title": "Canny (Flux)",
+                "enum": [
+                  "canny"
+                ]
+              },
+              {
+                "type": "string",
+                "title": "Face (Flux)",
+                "enum": [
+                  "face"
+                ]
+              }
+            ]
+          }
         }
       }
     }

@@ -36,7 +36,7 @@ export class Generator {
     removeBackground: boolean;
     updates: {[key: string]: string}
     dependencies: string[];
-    inputImageUrl: string;
+    sourceImageUrl: string;
     imageToImageType: ImageToImageType;
 
     retries: number = 0;
@@ -65,7 +65,7 @@ export class Generator {
         this.removeBackground = data.removeBackground ?? false;
         this.dependencies = data.dependencies ? data.dependencies.toString().split(',').map((dependency: string) => dependency.trim()) : [];
         this.updates = {};
-        this.inputImageUrl = data.inputImageUrl ?? '';
+        this.sourceImageUrl = data.sourceImageUrl ?? '';
         this.imageToImageType = data.iamgeToImageType ?? ImageToImageType.Edit;
         const updates: any[] = data.updates;
         Object.values(updates).forEach(update => this.updates[update.variable] = stage.processCode(update.setTo));
