@@ -21,7 +21,7 @@ jobs:
       - name: Set up Node
         uses: actions/setup-node@v2
         with:
-          node-version: '21.7.1'
+          node-version: '24.2.0'
 
       - name: Confirm CHUB_AUTH_TOKEN is set
         env:

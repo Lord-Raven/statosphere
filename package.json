@@ -17,7 +17,7 @@
     "start": "react-scripts start"
   },
   "dependencies": {
-    "@chub-ai/stages-ts": "^0.4.0",
+    "@chub-ai/stages-ts": "^0.5.2",
     "@typescript-eslint/parser": "^7.4.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
@@ -29,7 +29,7 @@
     "ajv": "^8.17.1"
   },
   "engines": {
-    "node": "21.7.1"
+    "node": "24.2.0"
   },
   "devDependencies": {
     "@types/react": "^18.2.66",

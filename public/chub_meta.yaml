@@ -83,6 +83,7 @@ As excited as I am to present this, it is, unfortunately, a \"bot-maker beware\"
 </ul>
 <br>
 **Updates**<br>
+2025/10/15 - Added image-to-image generator support, including Chub's new Qwen model.<br>
 2025/10/13 - Making some tweaks to LLM classifiers. <br>
 2025/09/10 - Adding a new LLM toggle to classifiers. I don't recommend using this for the moment; I am testing feasibility, but it could allow for more complex classification tasks than the naive zero-shot model can handle. <br>
 2025/08/05 - Added a retry condition to generators, so bad content can be automatically re-rolled. Added built-in functions: substring(), isNull(), isNotNull(). <br>

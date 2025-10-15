@@ -9,7 +9,14 @@ export enum GeneratorPhase {
 
 export enum GeneratorType {
     Text = 'Text',
-    Image = 'Image'
+    Image = 'Image',
+    ImageToImage = 'Image to Image'
+}
+
+export enum ImageToImageType {
+    Canny = 'canny',
+    Edit = 'edit',
+    Face = 'face'
 }
 
 export class Generator {
@@ -29,6 +36,8 @@ export class Generator {
     removeBackground: boolean;
     updates: {[key: string]: string}
     dependencies: string[];
+    inputImageUrl: string;
+    imageToImageType: ImageToImageType;
 
     retries: number = 0;
     skipped: boolean = false;
@@ -56,6 +65,8 @@ export class Generator {
         this.removeBackground = data.removeBackground ?? false;
         this.dependencies = data.dependencies ? data.dependencies.toString().split(',').map((dependency: string) => dependency.trim()) : [];
         this.updates = {};
+        this.inputImageUrl = data.inputImageUrl ?? '';
+        this.imageToImageType = data.iamgeToImageType ?? ImageToImageType.Edit;
         const updates: any[] = data.updates;
         Object.values(updates).forEach(update => this.updates[update.variable] = stage.processCode(update.setTo));
         const lastQuote = this.prompt.lastIndexOf('"');

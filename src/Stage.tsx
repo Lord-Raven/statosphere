@@ -561,7 +561,18 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
             if (generator.dependencies.filter(dependency => !((this.generators[dependency] ? this.generators[dependency].isDone() : true) && (this.classifiers[dependency] ? this.classifiers[dependency].isDone() : true))).length == 0) {
                 if (generator.phase == phase && (generator.condition == '' || this.evaluate(this.replaceTags(generator.condition ?? 'true'), this.buildScope()))) {
                     let promise;
-                    if (generator.type == GeneratorType.Image) {
+                    if (generator.type == GeneratorType.ImageToImage) {
+                        const prompt = this.evaluate(this.replaceTags(generator.prompt), this.scope);
+                        const negativePrompt = this.evaluate(this.replaceTags(generator.negativePrompt), this.scope);
+                        console.log('Kicking off an image-to-image generator with prompt:\n' + prompt);
+                        promise = this.generator.imageToImage({
+                            image: this.evaluate(this.replaceTags(generator.inputImageUrl), this.scope),
+                            prompt: prompt,
+                            negative_prompt: negativePrompt,
+                            transfer_type: generator.imageToImageType,
+                            remove_background: generator.removeBackground
+                        });
+                    } else if (generator.type == GeneratorType.Image) {
                         const prompt = this.evaluate(this.replaceTags(generator.prompt), this.scope);
                         const negativePrompt = this.evaluate(this.replaceTags(generator.negativePrompt), this.scope);
                         console.log('Kicking off an image generator with prompt:\n' + prompt);
