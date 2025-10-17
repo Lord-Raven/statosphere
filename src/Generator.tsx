@@ -70,11 +70,11 @@ export class Generator {
         const updates: any[] = data.updates;
         Object.values(updates).forEach(update => this.updates[update.variable] = stage.processCode(update.setTo));
         const lastQuote = this.prompt.lastIndexOf('"');
-        if (this.includeHistory && !this.prompt.includes("{{post_history_instructions}}") && lastQuote >= 0) {
+        /*if (this.includeHistory && !this.prompt.includes("{{post_history_instructions}}") && lastQuote >= 0) {
             const beforeQuote = this.prompt.substring(0, lastQuote);
             const afterQuote = this.prompt.substring(lastQuote);
             this.prompt = `${beforeQuote}\n{{post_history_instructions}}${afterQuote}`;
-        }
+        }*/
         console.log('Loaded this generator:');
         console.log(this);
     }

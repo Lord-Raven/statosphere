@@ -12,16 +12,13 @@ _Up front, this is pretty experimental; it may become unstable and it may not be
 but if you've been thinking about playing with a stage of your own, this may be a less daunting entrypoint. 
 <br>
 <br>
-(There are a lot of notes and a Chub bug here; if you don't see a \"Show More\" button, try refreshing the page 'til it appears, so you can view all of the notes.)
-<br>
-<br>
 This stage comprises five core elements:<br>
 <ul>
 <li>Variable definitions with various update phases
 <li>JavaScript function definitions for creating complex, re-usable logic
 <li>Zero-shot or LLM-based classification rules to draw inferences from inputs or responses and apply updates to variables as a result
-<li>Generators which make LLM calls to request additional content
-<li>Content modification rules which alter input, response, post-input/response (which are \"system messages\" that display in-chat but do not persist to the LLM), and stage directions (additional LLM instruction), all based on specified conditions
+<li>Generators which make LLM calls to request additional text or image content
+<li>Content modification rules which alter input, response, post-input/response (\"system messages\"), and stage directions (additional, hidden LLM instruction), all based on specified conditions
 </ul>
 <br>
 **Example Applications**<br>
@@ -83,7 +80,7 @@ As excited as I am to present this, it is, unfortunately, a \"bot-maker beware\"
 </ul>
 <br>
 **Updates**<br>
-2025/10/15 - Added image-to-image generator support, including Chub's new Qwen model.<br>
+2025/10/17 - Added image-to-image generator support, including Chub's new Qwen model.<br>
 2025/10/13 - Making some tweaks to LLM classifiers. <br>
 2025/09/10 - Adding a new LLM toggle to classifiers. I don't recommend using this for the moment; I am testing feasibility, but it could allow for more complex classification tasks than the naive zero-shot model can handle. <br>
 2025/08/05 - Added a retry condition to generators, so bad content can be automatically re-rolled. Added built-in functions: substring(), isNull(), isNotNull(). <br>
