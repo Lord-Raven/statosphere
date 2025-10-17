@@ -19,7 +19,8 @@
         "type": "string",
         "enum": [
           "Text",
-          "Image"
+          "Image",
+          "Image-to-Image"
         ],
         "default": "Text"
       },
