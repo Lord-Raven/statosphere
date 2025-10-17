@@ -558,7 +558,10 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
     kickOffGenerator(generator: Generator, phase: GeneratorPhase) {
         try {
             // If there are no dependencies that haven't completed, then this classifier can start.
+            console.log(`Generator dependencies for ${generator.name}:`);
+            console.log(generator.dependencies);
             if (generator.dependencies.filter(dependency => !((this.generators[dependency] ? this.generators[dependency].isDone() : true) && (this.classifiers[dependency] ? this.classifiers[dependency].isDone() : true))).length == 0) {
+                console.log('Dependencies met');
                 if (generator.phase == phase && (generator.condition == '' || this.evaluate(this.replaceTags(generator.condition ?? 'true'), this.buildScope()))) {
                     let promise;
                     if (generator.type == GeneratorType.ImageToImage) {
@@ -596,7 +599,8 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
                     promise.then(response => generator.result = response).catch(reason => {console.log(reason); generator.result = null;});
                     generator.promise = promise;
                 } else {
-                    // No dependencies and criteria not met; skip this one.
+                    // No remaining dependencies and criteria not met; skip this one.
+                    console.log(`Skipping ${generator.name}`);
                     generator.skipped = true;
                 }
             }
