@@ -682,8 +682,8 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
             tries--;
             try {
                 let prompt = `{{system_prompt}}\n\n` +
-                    `About {{char}}:\n${char.description} ${char.personality}\n\n` +
-                    `About {{user}}:\n${user.chatProfile}\n\n` +
+                    (char ? `About {{char}}:\n${char.description} ${char.personality}\n\n` : '') +
+                    (user ? `About {{user}}:\n${user.chatProfile}\n\n` : '') +
                     (useHistory ? `Conversation history:\n{{messages}}\n\n` : '') +
                     `Passage for Analysis: ${data.sequence}\n\n` +
                     `Hypothesis Statements: \n${[...data.candidate_labels].map(candidate => data.hypothesis_template.replace('{}', candidate)).join('\n')}.\n\n` +
