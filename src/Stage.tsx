@@ -782,11 +782,13 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         // Check for /setVar in this message, which allows the user to update a variable directly.
         // Format is /setVar variableName=value
         // Where value extends to newline or end of message.
-        // setVar is not case-sensitive for the command itself, but variableName is case-sensitive.
-        const setVarMatch = content.match(/\/setVar\s+([A-Za-z_][A-Za-z0-9_]*)=(.+?)(\n|$)/s);
-        if (setVarMatch) {
-            const varName = setVarMatch[1];
-            const varValue = setVarMatch[2];
+        // There can be multiple matches; loop through and process all of them
+        let updatedContent = content;
+        const setVarRegex = /\/setvar\s+([A-Za-z_][A-Za-z0-9_]*)\s*=\s*([^\n\r]+)/gi;
+        let match;
+        while ((match = setVarRegex.exec(content)) !== null) {
+            const varName = match[1];
+            const varValue = match[2];
             if (this.variableDefinitions[varName]) {
                 console.log(`Attempting to set variable ${varName} to ${varValue}`);
                 this.updateVariable(varName, varValue);
@@ -794,7 +796,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
                 console.warn(`Attempted to set an unknown variable: ${varName}`);
             }
             // Clean up setvar from content:
-            userMessage.content = content.replace(setVarMatch[0], '').trim();
+            updatedContent = updatedContent.replace(match[0], '').trim();
         }
 
         this.updateReplacements(anonymizedId, promptForId);
@@ -804,7 +806,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
 
         console.log('Handle input generators and classifiers.');
         this.resetGeneratorsAndClassifiers()
-        this.setContent(content);
+        this.setContent(updatedContent);
         this.buildScope();
         while (!this.processRequests(GeneratorPhase.OnInput, this.characters[promptForId ?? ''] ?? null, this.users[anonymizedId ?? ''] ?? null)) {
             await new Promise(resolve => setTimeout(resolve, 500));
@@ -816,7 +818,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         this.buildScope();
 
         console.log('Apply input content rules.');
-        this.setContent(content);
+        this.setContent(updatedContent);
         Object.values(this.contentRules).forEach(contentRule => this.setContent(contentRule.evaluateAndApply(this, ContentCategory.Input)));
         const modifiedMessage = this.content.trim() == '' ? '\n' : this.replaceTags(this.content);
 
@@ -832,7 +834,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
 
         console.log('End beforePrompt().');
         return {
-            stageDirections: stageDirections.trim() != '' ? `### Response Instruction: ${stageDirections}` : null,
+            stageDirections: stageDirections.trim() != '' ? `Response Instruction: ${stageDirections}` : null,
             messageState: this.writeMessageState(),
             modifiedMessage: modifiedMessage,
             systemMessage: systemMessage.trim() != '' ? systemMessage : null,
