@@ -779,6 +779,23 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         } = userMessage;
         console.log('Start beforePrompt().');
 
+        // Check for /setVar in this message, which allows the user to update a variable directly.
+        // Format is /setVar variableName=value
+        // Where value extends to newline or end of message.
+        // setVar is not case-sensitive for the command itself, but variableName is case-sensitive.
+        const setVarMatch = content.match(/\/setVar\s+([A-Za-z_][A-Za-z0-9_]*)=(.+?)(\n|$)/s);
+        if (setVarMatch) {
+            const varName = setVarMatch[1];
+            const varValue = setVarMatch[2];
+            if (this.variableDefinitions[varName]) {
+                console.log(`Attempting to set variable ${varName} to ${varValue}`);
+                this.updateVariable(varName, varValue);
+            } else {
+                console.warn(`Attempted to set an unknown variable: ${varName}`);
+            }
+            // Clean up setvar from content:
+            userMessage.content = content.replace(setVarMatch[0], '').trim();
+        }
 
         this.updateReplacements(anonymizedId, promptForId);
 
@@ -801,7 +818,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         console.log('Apply input content rules.');
         this.setContent(content);
         Object.values(this.contentRules).forEach(contentRule => this.setContent(contentRule.evaluateAndApply(this, ContentCategory.Input)));
-        const modifiedMessage = this.content.trim() == '' ? '\n' : this.content;
+        const modifiedMessage = this.content.trim() == '' ? '\n' : this.replaceTags(this.content);
 
 
         this.setContent('');
