@@ -679,6 +679,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         let tries = 3;
         // Use generator.textGen to query the LLM. Don't care about the client here.
         while (tries > 0 && (!result || result.labels.length == 0)) {
+            tries--;
             try {
                 let prompt = `{{system_prompt}}\n\n` +
                     `About {{char}}:\n${char.description} ${char.personality}\n\n` +
