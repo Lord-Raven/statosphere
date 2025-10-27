@@ -32,6 +32,7 @@ export class Generator {
     includeHistory: boolean;
     minTokens: any;
     maxTokens: any;
+    stoppingStrings: any;
     aspectRatio: any;
     removeBackground: boolean;
     updates: {[key: string]: string}
@@ -61,6 +62,7 @@ export class Generator {
         this.includeHistory = data.includeHistory ?? false;
         this.minTokens = data.minTokens;
         this.maxTokens = data.maxTokens;
+        this.stoppingStrings = data.stoppingStrings ?? '';
         this.aspectRatio = data.aspectRatio ?? AspectRatio.PHOTO_HORIZONTAL;
         this.removeBackground = data.removeBackground ?? false;
         this.dependencies = data.dependencies ? data.dependencies.toString().split(',').map((dependency: string) => dependency.trim()) : [];

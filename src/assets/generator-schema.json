@@ -109,6 +109,12 @@
           "description": "If this resolves to true after the generator runs, the generator will be retried. Generally, this should involve {{content}} in some way.",
           "default": "",
           "type": "string"
+        },
+        "stoppingStrings": {
+          "title": "Stopping Strings",
+          "description": "Comma-delimited stopping strings for the request; if the LLM produces one of these strings, it will end the response.",
+          "default": "",
+          "type": "string"
         }
       }
     },

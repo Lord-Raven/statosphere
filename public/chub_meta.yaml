@@ -80,6 +80,7 @@ As excited as I am to present this, it is, unfortunately, a \"bot-maker beware\"
 </ul>
 <br>
 **Updates**<br>
+2025/10/27 - Custom stopping strings added to text requests. Addressing some quotation escaping issues.<br>
 2025/10/21 - Some diagnostic features for developers (or cheaters): /setVar command for manually updating variable values, and {{variableName}} substitution processed on input.<br>
 2025/10/17 - Added image-to-image generator support, including Chub's new Qwen model.<br>
 2025/10/13 - Making some tweaks to LLM classifiers. <br>

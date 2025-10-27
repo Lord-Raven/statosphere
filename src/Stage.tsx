@@ -568,6 +568,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
                             prompt: prompt,
                             min_tokens: generator.minTokens,
                             max_tokens: generator.maxTokens,
+                            stop: generator.stoppingStrings.split(','),
                             include_history: generator.includeHistory
                         })
                     } else if (generator.type == GeneratorType.Image) {
@@ -645,22 +646,27 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         };
     }
 
-    /*
-    replaceTags(source: string) {
+     replaceTags(source: string) {
+
         if (!source) return '';
         let replacements = this.replacements;
         for (const key of Object.keys(this.variables)) {
-            replacements[key.toLowerCase()] = (typeof this.getVariable(key) in ['object','string'] ? JSON.stringify(this.getVariable(key)) : this.getVariable(key));
+            let value = this.getVariable(key);
+            if (typeof this.getVariable(key) in ['object','string']) {
+                value = JSON.stringify(value);
+            }
+            replacements[key.toLowerCase()] = String(value).replace(/"/g, '\\"');
         }
-        replacements['content'] = this.content;
+        replacements['content'] = this.content ? this.content.replace(/"/g, '\\"') : this.content;
         return source.replace(/{{([A-z]*)}}/g, (match) => {
             const variableName = match.substring(2, match.length - 2).toLowerCase()
-            return (variableName in replacements ? (typeof replacements[variableName] === 'string' ? `${replacements[variableName]}`.replace(/"/g, '\\"').replace(/'/g, '\\\'') : replacements[variableName]) : match);
+            return (variableName in replacements ? replacements[variableName] : match);
         });
     }
-     */
 
-    replaceTags(source: string) {
+    /* Original
+     replaceTags(source: string) {
+
         if (!source) return '';
         let replacements = this.replacements;
         for (const key of Object.keys(this.variables)) {
@@ -672,6 +678,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
             return (variableName in replacements ? replacements[variableName] : match);
         });
     }
+     */
 
     async queryLlm(data: any, char: Character, user: User, useHistory: boolean = false) {
         // This version builds a prompt and sends it to the text generation endpoint, then parses the response to determine label scoring.
@@ -806,7 +813,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
 
         console.log('Handle input generators and classifiers.');
         this.resetGeneratorsAndClassifiers()
-        this.setContent(updatedContent);
+        this.setContent(`${updatedContent}`);
         this.buildScope();
         while (!this.processRequests(GeneratorPhase.OnInput, this.characters[promptForId ?? ''] ?? null, this.users[anonymizedId ?? ''] ?? null)) {
             await new Promise(resolve => setTimeout(resolve, 500));
@@ -815,10 +822,8 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         console.log('Process final input variable changes.')
         await this.processVariablesPostInput();
 
-        this.buildScope();
-
         console.log('Apply input content rules.');
-        this.setContent(updatedContent);
+        this.setContent(`${updatedContent}`);
         Object.values(this.contentRules).forEach(contentRule => this.setContent(contentRule.evaluateAndApply(this, ContentCategory.Input)));
         const modifiedMessage = this.content.trim() == '' ? '\n' : this.replaceTags(this.content);
 
