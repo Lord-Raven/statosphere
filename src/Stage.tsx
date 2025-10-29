@@ -290,7 +290,8 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
             this.debugMode = true;
         }
         this.buildScope();
-        await this.checkBackground();
+        // This was getting overridden by the chat's background check after the stage has loaded. Instead, let the setState call handle it.
+        // await this.checkBackground();
 
         console.log('Finished loading Statosphere.');
         return {
@@ -689,25 +690,21 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
             tries--;
             try {
                 let prompt = `` +
-                    `This is a simple entailment classification task. Absorb the following context and then follow the ensuing instruction and example format to output a successfully informed response.\n\n` +
+                    `This is a simple entailment classification task. Absorb the following context and then score the provided Hypothesis Statements as they relate to the Passage for Analysis.\n\n` +
                     (char ? `### About {{char}}:\n${char.description} ${char.personality}\n\n` : '') +
                     (user ? `### About {{user}}:\n${user.chatProfile}\n\n` : '') +
                     (useHistory ? `### Conversation history:\n{{messages}}\n\n` : '') +
                     `### Passage for Analysis: ${data.sequence}\n\n` +
                     `### Hypothesis Statements: \n${[...data.candidate_labels].map(candidate => data.hypothesis_template.replace('{}', candidate)).join('\n')}\n\n` +
-                    `### Current Task: Within the context of this narrative, carefully consider the events and content of the Passage for Analysis, ` +
+                    `### Current Task: Carefully consider the events and content of the Passage for Analysis, ` +
                     `then rank and score the entailment of each Hypothesis Statement with regards to the passage on a scale of 0.0 to 1.0. ` +
-                    `Entailment is a measurement of the veracity or implied accuracy of the hypothesis as it applies to the Passage for Analysis; ` +
-                    `a high entailment of 0.7 or above indicates that, based on the Passage, the hypothesis statement is likely true, a lesser score may indicate that the Passage does not support the hypothesis statement. ` +
-                    `Directly output each Hypothesis Statement verbatim, followed by its determined entailment score (between 0.0 and 1.0), with each hypothesis on a new line in this strict format: \n` +
-                    `1. Inarguably supported hypothesis statement: 1.0\n` +
-                    `2. Likely supported hypothesis statement: 0.7\n` +
-                    `3. Vaguely supported hypothesis statement: 0.3\n` +
-                    `4. Unsupported hypothesis statement: 0.0\n` +
-                    `Bear in mind that this example format depicts only sample scorings which convey the relative value of entailment scores.\n` +
-                    `\n` +
-                    `### Example Response:\n` +
-                    `System: ${[...data.candidate_labels].sort(() => Math.random() - 0.5).map((candidate, index) => `${index + 1}. ${data.hypothesis_template.replace('{}', candidate)}: x.y`).join('\n')}.\n\n` +
+                    `Entailment is a heuristic measurement of the veracity or implied accuracy of the hypothesis as it applies to the Passage for Analysis:\n` +
+                    `1.0 entailment indicates that, based on the Passage, the Hypothesis Statement is unquestionably true;\n` +
+                    `0.7 entailment indicates that, based on the Passage, the Hypothesis Statement is likely true;\n` +
+                    `0.3 entailment indicates that, based on the Passage, the Hypothesis Statement is vaguely or partially true;\n` +
+                    `0.0 entailment indicates that, based on the Passage, the Hypothesis Statement is false or unsupported.\n` +
+                    `Directly output each Hypothesis Statement verbatim, followed by its relative entailment score between 0.0 (false) and 1.0 (true), following this strict format with request-specific scoring: \n` +
+                    `System: ${[...data.candidate_labels].sort(() => Math.random() - 0.5).map((candidate, index) => `${index + 1}. ${data.hypothesis_template.replace('{}', candidate)}: x.x`).join('\n')}.\n\n` +
                     `###\n`;
                 console.log('LLM classification prompt:\n' + prompt);
                 const response = await this.generator.textGen({
