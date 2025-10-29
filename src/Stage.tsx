@@ -689,12 +689,13 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
             tries--;
             try {
                 let prompt = `` +
-                    (char ? `About {{char}}:\n${char.description} ${char.personality}\n\n` : '') +
-                    (user ? `About {{user}}:\n${user.chatProfile}\n\n` : '') +
-                    (useHistory ? `Conversation history:\n{{messages}}\n\n` : '') +
-                    `Passage for Analysis: ${data.sequence}\n\n` +
-                    `Hypothesis Statements: \n${[...data.candidate_labels].map(candidate => data.hypothesis_template.replace('{}', candidate)).join('\n')}.\n\n` +
-                    `Current Task: Within the context of this narrative, analyze the Passage for Analysis, then rank and score the entailment of each Hypothesis Statement with regards to the passage on a scale of 0.00 to 1.00. ` +
+                    `This is a simple entailment classification task. Absorb the following context and then follow the ensuing instruction and example format to output a successfully informed response.\n\n` +
+                    (char ? `### About {{char}}:\n${char.description} ${char.personality}\n\n` : '') +
+                    (user ? `### About {{user}}:\n${user.chatProfile}\n\n` : '') +
+                    (useHistory ? `### Conversation history:\n{{messages}}\n\n` : '') +
+                    `### Passage for Analysis: ${data.sequence}\n\n` +
+                    `### Hypothesis Statements: \n${[...data.candidate_labels].map(candidate => data.hypothesis_template.replace('{}', candidate)).join('\n')}.\n\n` +
+                    `### Current Task: Within the context of this narrative, analyze the Passage for Analysis, then rank and score the entailment of each Hypothesis Statement with regards to the passage on a scale of 0.00 to 1.00. ` +
                     `Entailment is a measurement of the veracity or implied accuracy of the hypothesis when applied to the Passage for Analysis. ` +
                     `Directly output each Hypothesis Statement verbatim, followed by its simple entailment score in this strict format: \n` +
                     `1. Inarguably supported hypothesis statement: 1.0\n` +
@@ -702,9 +703,9 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
                     `3. Vaguely supported hypothesis statement: 0.3\n` +
                     `4. Unsupported hypothesis statement: 0.0\n` +
                     `\n` +
-                    `Example Response:\n` +
+                    `### Example Response:\n` +
                     `System: ${[...data.candidate_labels].sort(() => Math.random() - 0.5).map((candidate, index) => `${index + 1}. ${data.hypothesis_template.replace('{}', candidate)}: ${1.0 - Math.min(1.0, index * 0.3)}`).join('\n')}.\n\n` +
-                    `Example Response:\n` +
+                    `### Example Response:\n` +
                     `System: ${[...data.candidate_labels].sort(() => Math.random() - 0.5).map((candidate, index) => `${index + 1}. ${data.hypothesis_template.replace('{}', candidate)}: ${1.0 - Math.min(1.0, index * 0.25)}`).join('\n')}.\n` +
                     `###\n`;
                 console.log('LLM classification prompt:\n' + prompt);
