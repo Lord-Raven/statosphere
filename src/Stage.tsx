@@ -688,20 +688,22 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         while (tries > 0 && (!result || result.labels.length == 0)) {
             tries--;
             try {
-                let prompt = `{{system_prompt}}\n\n` +
+                let prompt = `` +
                     (char ? `About {{char}}:\n${char.description} ${char.personality}\n\n` : '') +
                     (user ? `About {{user}}:\n${user.chatProfile}\n\n` : '') +
                     (useHistory ? `Conversation history:\n{{messages}}\n\n` : '') +
                     `Passage for Analysis: ${data.sequence}\n\n` +
                     `Hypothesis Statements: \n${[...data.candidate_labels].map(candidate => data.hypothesis_template.replace('{}', candidate)).join('\n')}.\n\n` +
-                    `Current Task: Within the context of this narrative, analyze the above passage, then rank and score the entailment of each hypothesis statement with regards to the passage on a scale of 0.0000 to 1.0000. ` +
-                    `Output each hypothesis verbatim, followed by its entailment score in this sample format: \n` +
+                    `Current Task: Within the context of this narrative, analyze the above passage, then rank and score the entailment of each hypothesis statement with regards to the passage on a scale of 0.00 to 1.00. ` +
+                    `Directly output each hypothesis verbatim, followed by its simple entailment score in this strict format: \n` +
                     `1. Inarguably supported hypothesis statement: 1.0\n` +
                     `2. Likely supported hypothesis statement: 0.7\n` +
                     `3. Vaguely supported hypothesis statement: 0.3\n` +
                     `4. Unsupported hypothesis statement: 0.0\n` +
-                    `###\n` +
-                    `General Instruction: \n`;
+                    `\n` +
+                    `Example Response:\n` +
+                    `System: ${[...data.candidate_labels].sort(() => Math.random() - 0.5).map((candidate, index) => `${index + 1}. ${data.hypothesis_template.replace('{}', candidate)}: ${1.0 - Math.max(1.0, index * 0.3)}`).join('\n')}.\n` +
+                    `###\n`;
                 console.log('LLM classification prompt:\n' + prompt);
                 const response = await this.generator.textGen({
                     prompt: prompt,
