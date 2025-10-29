@@ -697,8 +697,8 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
                     `### Hypothesis Statements: \n${[...data.candidate_labels].map(candidate => data.hypothesis_template.replace('{}', candidate)).join('\n')}\n\n` +
                     `### Current Task: Within the context of this narrative, carefully consider the events and content of the Passage for Analysis, ` +
                     `then rank and score the entailment of each Hypothesis Statement with regards to the passage on a scale of 0.0 to 1.0. ` +
-                    `Entailment is a measurement of the veracity or implied accuracy of the hypothesis when applied to the Passage for Analysis; ` +
-                    `a high entailment of 0.7 or above indicates that the hypothesis statement is likely true, a lesser score may indicate that the statement is possibly true but unlikely. ` +
+                    `Entailment is a measurement of the veracity or implied accuracy of the hypothesis as it applies to the Passage for Analysis; ` +
+                    `a high entailment of 0.7 or above indicates that, based on the Passage, the hypothesis statement is likely true, a lesser score may indicate that the Passage does not support the hypothesis statement. ` +
                     `Directly output each Hypothesis Statement verbatim, followed by its determined entailment score (between 0.0 and 1.0), with each hypothesis on a new line in this strict format: \n` +
                     `1. Inarguably supported hypothesis statement: 1.0\n` +
                     `2. Likely supported hypothesis statement: 0.7\n` +
@@ -707,9 +707,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
                     `Bear in mind that this example format depicts only sample scorings which convey the relative value of entailment scores.\n` +
                     `\n` +
                     `### Example Response:\n` +
-                    `System: ${[...data.candidate_labels].sort(() => Math.random() - 0.5).map((candidate, index) => `${index + 1}. ${data.hypothesis_template.replace('{}', candidate)}: ${1.0 - Math.min(1.0, index * 0.4)}`).join('\n')}.\n\n` +
-                    `### Example Response:\n` +
-                    `System: ${[...data.candidate_labels].sort(() => Math.random() - 0.5).map((candidate, index) => `${index + 1}. ${data.hypothesis_template.replace('{}', candidate)}: ${1.0 - Math.min(1.0, index * 0.25)}`).join('\n')}.\n` +
+                    `System: ${[...data.candidate_labels].sort(() => Math.random() - 0.5).map((candidate, index) => `${index + 1}. ${data.hypothesis_template.replace('{}', candidate)}: x.y`).join('\n')}.\n\n` +
                     `###\n`;
                 console.log('LLM classification prompt:\n' + prompt);
                 const response = await this.generator.textGen({
