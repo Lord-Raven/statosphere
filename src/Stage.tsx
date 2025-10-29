@@ -694,7 +694,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
                     (user ? `### About {{user}}:\n${user.chatProfile}\n\n` : '') +
                     (useHistory ? `### Conversation history:\n{{messages}}\n\n` : '') +
                     `### Passage for Analysis: ${data.sequence}\n\n` +
-                    `### Hypothesis Statements: \n${[...data.candidate_labels].map(candidate => data.hypothesis_template.replace('{}', candidate)).join('\n')}.\n\n` +
+                    `### Hypothesis Statements: \n${[...data.candidate_labels].map(candidate => data.hypothesis_template.replace('{}', candidate)).join('\n')}\n\n` +
                     `### Current Task: Within the context of this narrative, carefully consider the events and content of the Passage for Analysis, ` +
                     `then rank and score the entailment of each Hypothesis Statement with regards to the passage on a scale of 0.0 to 1.0. ` +
                     `Entailment is a measurement of the veracity or implied accuracy of the hypothesis when applied to the Passage for Analysis; ` +
@@ -707,7 +707,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
                     `Bear in mind that this example format depicts only sample scorings which convey the relative value of entailment scores.\n` +
                     `\n` +
                     `### Example Response:\n` +
-                    `System: ${[...data.candidate_labels].sort(() => Math.random() - 0.5).map((candidate, index) => `${index + 1}. ${data.hypothesis_template.replace('{}', candidate)}: ${1.0 - Math.min(1.0, index * 0.3)}`).join('\n')}.\n\n` +
+                    `System: ${[...data.candidate_labels].sort(() => Math.random() - 0.5).map((candidate, index) => `${index + 1}. ${data.hypothesis_template.replace('{}', candidate)}: ${1.0 - Math.min(1.0, index * 0.4)}`).join('\n')}.\n\n` +
                     `### Example Response:\n` +
                     `System: ${[...data.candidate_labels].sort(() => Math.random() - 0.5).map((candidate, index) => `${index + 1}. ${data.hypothesis_template.replace('{}', candidate)}: ${1.0 - Math.min(1.0, index * 0.25)}`).join('\n')}.\n` +
                     `###\n`;
@@ -726,8 +726,12 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
                 let foundScores: number[] = [];
                 const lines = textResponse.result.split('\n');
                 for (let line of lines) {
-                    const match = line.match(/^\s*\d+\.\s*(.*?):\s*([0-9]*\.?[0-9]+)/);
-                    if (match) {
+                    while(line.match(/^\s*\d+\.\s*(.*?):\s*([0-9]*\.?[0-9]+)/)) {
+                        const match = line.match(/^\s*\d+\.\s*(.*?):\s*([0-9]*\.?[0-9]+)/);
+                        if (!match) {
+                            break;
+                        }
+                        line = line.substring(match.index! + match[0].length);
                         const label = match[1].trim();
                         const score = parseFloat(match[2]);
                         let bestMatch = null;
