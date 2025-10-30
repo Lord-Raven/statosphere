@@ -665,22 +665,6 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         });
     }
 
-    /* Original
-     replaceTags(source: string) {
-
-        if (!source) return '';
-        let replacements = this.replacements;
-        for (const key of Object.keys(this.variables)) {
-            replacements[key.toLowerCase()] = (typeof this.getVariable(key) in ['object','string'] ? JSON.stringify(this.getVariable(key)) : this.getVariable(key));
-        }
-        replacements['content'] = this.content ? this.content.replace(/"/g, '\\"') : this.content;
-        return source.replace(/{{([A-z]*)}}/g, (match) => {
-            const variableName = match.substring(2, match.length - 2).toLowerCase()
-            return (variableName in replacements ? replacements[variableName] : match);
-        });
-    }
-     */
-
     async queryLlm(data: any, char: Character, user: User, useHistory: boolean = false) {
         // This version builds a prompt and sends it to the text generation endpoint, then parses the response to determine label scoring.
         let result: any = null;
@@ -863,35 +847,41 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
             anonymizedId
         } = botMessage;
         console.log('Start afterResponse().');
+        let modifiedMessage = content;
+        let systemMessage = '';
 
-        // await this.messenger.updateEnvironment({input_enabled: false});
-        this.updateReplacements(null, anonymizedId);
+        await this.messenger.updateEnvironment({input_enabled: false});
+        try {
+            this.updateReplacements(null, anonymizedId);
 
-        console.log('Process initial response variable changes.');
-        await this.processVariablesPreResponse();
+            console.log('Process initial response variable changes.');
+            await this.processVariablesPreResponse();
 
-        console.log('Handle response generators and classifiers.');
-        this.resetGeneratorsAndClassifiers()
-        this.setContent(content);
-        this.buildScope(); // Make content available to dynamic label functions
-        while (!this.processRequests(GeneratorPhase.OnResponse, this.characters[anonymizedId ?? ''] ?? null, this.users[this.lastUserId ?? ''] ?? null)) {
-            await new Promise(resolve => setTimeout(resolve, 500));
+            console.log('Handle response generators and classifiers.');
+            this.resetGeneratorsAndClassifiers()
+            this.setContent(content);
+            this.buildScope(); // Make content available to dynamic label functions
+            while (!this.processRequests(GeneratorPhase.OnResponse, this.characters[anonymizedId ?? ''] ?? null, this.users[this.lastUserId ?? ''] ?? null)) {
+                await new Promise(resolve => setTimeout(resolve, 500));
+            }
+
+            console.log('Process final response variable changes.');
+            await this.processVariablesPostResponse();
+            this.buildScope();
+
+            console.log('Apply response content rules.');
+            Object.values(this.contentRules).forEach(contentRule => this.setContent(contentRule.evaluateAndApply(this, ContentCategory.Response)));
+            modifiedMessage = this.content;
+
+            this.setContent('');
+            this.buildScope();
+            Object.values(this.contentRules).forEach(contentRule => this.setContent(contentRule.evaluateAndApply(this, ContentCategory.PostResponse)));
+            systemMessage = this.content;
+        } catch (e) {
+            console.error(e);
         }
 
-        console.log('Process final response variable changes.');
-        await this.processVariablesPostResponse();
-        this.buildScope();
-
-        console.log('Apply response content rules.');
-        Object.values(this.contentRules).forEach(contentRule => this.setContent(contentRule.evaluateAndApply(this, ContentCategory.Response)));
-        const modifiedMessage = this.content;
-
-        this.setContent('');
-        this.buildScope();
-        Object.values(this.contentRules).forEach(contentRule => this.setContent(contentRule.evaluateAndApply(this, ContentCategory.PostResponse)));
-        const systemMessage = this.content;
-
-        // await this.messenger.updateEnvironment({input_enabled: true});
+        await this.messenger.updateEnvironment({input_enabled: true});
         console.log(`End afterResponse()`);
         return {
             stageDirections: null,
