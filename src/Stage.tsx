@@ -565,7 +565,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
                     if (generator.type == GeneratorType.Text) {
                         const prompt = this.evaluate(this.replaceTags(generator.prompt), this.scope);
                         console.log('Kicking off a text generator with prompt:\n' + prompt);
-                        promise = this.generator.textGen({
+                        const request = {
                             prompt: prompt,
                             min_tokens: generator.minTokens,
                             max_tokens: generator.maxTokens,
@@ -573,7 +573,9 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
                             include_history: generator.includeHistory,
                             ...(generator.includeHistory && generator.historyContextSize > 0 ? {context_length: generator.historyContextSize} : {}),
                             post_history_instructions: ''
-                        })
+                        };
+                        console.log(request);
+                        promise = this.generator.textGen(request);
                     } else if (generator.type == GeneratorType.Image) {
                         const prompt = this.evaluate(this.replaceTags(generator.prompt), this.scope);
                         const negativePrompt = this.evaluate(this.replaceTags(generator.negativePrompt), this.scope);
@@ -693,7 +695,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
                     `System: ${[...data.candidate_labels].sort(() => Math.random() - 0.5).map((candidate, index) => `${index + 1}. ${data.hypothesis_template.replace('{}', candidate)}: x.x`).join('\n')}.\n\n` +
                     `###\n`;
                 console.log('LLM classification prompt:\n' + prompt);
-                const response = await this.generator.textGen({
+                const request = {
                     prompt: prompt,
                     min_tokens: 1,
                     max_tokens: 1000,
@@ -701,7 +703,9 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
                     ...(useHistory && historyContext > 0 ? {context_length: historyContext} : {}),
                     post_history_instructions: '',
                     stop: ['###', '\n\n']
-                });
+                };
+                console.log(request);
+                const response = await this.generator.textGen(request);
                 const textResponse = response as TextResponse;
                 console.log('LLM classification response:\n' + textResponse.result);
                 // Parse the response to determine which labels were mentioned.
