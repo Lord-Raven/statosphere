@@ -92,6 +92,12 @@
           "description": "When true, chat history will be included with the prompt.",
           "type": "boolean"
         },
+        "historyContextSize": {
+          "title": "History Context Size",
+          "description": "The context limit for this request (0 defers to preset size). This is only used when Include History is true, and primarily scales down the provided history.",
+          "default": 0,
+          "type": "number"
+        },
         "minTokens": {
           "title": "Minimum Response Tokens",
           "description": "Minimum token size requested for this response.",

@@ -30,6 +30,7 @@ export class Generator {
     negativePrompt: any;
     template: any;
     includeHistory: boolean;
+    historyContextSize: number;
     minTokens: any;
     maxTokens: any;
     stoppingStrings: any;
@@ -60,6 +61,7 @@ export class Generator {
         this.negativePrompt = stage.processCode(data.negativePrompt);
         this.template = stage.processCode(data.template);
         this.includeHistory = data.includeHistory ?? false;
+        this.historyContextSize = data.historyContext ?? 0;
         this.minTokens = data.minTokens;
         this.maxTokens = data.maxTokens;
         this.stoppingStrings = data.stoppingStrings ?? '';

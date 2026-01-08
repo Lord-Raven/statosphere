@@ -11,6 +11,7 @@ export class Classifier {
     classifications: {[key: string]: Classification};
     useLlm: boolean;
     useHistory: boolean;
+    historyContextSize: number;
 
     skipped: boolean = false;
     processed: boolean = false;
@@ -30,6 +31,7 @@ export class Classifier {
         this.classifications = {};
         this.useLlm = data.useLlm ?? false;
         this.useHistory = data.useHistory ?? false;
+        this.historyContextSize = data.historyContext ?? 0;
         for (let classification of data.classifications) {
             this.classifications[classification.label] = new Classification(classification, stage);
         }

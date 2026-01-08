@@ -55,6 +55,12 @@
         "type": "boolean",
         "default": false
       },
+      "historyContextSize": {
+        "title": "History Context Size",
+        "description": "The context limit for this request (0 defers to preset size). This is only used when Use History is true, and primarily scales down the provided history.",
+        "default": 0,
+        "type": "number"
+      },
       "classifications": {
         "title": "Classifications",
         "description": "An array of classifications to test for.",

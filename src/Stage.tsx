@@ -544,7 +544,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
                         hypothesis_template: hypothesisTemplate,
                         multi_label: true
                     };
-                    const promise = classifier.useLlm ? this.queryLlm(input, char, user, classifier.useHistory) : this.queryHf(input);
+                    const promise = classifier.useLlm ? this.queryLlm(input, char, user, classifier.useHistory, classifier.historyContextSize) : this.queryHf(input);
                     promise.then(result => classifier.result = result).catch(reason => {console.log(reason); classifier.result = null;});
                     classifier.promise = promise;
                 }
@@ -570,7 +570,9 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
                             min_tokens: generator.minTokens,
                             max_tokens: generator.maxTokens,
                             stop: generator.stoppingStrings.split(','),
-                            include_history: generator.includeHistory
+                            include_history: generator.includeHistory,
+                            ...(generator.includeHistory && generator.historyContextSize > 0 ? {context_length: generator.historyContextSize} : {}),
+                            post_history_instructions: ''
                         })
                     } else if (generator.type == GeneratorType.Image) {
                         const prompt = this.evaluate(this.replaceTags(generator.prompt), this.scope);
@@ -665,7 +667,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         });
     }
 
-    async queryLlm(data: any, char: Character, user: User, useHistory: boolean = false) {
+    async queryLlm(data: any, char: Character, user: User, useHistory: boolean = false, historyContext: number = 0) {
         // This version builds a prompt and sends it to the text generation endpoint, then parses the response to determine label scoring.
         let result: any = null;
         let tries = 3;
@@ -696,6 +698,8 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
                     min_tokens: 1,
                     max_tokens: 1000,
                     include_history: useHistory,
+                    ...(useHistory && historyContext > 0 ? {context_length: historyContext} : {}),
+                    post_history_instructions: '',
                     stop: ['###', '\n\n']
                 });
                 const textResponse = response as TextResponse;
