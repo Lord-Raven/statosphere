@@ -25,6 +25,8 @@ import generatorSchema from "./assets/generator-schema.json";
 import variableSchema from "./assets/variable-schema.json";
 import {CustomFunction} from "./CustomFunction";
 import {Generator, GeneratorPhase, GeneratorType} from "./Generator";
+import { CallToolResult } from '@modelcontextprotocol/sdk/types';
+import { z } from 'zod';
 
 type MessageStateType = any;
 type ConfigType = any;
@@ -95,6 +97,18 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         this.evaluate = math.evaluate;
 
         this.readMessageState(messageState);
+
+
+        this.mcp.tool('ping', 'Verifies that tools are available.',
+            {
+                parameter: z.number(),
+            },
+            async ({ parameter }): Promise<CallToolResult> => {
+                return { content: [{type: 'text', text: `${parameter}`}] };
+            }
+        );
+
+
         console.log('Statosphere constructed');
     }
 
