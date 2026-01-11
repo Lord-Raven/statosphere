@@ -99,12 +99,12 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         this.readMessageState(messageState);
 
 
-        this.mcp.tool('ping', 'Verifies that tools are available.',
+        this.mcp.tool('ping', 'Verify that tools are available.',
             {
-                parameter: z.number(),
+                returnThis: z.string(),
             },
-            async ({ parameter }): Promise<CallToolResult> => {
-                return { content: [{type: 'text', text: `${parameter}`}] };
+            async ({ returnThis }): Promise<CallToolResult> => {
+                return { content: [{type: 'text', text: returnThis}] };
             }
         );
 
