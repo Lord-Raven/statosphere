@@ -98,18 +98,20 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
 
         this.readMessageState(messageState);
 
-        this.mcp.registerTool('ping',
-            {
-                title: 'Ping',
-                description: 'Returns the input string.',
-                inputSchema: {
-                    returnThis: z.string().describe('String to return'),
+        try {
+            this.mcp.registerTool('ping-statosphere',
+                {
+                    title: 'Ping Statosphere',
+                    description: 'Returns "pong."',
+                    inputSchema: {}
+                },
+                async (): Promise<CallToolResult> => {
+                    return {content: [{type: 'text', text: 'pong'}]};
                 }
-            },
-            async ({ returnThis }): Promise<CallToolResult> => {
-                return { content: [{type: 'text', text: returnThis}] };
-            }
-        );
+            );
+        } catch (error) {
+            console.error('Error registering tool: ', error);
+        }
 
         console.log('Statosphere constructed');
     }
