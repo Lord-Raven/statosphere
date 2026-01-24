@@ -348,6 +348,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
     }
 
     async setState(state: MessageStateType): Promise<void> {
+        console.log('setState() called');
         this.readMessageState(state);
         this.buildScope();
         await this.checkBackground();
