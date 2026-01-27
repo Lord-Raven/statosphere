@@ -201,14 +201,19 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
                     newDependencies = '';
                     splitDependencies.map(otherName => this.functions[otherName]).filter(otherFunc => otherFunc).forEach(otherFunc => {
                         // Looking at each function in new dependencies to check for their dependencies.
-                        Object.keys(this.functions).filter(thirdKey => otherFunc.body.includes(`${thirdKey}(`)).forEach(potentialDependency => {
+                        Object.keys(this.functions).filter(thirdKey =>
+                        {
+                            const regex = new RegExp(`(?<!\\.)\\b${thirdKey}(`);regex.test(otherFunc.body)
+                        }).forEach(potentialDependency => {
                             if (!thisFunction.dependencies.includes(potentialDependency)) {
+                                console.log(`Function ${thisFunction.name} depends on function ${potentialDependency} via function ${otherFunc.name}`);
                                 newDependencies = `${newDependencies},${potentialDependency}`;
                             }
                         });
                         Object.values(variableDefinitions).map(definition => definition.name).forEach(potentialDependency => {
                             const regex = new RegExp(`(?<!\\.)\\b${potentialDependency}\\b`);
                             if (regex.test(otherFunc.body) && !thisFunction.dependencies.includes(potentialDependency)) {
+                                console.log(`Function ${thisFunction.name} depends on variable ${potentialDependency} via function ${otherFunc.name}`);
                                 newDependencies = `${newDependencies},${potentialDependency}`;
                             }
                         })
