@@ -520,13 +520,13 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
                 sequenceTemplate = sequenceTemplate.trim() == '' ? this.content : sequenceTemplate.replace('{}', this.content);
                 let hypothesisTemplate = this.replaceTags((phase == GeneratorPhase.OnInput ? classifier.inputHypothesis : classifier.responseHypothesis) ?? '');
                 // No hypothesis (this classifier doesn't apply to this contentSource) or condition set but not true):
-                if (hypothesisTemplate.trim() == '' || !this.evaluate(this.replaceTags(classifier.condition), this.scope)) {
+                if (hypothesisTemplate.trim() == '' || !this.evaluate(`(${this.replaceTags(classifier.condition)})`, this.scope)) {
                     classifier.skipped = true;
                 } else {
                     let candidateLabels: string[] = [];
                     let thisLabelMapping: { [key: string]: string } = {};
                     for (const label of Object.keys(classifier.classifications)) {
-                        if (!this.evaluate(this.replaceTags(classifier.classifications[label].condition), this.scope)) {
+                        if (!this.evaluate(`(${this.replaceTags(classifier.classifications[label].condition)})`, this.scope)) {
                             continue;
                         }
                         // The label key here does not contain code alterations, which are essential for dynamic labels; use the label from the classification object for substitution
@@ -579,7 +579,9 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         try {
             // If there are no dependencies that haven't completed, then this classifier can start.
             if (generator.dependencies.filter(dependency => !((this.generators[dependency] ? this.generators[dependency].isDone() : true) && (this.classifiers[dependency] ? this.classifiers[dependency].isDone() : true))).length == 0) {
-                if (generator.phase == phase && (generator.condition == '' || this.evaluate(this.replaceTags(generator.condition ?? 'true'), this.buildScope()))) {
+                console.log(`Kicking off generator ${generator.name} with condition: (${this.replaceTags(generator.condition)}) and retry condition: (${this.replaceTags(generator.retryCondition ?? 'false')})`);
+
+                if (generator.phase == phase && (generator.condition == '' || this.evaluate(`(${this.replaceTags(generator.condition ?? 'true')})`, this.buildScope()))) {
                     let promise;
                     if (generator.type == GeneratorType.Text) {
                         const prompt = this.evaluate(this.replaceTags(generator.prompt), this.scope);
@@ -638,7 +640,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         const backupContent = this.content;
         this.setContent(result);
 
-        if (result == '' || this.evaluate(this.replaceTags(generator.retryCondition ?? 'false'), this.buildScope())) {
+        if (result == '' || this.evaluate(`(${this.replaceTags(generator.retryCondition ?? 'false')})`, this.buildScope())) {
             // Retry the request:
             if (++generator.retries < 3) {
                 console.log(`Retrying generator ${generator.name}.`);
