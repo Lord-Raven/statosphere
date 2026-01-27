@@ -203,7 +203,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
                         // Looking at each function in new dependencies to check for their dependencies.
                         Object.keys(this.functions).filter(thirdKey =>
                         {
-                            const regex = new RegExp(`(?<!\\.)\\b${thirdKey}(`);regex.test(otherFunc.body)
+                            const regex = new RegExp(`(?<!\\.)\\b${thirdKey}\\b`);regex.test(otherFunc.body)
                         }).forEach(potentialDependency => {
                             if (!thisFunction.dependencies.includes(potentialDependency)) {
                                 console.log(`Function ${thisFunction.name} depends on function ${potentialDependency} via function ${otherFunc.name}`);
