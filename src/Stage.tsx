@@ -203,17 +203,18 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
                         // Looking at each function in new dependencies to check for their dependencies.
                         Object.keys(this.functions).filter(thirdKey =>
                         {
-
-                            const regex = new RegExp(`(?<!\\.)\\b${thirdKey}\\b`);return regex.test(otherFunc.body)
+                            const inBodyRegex = new RegExp(`(?<!\\.)\\b${thirdKey}\\b`);return inBodyRegex.test(otherFunc.body)
                         }).forEach(potentialDependency => {
-                            if (!thisFunction.dependencies.includes(potentialDependency)) {
+                            const inDependenciesRegex = new RegExp(`\\b${potentialDependency}\\b`);
+                            if (!inDependenciesRegex.test(thisFunction.dependencies)) {
                                 console.log(`Function ${thisFunction.name} depends on function ${potentialDependency} via function ${otherFunc.name}`);
                                 newDependencies = `${newDependencies},${potentialDependency}`;
                             }
                         });
                         Object.values(variableDefinitions).map(definition => definition.name).forEach(potentialDependency => {
-                            const regex = new RegExp(`(?<!\\.)\\b${potentialDependency}\\b`);
-                            if (regex.test(otherFunc.body) && !thisFunction.dependencies.includes(potentialDependency)) {
+                            const inBodyRegex = new RegExp(`(?<!\\.)\\b${potentialDependency}\\b`);
+                            const inDependenciesRegex = new RegExp(`\\b${potentialDependency}\\b`);
+                            if (inBodyRegex.test(otherFunc.body) && !inDependenciesRegex.test(thisFunction.dependencies)) {
                                 console.log(`Function ${thisFunction.name} depends on variable ${potentialDependency} via function ${otherFunc.name}`);
                                 newDependencies = `${newDependencies},${potentialDependency}`;
                             }
