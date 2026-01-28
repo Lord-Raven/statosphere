@@ -848,6 +848,8 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         while (!this.processRequests(GeneratorPhase.OnInput, this.characters[promptForId ?? ''] ?? null, this.users[anonymizedId ?? ''] ?? null)) {
             await new Promise(resolve => setTimeout(resolve, 500));
         }
+        console.log(`Setting post-generator content to: ${updatedContent}`);
+        this.setContent(`${updatedContent}`);
 
         console.log('Process final input variable changes.')
         await this.processVariablesPostInput();
