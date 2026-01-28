@@ -818,6 +818,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         // Where value extends to newline or end of message.
         // There can be multiple matches; loop through and process all of them
         let updatedContent = content;
+        this.setContent(`${updatedContent}`);
         const setVarRegex = /\/setvar\s+([A-Za-z_][A-Za-z0-9_]*)\s*=\s*([^\n\r]+)/gi;
         let match;
         while ((match = setVarRegex.exec(content)) !== null) {
@@ -832,6 +833,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
             // Clean up setvar from content:
             updatedContent = updatedContent.replace(match[0], '').trim();
         }
+        this.setContent(`${updatedContent}`);
 
         this.updateReplacements(anonymizedId, promptForId);
 
