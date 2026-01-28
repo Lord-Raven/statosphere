@@ -848,7 +848,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         while (!this.processRequests(GeneratorPhase.OnInput, this.characters[promptForId ?? ''] ?? null, this.users[anonymizedId ?? ''] ?? null)) {
             await new Promise(resolve => setTimeout(resolve, 500));
         }
-        console.log(`Setting post-generator content to: ${updatedContent}`);
+
         this.setContent(`${updatedContent}`);
 
         console.log('Process final input variable changes.')
@@ -904,12 +904,14 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
             while (!this.processRequests(GeneratorPhase.OnResponse, this.characters[anonymizedId ?? ''] ?? null, this.users[this.lastUserId ?? ''] ?? null)) {
                 await new Promise(resolve => setTimeout(resolve, 500));
             }
+            this.setContent(`${modifiedMessage}`);
 
             console.log('Process final response variable changes.');
             await this.processVariablesPostResponse();
             this.buildScope();
 
             console.log('Apply response content rules.');
+            this.setContent(`${modifiedMessage}`);
             Object.values(this.contentRules).forEach(contentRule => this.setContent(contentRule.evaluateAndApply(this, ContentCategory.Response)));
             modifiedMessage = this.content;
 
