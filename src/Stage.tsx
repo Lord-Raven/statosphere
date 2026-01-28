@@ -654,6 +654,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
                 this.kickOffGenerator(generator, generatorPhase);
             } else {
                 console.log(`Generator ${generator.name} exhausted retries; skipping.`);
+                this.setContent(backupContent);
                 generator.skipped = true;
             }
         } else {
