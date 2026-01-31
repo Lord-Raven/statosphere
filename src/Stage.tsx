@@ -490,6 +490,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
                     for (let variable of Object.keys(classification.updates)) {
                         //console.log(`Classification ${classification.label} is updating ${variable}`);
                         this.replacements['label'] = specificLabels[key];
+                        console.log(`Updating variable ${variable} to ${classification.updates[variable]}`);
                         this.updateVariable(variable, classification.updates[variable]);
                     }
                 }
