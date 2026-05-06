@@ -595,8 +595,8 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
                         console.log('Kicking off a text generator with prompt:\n' + prompt);
                         const request = {
                             prompt: prompt,
-                            min_tokens: generator.minTokens,
-                            max_tokens: generator.maxTokens,
+                            min_tokens: Number.parseInt(generator.minTokens),
+                            max_tokens: Number.parseInt(generator.maxTokens),
                             stop: generator.stoppingStrings.split(','),
                             include_history: generator.includeHistory,
                             ...(generator.includeHistory && generator.historyContextSize > 0 ? {context_length: generator.historyContextSize} : {}),
