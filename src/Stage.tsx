@@ -896,10 +896,11 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
             this.updateReplacements(null, anonymizedId);
 
             console.log('Process initial response variable changes.');
+            this.setContent(content);
             await this.processVariablesPreResponse();
 
             console.log('Handle response generators and classifiers.');
-            this.resetGeneratorsAndClassifiers()
+            this.resetGeneratorsAndClassifiers();
             this.setContent(content);
             this.buildScope(); // Make content available to dynamic label functions
             while (!this.processRequests(GeneratorPhase.OnResponse, this.characters[anonymizedId ?? ''] ?? null, this.users[this.lastUserId ?? ''] ?? null)) {
