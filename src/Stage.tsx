@@ -807,8 +807,8 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
                     body: JSON.stringify({data: [{data_string: data}]}),
                     credentials: "omit"
                 });
-                const { event_id } = await request.json();
 
+                const { event_id } = await request.json();
                 const response = await this.awaitPipeline(pipeline, event_id);
                 console.log('HF response:');
                 console.log(response);
