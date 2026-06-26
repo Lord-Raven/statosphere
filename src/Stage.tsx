@@ -799,7 +799,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         const pipeline = "ravenok-statosphere-backend.hf.space/gradio_api/call/predict";
         while (retries > 0 && (!result || result.labels.length == 0)) {
             try {
-                const request = await fetch(pipeline, {
+                const request = await fetch(`https://${pipeline}`, {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json"
