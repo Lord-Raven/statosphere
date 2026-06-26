@@ -13,10 +13,8 @@ import {LoadResponse} from "@chub-ai/stages-ts/dist/types/load";
 import {all, create} from "mathjs";
 import {Variable, VariableDefinition} from "./Variable";
 import * as yaml from 'js-yaml';
-import {Client} from "@gradio/client";
 import {ContentCategory, ContentRule} from "./ContentRule";
 import {Classification, Classifier} from "./Classifier";
-import {env, pipeline} from "@xenova/transformers";
 import Ajv from "ajv";
 import classifierSchema from "./assets/classifier-schema.json";
 import contentSchema from "./assets/content-schema.json";
@@ -26,7 +24,6 @@ import variableSchema from "./assets/variable-schema.json";
 import {CustomFunction} from "./CustomFunction";
 import {Generator, GeneratorPhase, GeneratorType} from "./Generator";
 import { CallToolResult } from '@modelcontextprotocol/sdk/types';
-import { z } from 'zod';
 
 type MessageStateType = any;
 type ConfigType = any;
@@ -52,10 +49,6 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
     characters: {[key: string]: Character};
     users: {[key: string]: User};
     lastUserId: string = '';
-    client: any;
-    fallbackPipelinePromise: Promise<any> | null = null;
-    fallbackPipeline: any;
-    fallbackMode: boolean;
     debugMode: boolean;
     evaluate: any;
     content: string = '';
@@ -88,10 +81,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         this.classifierLabelMapping = {};
         this.config = config;
         this.debugMode = false
-        this.fallbackMode = false;
-        this.fallbackPipeline = null;
         this.scope = {};
-        env.allowRemoteModels = false;
 
         this.customFunctionMap = {};
         this.evaluate = math.evaluate;
@@ -288,10 +278,6 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
             .forEach(classifierData => {const classifier = new Classifier(classifierData, this);this.classifiers[classifier.name] = classifier;});
 
         if (Object.values(this.classifiers).length > 0) {
-            console.log('Load classifier pipeline.');
-            // Only bother loading pipeline if classifiers exist.
-            this.fallbackPipelinePromise = this.getPipeline();
-
             // Update variables that are updated by classifiers to never be constant.
             for (let classifier of Object.values(this.classifiers)) {
                 for (let classification of Object.values(classifier.classifications)) {
@@ -302,10 +288,6 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
                     }
                 }
             }
-
-            console.log('Load backend client.');
-            this.client = await Client.connect("Ravenok/statosphere-backend");
-            console.log('Loaded client.');
         } else {
             console.log('No classifiers');
         }
@@ -325,10 +307,6 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
             initState: null,
             chatState: null,
         };
-    }
-
-    async getPipeline() {
-        return pipeline("zero-shot-classification", "Xenova/mobilebert-uncased-mnli");
     }
 
     validateSchema(data: any, schema: any, schemaName: string): any {
@@ -782,26 +760,62 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         return result;
     }
 
+    async awaitPipeline(pipeline: string, eventId: any): Promise<any> {
+        return new Promise((resolve, reject) => {
+            const url = `https://${pipeline}/${eventId}`;
+            const evtSource = new EventSource(url, {withCredentials: false});
+
+            evtSource.onmessage = (e) => {
+                try {
+                    const data = JSON.parse(e.data[0]);
+                    resolve(data);
+                    evtSource.close();
+                } catch (exception) {
+                    reject(exception);
+                }
+            };
+
+            evtSource.addEventListener("complete", (e) => {
+                try {
+                    const data = JSON.parse(e.data[0]);
+                    resolve(data);
+                } catch (exception) {
+                    reject(exception);
+                } finally {
+                    evtSource.close();
+                }
+            });
+
+            evtSource.onerror = (e) => {
+                evtSource.close();
+                reject(e);
+            };
+        });
+    }
+
     async queryHf(data: any) {
         let result: any = null;
-        if (this.client && !this.fallbackMode) {
+        let retries = 3;
+        const pipeline = "ravenok-statosphere-backend.hf.space/gradio_api/call/predict";
+        while (retries > 0 && (!result || result.labels.length == 0)) {
             try {
-                const response = await this.client.predict("/predict", {data_string: JSON.stringify(data)});
-                result = JSON.parse(`${response.data[0]}`);
-            } catch(e) {
-                console.log(e);
-            }
-        }
-        if (!result) {
-            console.log('Falling back to local zero-shot pipeline.');
-            this.fallbackMode = true;
-            Client.connect("Ravenok/statosphere-backend").then(client => {this.fallbackMode = false; this.client = client}).catch(err => console.log(err));
+                const request = await fetch(pipeline, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({data: [{data_string: JSON.stringify(data)}]}),
+                    credentials: "omit"
+                });
+                const { event_id } = await request.json();
 
-            if (this.fallbackPipeline == null) {
-                this.fallbackPipeline = this.fallbackPipelinePromise ? await this.fallbackPipelinePromise : await this.getPipeline();
+                result = await this.awaitPipeline(pipeline, event_id);
+            } catch (error) {
+                console.log(error);
+                retries--;
             }
-            result = await this.fallbackPipeline(data.sequence, data.candidate_labels, { hypothesis_template: data.hypothesis_template, multi_label: data.multi_label });
         }
+
         console.log(result);
         return result;
     }
