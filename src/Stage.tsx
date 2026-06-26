@@ -13,7 +13,6 @@ import {LoadResponse} from "@chub-ai/stages-ts/dist/types/load";
 import {all, create} from "mathjs";
 import {Variable, VariableDefinition} from "./Variable";
 import * as yaml from 'js-yaml';
-import {Client} from "@gradio/client";
 import {ContentCategory, ContentRule} from "./ContentRule";
 import {Classification, Classifier} from "./Classifier";
 import Ajv from "ajv";
@@ -50,7 +49,6 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
     characters: {[key: string]: Character};
     users: {[key: string]: User};
     lastUserId: string = '';
-    client: any;
     debugMode: boolean;
     evaluate: any;
     content: string = '';
@@ -290,13 +288,6 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
                     }
                 }
             }
-
-            console.log('Load backend client.');
-            Client.prototype.fetch = (url, opts) => {
-                return fetch(url, { ...opts, credentials: 'omit'});
-            };
-            this.client = await Client.connect("Ravenok/statosphere-backend");
-            console.log('Loaded client.');
         } else {
             console.log('No classifiers');
         }
@@ -769,22 +760,68 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         return result;
     }
 
+    async awaitPipeline(pipeline: string, eventId: any): Promise<any> {
+        return new Promise((resolve, reject) => {
+            const url = `https://${pipeline}/${eventId}`;
+            const evtSource = new EventSource(url, {withCredentials: false});
+
+            evtSource.onmessage = (e) => {
+                try {
+                    const data = JSON.parse(e.data);
+                    resolve(data);
+                    evtSource.close();
+                } catch (exception) {
+                    reject(exception);
+                }
+            };
+
+            evtSource.addEventListener("complete", (e) => {
+                try {
+                    const data = JSON.parse(e.data);
+                    resolve(data);
+                } catch (exception) {
+                    reject(exception);
+                } finally {
+                    evtSource.close();
+                }
+            });
+
+            evtSource.onerror = (e) => {
+                evtSource.close();
+                reject(e);
+            };
+        });
+    }
+
     async queryHf(data: any) {
         let result: any = null;
         let retries = 3;
+        console.log('Querying HF pipeline for classification with data:');
+        console.log(data);
+        console.log(JSON.stringify({data: [{data_string: data}]}));
+        const pipeline = "ravenok-statosphere-backend.hf.space/gradio_api/call/predict";
         while (retries > 0 && (!result || result.labels.length == 0)) {
-            if (this.client) {
-                try {
-                    const response = await this.client.predict("/predict", {data_string: JSON.stringify(data)});
-                    result = JSON.parse(`${response.data[0]}`);
-                    retries--;
-                } catch (e) {
-                    retries--;
-                    console.log(e);
-                    this.client = await Client.connect("Ravenok/statosphere-backend");
-                }
+            try {
+                const request = await fetch(`https://${pipeline}`, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({data: [{data_string: data}]}),
+                    credentials: "omit"
+                });
+
+                const { event_id } = await request.json();
+                const response = await this.awaitPipeline(pipeline, event_id);
+                console.log('HF response:');
+                console.log(response);
+                result = response.data[0];
+            } catch (error) {
+                console.log(error);
+                retries--;
             }
         }
+
         console.log(result);
         return result;
     }
