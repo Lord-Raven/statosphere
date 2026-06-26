@@ -816,7 +816,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
                 const response = await this.awaitPipeline(pipeline, event_id);
                 console.log('HF response:');
                 console.log(response);
-                result = response[0];
+                result = JSON.parse(response[0]);
             } catch (error) {
                 console.log(error);
                 retries--;
