@@ -778,6 +778,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
                     const response = await this.client.predict("/predict", {data_string: JSON.stringify(data)});
                     result = JSON.parse(`${response.data[0]}`);
                 } catch (e) {
+                    retries--;
                     console.log(e);
                     this.client = await Client.connect("Ravenok/statosphere-backend");
                 }
