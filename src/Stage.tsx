@@ -799,6 +799,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
         console.log('Querying HF pipeline for classification with data:');
         console.log(data);
         console.log(JSON.stringify({data: [{data_string: data}]}));
+        console.log(JSON.stringify({data: [{data_string: JSON.stringify(data)}]}));
         const pipeline = "ravenok-statosphere-backend.hf.space/gradio_api/call/predict";
         while (retries > 0 && (!result || result.labels.length == 0)) {
             try {
@@ -807,7 +808,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
                     headers: {
                         "Content-Type": "application/json"
                     },
-                    body: JSON.stringify({data: [{data_string: data}]}),
+                    body: JSON.stringify({data: [{data_string: JSON.stringify(data)}]}),
                     credentials: "omit"
                 });
 
