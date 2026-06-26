@@ -804,7 +804,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
                     headers: {
                         "Content-Type": "application/json"
                     },
-                    body: JSON.stringify({data: [{data_string: JSON.stringify(data)}]}),
+                    body: JSON.stringify({data: [{data_string: data}]}),
                     credentials: "omit"
                 });
                 const { event_id } = await request.json();
