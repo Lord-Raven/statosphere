@@ -777,6 +777,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
                 try {
                     const response = await this.client.predict("/predict", {data_string: JSON.stringify(data)});
                     result = JSON.parse(`${response.data[0]}`);
+                    retries--;
                 } catch (e) {
                     retries--;
                     console.log(e);
