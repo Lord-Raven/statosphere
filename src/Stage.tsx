@@ -767,7 +767,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
 
             evtSource.onmessage = (e) => {
                 try {
-                    const data = JSON.parse(e.data[0]);
+                    const data = JSON.parse(e.data);
                     resolve(data);
                     evtSource.close();
                 } catch (exception) {
@@ -777,7 +777,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
 
             evtSource.addEventListener("complete", (e) => {
                 try {
-                    const data = JSON.parse(e.data[0]);
+                    const data = JSON.parse(e.data);
                     resolve(data);
                 } catch (exception) {
                     reject(exception);
@@ -809,7 +809,10 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
                 });
                 const { event_id } = await request.json();
 
-                result = await this.awaitPipeline(pipeline, event_id);
+                const response = await this.awaitPipeline(pipeline, event_id);
+                console.log('HF response:');
+                console.log(response);
+                result = response.data[0];
             } catch (error) {
                 console.log(error);
                 retries--;
