@@ -117,8 +117,11 @@ jobs:
         if: ${{ !contains(github.repository, 'template') }}
         env:
           CHUB_AUTH_TOKEN: ${{ secrets.CHUB_AUTH_TOKEN }}
-        run: |    
-          curl -H "CH-API-KEY: ${{ secrets.CHUB_AUTH_TOKEN }}" -F "file=@build.zip" https://api.chub.ai/extension/${{ env.STAGE_ID }}/upload
+        run: |
+          curl \
+            -H "CH-API-KEY: ${{ secrets.CHUB_AUTH_TOKEN }}" \
+            -F "file=@build.zip" \
+            https://chub-relay.jake-h.workers.dev/${{ env.STAGE_ID }}/
 
       - name: Setup .npmrc
         env:

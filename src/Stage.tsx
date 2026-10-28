@@ -575,7 +575,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
                             prompt: prompt,
                             min_tokens: Number.parseInt(generator.minTokens),
                             max_tokens: Number.parseInt(generator.maxTokens),
-                            stop: generator.stoppingStrings.split(','),
+                            stop: generator.stoppingStrings.split(',').filter((stop: string) => stop.length > 0),
                             include_history: generator.includeHistory,
                             ...(generator.includeHistory && generator.historyContextSize > 0 ? {context_length: generator.historyContextSize} : {}),
                             post_history_instructions: ''
